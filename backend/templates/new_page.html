@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Tạo Page Mới - {{ site.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Tạo Page Mới cho "{{ site.title }}"</h5>
+                </div>
+                <div class="card-body">
+                    <form id="newPageForm">
+                        <input type="hidden" id="site_id" value="{{ site.id }}">
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Tên Page *</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="d-flex gap-2 justify-content-between mt-3">
+                            <a href="{{ url_for('main.site_detail', site_id=site.id) }}" class="btn btn-outline-secondary">
+                                Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                Tạo Page
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('newPageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        site_id: parseInt(document.getElementById('site_id').value)
+    };
+    
+    // Basic validation
+    if (!formData.title) {
+        alert('Vui lòng nhập tên page');
+        return;
+    }
+    
+    // Submit form
+    const submitBtn = document.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Đang tạo...';
+    
+    fetch('/api/pages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Tạo Page';
+        } else {
+            // Success - redirect to editor
+            window.location.href = `/editor/${data.id}`;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi tạo page');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Tạo Page';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - {{ site.name }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .error-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            color: #fdcb6e;
+            margin-bottom: 1rem;
+        }
+        
+        .site-name {
+            color: #2d3436;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .site-name:hover {
+            color: #0984e3;
+        }
+        
+        .page-path {
+            color: #e17055;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            background: #ffeaa7;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-outline-secondary {
+            border-radius: 50px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn-outline-secondary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .pages-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .page-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #74b9ff;
+            transition: transform 0.2s ease;
+        }
+        
+        .page-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .page-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .page-link {
+            color: #2d3436;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .page-link:hover {
+            color: #0984e3;
+        }
+        
+        .page-badge {
+            background: #e17055;
+            color: white;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-container">
+            <i class="fas fa-search error-icon"></i>
+            
+            <h1 class="h2 mb-3">Page Not Found</h1>
+            
+            <p class="lead mb-4">
+                Trang <span class="page-path">{{ requested_path }}</span> 
+                không tồn tại trên site 
+                <a href="/" class="site-name">{{ site.name }}</a>
+            </p>
+            
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Trang này có thể đã bị xóa, di chuyển, hoặc URL không chính xác.
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+                <a href="/" class="btn btn-primary">
+                    <i class="fas fa-home me-2"></i>
+                    Về Trang Chủ
+                </a>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Quay Lại
+                </a>
+            </div>
+            
+            {% if pages and pages|length > 0 %}
+            <div class="pages-list">
+                <h5 class="mb-3">
+                    <i class="fas fa-sitemap me-2 text-primary"></i>
+                    Các trang có sẵn trên {{ site.name }}:
+                </h5>
+                
+                {% for page in pages %}
+                <div class="page-item">
+                    <div>
+                        <a href="{{ page.get_url() }}" class="page-link">
+                            <i class="fas fa-file-alt me-2"></i>
+                            {{ page.title }}
+                        </a>
+                        {% if page.is_homepage %}
+                        <span class="page-badge ms-2">Homepage</span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">
+                        {{ page.get_url() }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                Site này chưa có trang nào được published.
+            </div>
+            {% endif %}
+            
+            <hr class="my-4">
+            
+            <div class="row text-center">
+                <div class="col-md-6">
+                    <h6 class="text-muted">
+                        <i class="fas fa-lightbulb me-1"></i>
+                        Gợi ý:
+                    </h6>
+                    <ul class="list-unstyled text-start text-muted small">
+                        <li>• Kiểm tra lại URL</li>
+                        <li>• Thử tìm kiếm từ trang chủ</li>
+                        <li>• Liên hệ chủ sở hữu site</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">
+                        <i class="fas fa-tools me-1"></i>
+                        Chủ sở hữu site:
+                    </h6>
+                    <p class="text-muted small mb-0">
+                        <a href="https://pagemade.site/dashboard" class="text-decoration-none">
+                            Đăng nhập để quản lý site
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

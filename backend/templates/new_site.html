@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Site mới{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Tạo Site Mới</h5>
+                </div>
+                <div class="card-body">
+                    <form id="newSiteForm">
+                        <!-- Site Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Tên Site *</label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   placeholder="Ví dụ: Cửa hàng xe của tôi" required>
+                        </div>
+                        
+                        <!-- Subdomain -->
+                        <div class="mb-3">
+                            <label for="subdomain" class="form-label">Subdomain *</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="subdomain" name="subdomain" 
+                                       pattern="[a-z0-9-]+" placeholder="cuahangxe" required>
+                                <span class="input-group-text">.pagemade.site</span>
+                            </div>
+                            <div class="form-text small">Chỉ dùng chữ thường, số và dấu gạch ngang</div>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="2" placeholder="Mô tả ngắn về website..."></textarea>
+                        </div>
+                        
+                        <hr class="my-3">
+                        
+                        <!-- Action Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Bước tiếp theo:</label>
+                            <div class="row g-2">
+                                <!-- Option 1: Create basic site -->
+                                <div class="col-6">
+                                    <div class="card action-card border-2" onclick="selectAction('dashboard')">
+                                        <div class="card-body text-center p-3">
+                                            <input class="form-check-input d-none" type="radio" name="action" 
+                                                   id="create_blank" value="dashboard" checked>
+                                            <h6 class="card-title mb-1">Tạo Site Cơ Bản</h6>
+                                            <p class="card-text text-muted small mb-0">
+                                                Quay về Dashboard
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Option 2: Create page and design -->
+                                <div class="col-6">
+                                    <div class="card action-card border-2" onclick="selectAction('pagemaker')">
+                                        <div class="card-body text-center p-3">
+                                            <input class="form-check-input d-none" type="radio" name="action" 
+                                                   id="redirect_pagemaker" value="pagemaker">
+                                            <h6 class="card-title mb-1">Tạo & Thiết Kế</h6>
+                                            <p class="card-text text-muted small mb-0">
+                                                Vào Editor ngay
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2 justify-content-between mt-3">
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                                Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="createSiteBtn">
+                                Tạo Site Cơ Bản
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default action card selection
+    selectAction('dashboard');
+});
+
+// Action card selection
+function selectAction(action) {
+    // Remove all selected classes
+    document.querySelectorAll('.action-card').forEach(card => {
+        card.classList.remove('border-primary', 'bg-light');
+    });
+    
+    // Select the clicked card
+    const selectedCard = event ? event.currentTarget : document.querySelector(`input[value="${action}"]`).closest('.col-md-6').querySelector('.action-card');
+    selectedCard.classList.add('border-primary', 'bg-light');
+    
+    // Check the corresponding radio
+    document.querySelector(`input[value="${action}"]`).checked = true;
+    
+    // Update button text
+    updateCreateButtonText();
+}
+
+function updateCreateButtonText() {
+    const btn = document.getElementById('createSiteBtn');
+    const selectedAction = document.querySelector('input[name="action"]:checked');
+    
+    if (selectedAction && selectedAction.value === 'pagemaker') {
+        btn.textContent = 'Tạo Site & Thiết Kế';
+        btn.className = 'btn btn-success';
+    } else {
+        btn.textContent = 'Tạo Site Cơ Bản';
+        btn.className = 'btn btn-primary';
+    }
+}
+
+// Form submission
+document.getElementById('newSiteForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('createSiteBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    const title = document.getElementById('title').value.trim();
+    const subdomain = document.getElementById('subdomain').value.trim().toLowerCase();
+    const description = document.getElementById('description').value.trim();
+    const selectedAction = document.querySelector('input[name="action"]:checked').value;
+    
+    // Validation
+    if (!title || !subdomain) {
+        alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+        return;
+    }
+    
+    // Subdomain format validation
+    const subdomainPattern = /^[a-z0-9-]+$/;
+    if (!subdomainPattern.test(subdomain)) {
+        alert('❌ Subdomain chỉ được chứa chữ thường, số và dấu gạch ngang');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Đang tạo...';
+    
+    try {
+        // Step 1: Create site
+        const response = await fetch('/api/sites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, subdomain, description })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok || !result.id) {
+            throw new Error(result.error || 'Không thể tạo site');
+        }
+        
+        // Step 2: Create first page (Homepage)
+        const pageResponse = await fetch('/api/pages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                site_id: result.id,
+                title: 'Home',
+                description: 'Trang chủ'
+            })
+        });
+        
+        const pageResult = await pageResponse.json();
+        
+        if (!pageResponse.ok || !pageResult.id) {
+            throw new Error(pageResult.error || 'Không thể tạo trang đầu tiên');
+        }
+        
+        // Step 3: Success - Redirect based on action
+        if (selectedAction === 'pagemaker') {
+            // Redirect to PageMaker editor
+            alert(`Site "${title}" đã được tạo thành công!`);
+            window.location.href = `/editor/${pageResult.id}`;
+        } else {
+            // Redirect to dashboard
+            alert(`Site "${title}" đã được tạo thành công!`);
+            window.location.href = '/dashboard';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert(`Lỗi: ${error.message}`);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+});
+</script>
+
+<!-- Custom CSS -->
+<style>
+.action-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid #dee2e6;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #0d6efd;
+}
+
+.action-card.border-primary {
+    border-color: #0d6efd !important;
+    background-color: #f8f9fa !important;
+}
+</style>
+{% endblock %}

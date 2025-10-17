@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - {{ site.title }}{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 mb-4">{{ page.title }}</h1>
+        <p class="lead">{{ page.description or 'Trang được tạo bằng PageMade.site' }}</p>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="container">
+        {% if page.content %}
+            {{ page.content|safe }}
+        {% else %}
+            <div class="text-center py-5">
+                <h3>Nội dung đang được cập nhật</h3>
+                <p class="text-muted">Page này chưa có nội dung hoặc đang trong quá trình chỉnh sửa.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<footer class="footer text-center mt-5">
+    <div class="container">
+        <p class="text-muted">
+            &copy; 2025 {{ site.title }} - 
+            <a href="https://pagemade.site" class="text-decoration-none">Được tạo bằng PageMade.site</a>
+        </p>
+    </div>
+</footer>
+
+<!-- Floating Edit Button for Owner -->
+{% if current_user.is_authenticated and current_user.id == site.user_id %}
+<div class="position-fixed bottom-0 end-0 p-3">
+    <a href="{{ url_for('main.editor', page_id=page.id) }}" class="btn btn-primary btn-lg rounded-pill shadow">
+        <i class="fas fa-edit"></i> Edit Page
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 100px 0;
+    }
+    
+    .content-section {
+        padding: 60px 0;
+        min-height: 400px;
+    }
+    
+    .footer {
+        background: #2c3e50;
+        color: white;
+        padding: 40px 0;
+    }
+    
+    /* Published page specific styles */
+    .published-page h1, .published-page h2, .published-page h3,
+    .published-page h4, .published-page h5, .published-page h6 {
+        margin-bottom: 1rem;
+    }
+    
+    .published-page p {
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+    
+    .published-page img {
+        max-width: 100%;
+        height: auto;
+        margin: 1rem 0;
+    }
+    
+    .published-page .btn {
+        margin: 0.5rem 0;
+    }
+    
+    .published-page hr {
+        margin: 2rem 0;
+    }
+</style>
+{% endblock %}

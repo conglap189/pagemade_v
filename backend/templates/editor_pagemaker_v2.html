@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagemade Editor - {{ page.title }}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/branding/favicon/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/branding/favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/branding/favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/branding/favicon/apple-touch-icon.png') }}">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- PageMaker CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='pagemaker/pagemaker.min.css') }}">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        /* ===== TOP TOOLBAR ===== */
+        #top-toolbar {
+            height: 60px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            position: relative;
+        }
+        
+        #top-toolbar .left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-right: 20px;
+            border-right: 1px solid #e5e7eb;
+        }
+        
+        .logo-section img {
+            height: 32px;
+            width: auto;
+        }
+        
+        .page-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .page-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+        
+        .page-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .device-switcher {
+            display: flex;
+            gap: 8px;
+            padding: 4px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        
+        .device-btn {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+        
+        .device-btn:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+        
+        .device-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        #top-toolbar .right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .lang-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-save {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        .btn-save:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn-publish {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-publish:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+        
+        .btn-back {
+            background: transparent;
+            color: #6b7280;
+            padding: 8px 12px;
+        }
+        
+        .btn-back:hover {
+            background: #f3f4f6;
+        }
+        
+        /* ===== MAIN EDITOR LAYOUT ===== */
+        #editor-wrapper {
+            display: flex;
+            height: calc(100vh - 60px); /* Full height minus top toolbar */
+            background: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* ===== LEFT SIDEBAR ===== */
+        #left-sidebar {
+            width: 60px;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+            gap: 4px;
+        }
+        
+        .sidebar-btn {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 18px;
+            position: relative;
+        }
+        
+        .sidebar-btn:hover {
+            background: #f3f4f6;
+            color: #667eea;
+        }
+        
+        .sidebar-btn.active {
+            background: #ede9fe;
+            color: #667eea;
+        }
+        
+        .sidebar-btn.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 3px;
+            background: #667eea;
+            border-radius: 0 3px 3px 0;
+        }
+        
+        .sidebar-btn-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        .sidebar-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #ef4444;
+            color: white;
+            font-size: 9px;
+            padding: 2px 4px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        /* ===== LEFT PANEL (Blocks, Layers, etc) ===== */
+        #left-panel {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            display: none;
+            flex-direction: column;
+        }
+        
+        #left-panel.active {
+            display: flex;
+        }
+        
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .panel-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        
+        /* ===== CANVAS AREA ===== */
+        #canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            background: #f3f4f6;
+        }
+        
+        #gjs {
+            flex: 1;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* ===== EMPTY STATE ===== */
+        .pagemaker-empty-state {
+            animation: fadeInEmpty 0.5s ease-out;
+        }
+        
+        @keyframes fadeInEmpty {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0);
+            }
+        }
+        
+        .pagemaker-empty-state svg {
+            opacity: 0.7;
+            margin-bottom: 16px;
+        }
+        
+        .pagemaker-empty-state .tip {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: inline-block;
+            margin-top: 16px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* ===== RIGHT PANEL (Style Manager) ===== */
+        #right-panel {
+            display: none !important; /* Hidden - Style Manager moved to left panel */
+        }
+        
+        /* ===== GrapesJS Custom Styles ===== */
+        .gjs-one-bg {
+            background-color: #f9fafb;
+        }
+        
+        .gjs-two-color {
+            color: #667eea;
+        }
+        
+        .gjs-three-bg {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .gjs-four-color,
+        .gjs-four-color-h:hover {
+            color: #667eea;
+        }
+        
+        /* ✅ Hide GrapesJS default panels/toolbars */
+        .gjs-pn-panels {
+            display: none !important;
+        }
+        
+        .gjs-pn-devices-c {
+            display: none !important;
+        }
+        
+        .gjs-pn-views {
+            display: none !important;
+        }
+        
+        .gjs-pn-commands {
+            display: none !important;
+        }
+        
+        .gjs-pn-options {
+            display: none !important;
+        }
+        
+        /* Canvas full width/height - remove all gaps */
+        .gjs-cv-canvas {
+            width: 100% !important;
+            height: 100% !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+        }
+        
+        .gjs-cv-canvas__frames {
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        .gjs-frame {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* Toolbar styling - changed to blue background */
+        .gjs-toolbar {
+            background: #667eea !important;
+            border: 1px solid #5568d3 !important;
+            border-radius: 4px !important;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+        }
+        
+        /* Toolbar buttons - ensure white icons on blue background */
+        .gjs-toolbar .gjs-toolbar-item {
+            color: white !important;
+        }
+        
+        .gjs-toolbar .gjs-toolbar-item:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        #loading-text {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        
+        /* Status Messages */
+        .status-message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .status-message.success {
+            background: #10b981;
+        }
+        
+        .status-message.error {
+            background: #ef4444;
+        }
+        
+        .status-message.info {
+            background: #3b82f6;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-text">Đang khởi tạo Pagemade Editor...</div>
+    </div>
+    
+    <!-- Top Toolbar -->
+    <div id="top-toolbar">
+        <div class="left">
+            <div class="logo-section">
+                <img src="{{ url_for('static', filename='images/branding/logo.svg') }}" alt="PageMade" height="32">
+            </div>
+            
+            <div class="page-info">
+                <div class="page-title">{{ page.title }}</div>
+                <div class="page-subtitle">{{ page.site.title }}</div>
+            </div>
+            
+            <div class="device-switcher">
+                <button class="device-btn active" data-device="Desktop" title="Tablet">
+                    <i class="fas fa-tablet-alt"></i>
+                </button>
+                <button class="device-btn" data-device="Tablet" title="Desktop">
+                    <i class="fas fa-desktop"></i>
+                </button>
+                <button class="device-btn" data-device="Mobile" title="Mobile">
+                    <i class="fas fa-mobile-alt"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="right">
+            <div class="lang-selector">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='15'%3E%3Crect fill='%23da251d' width='20' height='15'/%3E%3Cpolygon fill='%23ff0' points='10,4 11,7 14,7 11.5,9 12.5,12 10,10 7.5,12 8.5,9 6,7 9,7'/%3E%3C/svg%3E" width="20" height="15" alt="VN">
+                <span>Tiếng Việt</span>
+                <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+            </div>
+            
+            <button class="btn btn-back" onclick="window.location.href='{{ url_for('main.site_detail', site_id=page.site_id) }}'">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại
+            </button>
+            
+            <button class="btn btn-save" id="btn-save">
+                <i class="fas fa-save"></i>
+                Lưu
+            </button>
+            
+            <button class="btn btn-publish" id="btn-publish">
+                <i class="fas fa-rocket"></i>
+                Xuất bản
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Editor -->
+    <div id="editor-wrapper">
+        <!-- Left Sidebar -->
+        <div id="left-sidebar">
+            <button class="sidebar-btn active" data-panel="blocks" title="Blocks">
+                <i class="fas fa-th-large"></i>
+            </button>
+            
+            <button class="sidebar-btn" data-panel="layers" title="Layers">
+                <i class="fas fa-layer-group"></i>
+            </button>
+            
+            <button class="sidebar-btn" data-panel="styles" title="Styles">
+                <i class="fas fa-palette"></i>
+            </button>
+            
+            <button class="sidebar-btn" data-panel="assets" title="Assets" style="display: none;">
+                <i class="fas fa-image"></i>
+            </button>
+            
+            <button class="sidebar-btn" data-panel="pages" title="Pages" style="display: none;">
+                <i class="fas fa-file-alt"></i>
+                <span class="sidebar-badge">1</span>
+            </button>
+            
+            <div style="flex: 1;"></div>
+            
+            <button class="sidebar-btn" data-panel="settings" title="Settings">
+                <i class="fas fa-cog"></i>
+            </button>
+            
+            <button class="sidebar-btn" data-panel="help" title="Help">
+                <i class="fas fa-question-circle"></i>
+            </button>
+        </div>
+        
+        <!-- Left Panel (Blocks, Layers, Styles) -->
+        <div id="left-panel" class="active">
+            <div class="panel-header">
+                <div class="panel-title">Blocks</div>
+                <div class="panel-subtitle">Kéo & thả để thêm vào trang</div>
+            </div>
+            
+            <div class="panel-content" id="blocks-container" style="display: block;">
+                <!-- GrapesJS blocks will be injected here -->
+            </div>
+            
+            <div class="panel-content" id="layers-container" style="display: none;">
+                <!-- GrapesJS layers will be injected here -->
+            </div>
+            
+            <div class="panel-content" id="styles-container" style="display: none;">
+                <!-- GrapesJS style manager will be injected here -->
+            </div>
+        </div>
+        
+        <!-- Canvas Area -->
+        <div id="canvas-area">
+            <div id="gjs"></div>
+        </div>
+        
+        <!-- Right Panel (Style Manager) -->
+        <div id="right-panel">
+            <div class="panel-header">
+                <div class="panel-title">Style Manager</div>
+                <div class="panel-subtitle">Tùy chỉnh giao diện</div>
+            </div>
+            
+            <div class="panel-content" id="styles-container">
+                <!-- GrapesJS style manager will be injected here -->
+            </div>
+            
+            <div class="panel-content" id="traits-container">
+                <!-- GrapesJS traits will be injected here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- PageMaker JS -->
+    <script src="{{ url_for('static', filename='pagemaker/pagemaker.min.js') }}"></script>
+    
+    <!-- GrapesJS Tailwind Plugin -->
+    <script src="https://unpkg.com/grapesjs-tailwind"></script>
+    
+    <!-- Custom Blocks Library -->
+    <script src="{{ url_for('static', filename='pagemaker/custom-blocks.js') }}"></script>
+    <script src="{{ url_for('static', filename='pagemaker/tailwind-blocks.js') }}"></script>
+    
+    <script>
+        console.log('🚀 PageMaker Editor v2 initializing...');
+        
+        // Page data from backend
+        const PAGE_ID = {{ page.id }};
+        const SITE_ID = {{ page.site_id }};
+        const PAGE_TITLE = "{{ page.title }}";
+        
+        // API endpoints
+        const LOAD_URL = `/api/pages/${PAGE_ID}/pagemaker/load`;
+        const SAVE_URL = `/api/pages/${PAGE_ID}/pagemaker/save`;
+        const PUBLISH_URL = `/api/pages/${PAGE_ID}/publish`;
+        
+        // Initialize PageMaker (formerly GrapesJS)
+        const editor = pagemaker.init({
+            container: '#gjs',
+            height: '100%',
+            width: 'auto',
+            
+            // ✅ Hide default panels and toolbars
+            showOffsets: false,
+            noticeOnUnload: false,
+            
+            // Storage Manager - Disabled (we handle save/load manually)
+            storageManager: false,
+            
+            // Plugins
+            plugins: ['gjs-preset-webpage', 'grapesjs-tailwind'],
+            pluginsOpts: {
+                'gjs-preset-webpage': {
+                    blocksBasicOpts: {
+                        blocks: ['column1', 'column2', 'column3', 'text', 'link', 'image', 'video', 'map'],
+                        flexGrid: true,
+                    },
+                    blocks: ['link-block', 'quote', 'text-basic'],
+                },
+                'grapesjs-tailwind': {
+                    // Custom Tailwind config for PageMaker
+                    config: {
+                        theme: {
+                            extend: {
+                                colors: {
+                                    'pagemaker': {
+                                        50: '#f0f0ff',
+                                        500: '#667eea',
+                                        900: '#312e81',
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            
+            // Block Manager
+            blockManager: {
+                appendTo: '#blocks-container',
+            },
+            
+            // Style Manager
+            styleManager: {
+                appendTo: '#styles-container',
+                sectors: [
+                    {
+                        name: 'Dimension',
+                        open: false,
+                        buildProps: ['width', 'min-height', 'padding', 'margin'],
+                    },
+                    {
+                        name: 'Typography',
+                        open: false,
+                        buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align'],
+                    },
+                    {
+                        name: 'Decorations',
+                        open: false,
+                        buildProps: ['opacity', 'border-radius', 'border', 'box-shadow', 'background'],
+                    },
+                    {
+                        name: 'Extra',
+                        open: false,
+                        buildProps: ['transition', 'perspective', 'transform'],
+                    }
+                ],
+            },
+            
+            // Layer Manager
+            layerManager: {
+                appendTo: '#layers-container',
+            },
+            
+            // Trait Manager
+            traitManager: {
+                appendTo: '#traits-container',
+            },
+            
+            // Canvas settings
+            canvas: {
+                styles: [],
+                scripts: [],
+            },
+            
+            // Device Manager
+            deviceManager: {
+                devices: [
+                    {
+                        name: 'Desktop',
+                        width: '',
+                    },
+                    {
+                        name: 'Tablet',
+                        width: '768px',
+                        widthMedia: '992px',
+                    },
+                    {
+                        name: 'Mobile',
+                        width: '320px',
+                        widthMedia: '480px',
+                    }
+                ]
+            },
+        });
+        
+        // ===== Load Custom Blocks =====
+        
+        // Load original custom blocks
+        if (typeof window.initCustomBlocks === 'function') {
+            window.initCustomBlocks(editor);
+            console.log('✅ Custom blocks library loaded');
+        }
+        
+        // Load Tailwind blocks
+        if (typeof window.initTailwindBlocks === 'function') {
+            window.initTailwindBlocks(editor);
+            console.log('✅ Tailwind blocks library loaded');
+        }
+        
+        // ===== Empty State Management =====
+        
+        function checkEmptyState() {
+            const canvas = editor.Canvas.getDocument();
+            const body = canvas.querySelector('body');
+            const hasContent = body && body.children.length > 0;
+            
+            if (!hasContent) {
+                showEmptyState();
+            } else {
+                hideEmptyState();
+            }
+        }
+        
+        function showEmptyState() {
+            const canvas = editor.Canvas.getDocument();
+            const body = canvas.querySelector('body');
+            
+            if (body && !body.querySelector('.pagemaker-empty-state')) {
+                body.innerHTML = `
+                    <div class="pagemaker-empty-state" style="
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        text-align: center;
+                        color: #64748b;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        pointer-events: none;
+                        z-index: 1000;
+                        max-width: 400px;
+                        padding: 40px 20px;
+                    ">
+                        <div style="margin-bottom: 32px;">
+                            <div style="
+                                width: 120px;
+                                height: 80px;
+                                background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+                                border: 2px dashed #cbd5e1;
+                                border-radius: 12px;
+                                margin: 0 auto 20px auto;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                position: relative;
+                            ">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21,15 16,10 5,21"/>
+                                </svg>
+                                
+                                <!-- Floating plus icon -->
+                                <div style="
+                                    position: absolute;
+                                    bottom: -8px;
+                                    right: -8px;
+                                    width: 24px;
+                                    height: 24px;
+                                    background: #667eea;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+                                ">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="
+                            font-size: 28px;
+                            font-weight: 700;
+                            margin: 0 0 16px 0;
+                            color: #1f2937;
+                            line-height: 1.2;
+                        ">
+                            Bắt đầu xây dựng trang của bạn!
+                        </h3>
+                        
+                        <p style="
+                            font-size: 16px;
+                            margin: 0 0 32px 0;
+                            color: #6b7280;
+                            line-height: 1.5;
+                        ">
+                            Kéo và thả các blocks từ sidebar bên trái để tạo nội dung chuyên nghiệp
+                        </p>
+                        
+                        <div style="
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 12px;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            padding: 14px 24px;
+                            border-radius: 25px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+                            margin-bottom: 20px;
+                        ">
+                            <span style="font-size: 16px;">✨</span>
+                            <span>Thử bắt đầu với Hero Block</span>
+                        </div>
+                        
+                        <div style="
+                            font-size: 13px;
+                            color: #9ca3af;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                        ">
+                            <span>💡</span>
+                            <span>Hoặc chọn từ thư viện Tailwind Components</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        function hideEmptyState() {
+            const canvas = editor.Canvas.getDocument();
+            const emptyState = canvas.querySelector('.pagemaker-empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+        }
+        
+        // Monitor canvas changes
+        editor.on('component:add component:remove', () => {
+            setTimeout(checkEmptyState, 100);
+        });
+        
+        // Initial load - Load saved content from API
+        editor.on('load', async () => {
+            console.log('📥 Loading saved content from API...');
+            
+            try {
+                const response = await fetch(LOAD_URL);
+                const data = await response.json();
+                console.log('📦 Loaded data:', data);
+                
+                // Load content into editor
+                if (data['gjs-html'] || data['gjs-css'] || (data['gjs-components'] && data['gjs-components'].length > 0)) {
+                    editor.setComponents(data['gjs-html'] || '');
+                    editor.setStyle(data['gjs-css'] || '');
+                    console.log('✅ Content loaded successfully');
+                } else {
+                    console.log('ℹ️  No saved content, starting fresh');
+                }
+            } catch (error) {
+                console.error('❌ Load error:', error);
+            }
+            
+            setTimeout(checkEmptyState, 500);
+            
+            // Set default device to Desktop
+            editor.setDevice('Desktop');
+        });
+        
+        // ===== Auto-switch to Styles when component selected =====
+        editor.on('component:selected', (component) => {
+            // Auto switch to Styles tab when user selects a component
+            const stylesBtn = document.querySelector('.sidebar-btn[data-panel="styles"]');
+            if (stylesBtn) {
+                stylesBtn.click(); // Trigger click to switch to Styles tab
+            }
+        });
+        
+        // ===== UI Controls =====
+        
+        // Device Switcher
+        document.querySelectorAll('.device-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const device = btn.dataset.device;
+                editor.setDevice(device);
+            });
+        });
+        
+        // Sidebar Panel Switcher
+        document.querySelectorAll('.sidebar-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const panel = btn.dataset.panel;
+                
+                // Toggle active state
+                document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Update left panel content
+                const panelHeader = document.querySelector('#left-panel .panel-header');
+                const blocksContainer = document.getElementById('blocks-container');
+                const layersContainer = document.getElementById('layers-container');
+                const stylesContainer = document.getElementById('styles-container');
+                
+                // Hide all containers first
+                blocksContainer.style.display = 'none';
+                layersContainer.style.display = 'none';
+                stylesContainer.style.display = 'none';
+                
+                switch(panel) {
+                    case 'blocks':
+                        panelHeader.querySelector('.panel-title').textContent = 'Blocks';
+                        panelHeader.querySelector('.panel-subtitle').textContent = 'Kéo & thả để thêm vào trang';
+                        blocksContainer.style.display = 'block';
+                        editor.BlockManager.render();
+                        break;
+                        
+                    case 'layers':
+                        panelHeader.querySelector('.panel-title').textContent = 'Layers';
+                        panelHeader.querySelector('.panel-subtitle').textContent = 'Cấu trúc trang';
+                        layersContainer.style.display = 'block';
+                        editor.LayerManager.render();
+                        break;
+                        
+                    case 'styles':
+                        panelHeader.querySelector('.panel-title').textContent = 'Styles';
+                        panelHeader.querySelector('.panel-subtitle').textContent = 'Tùy chỉnh CSS';
+                        stylesContainer.style.display = 'block';
+                        editor.StyleManager.render();
+                        break;
+                        
+                    case 'assets':
+                        panelHeader.querySelector('.panel-title').textContent = 'Assets';
+                        panelHeader.querySelector('.panel-subtitle').textContent = 'Quản lý hình ảnh';
+                        blocksContainer.style.display = 'block';
+                        blocksContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Assets manager coming soon...</div>';
+                        break;
+                        
+                    case 'pages':
+                        panelHeader.querySelector('.panel-title').textContent = 'Pages';
+                        panelHeader.querySelector('.panel-subtitle').textContent = 'Quản lý trang';
+                        blocksContainer.style.display = 'block';
+                        blocksContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Pages manager coming soon...</div>';
+                        break;
+                }
+                
+                // Show left panel
+                document.getElementById('left-panel').classList.add('active');
+            });
+        });
+        
+        // Show status message
+        function showStatus(message, type = 'success') {
+            const statusEl = document.createElement('div');
+            statusEl.className = `status-message ${type}`;
+            statusEl.textContent = message;
+            document.body.appendChild(statusEl);
+            
+            setTimeout(() => {
+                statusEl.remove();
+            }, 3000);
+        }
+        
+        // Save button - Custom save implementation
+        document.getElementById('btn-save').addEventListener('click', async () => {
+            try {
+                console.log('💾 Saving content...');
+                
+                // Get current editor state
+                const html = editor.getHtml();
+                const css = editor.getCss();
+                const projectData = editor.getProjectData();
+                
+                // Prepare data in GrapesJS storage format
+                const saveData = {
+                    'gjs-html': html,
+                    'gjs-css': css,
+                    'gjs-components': projectData.pages?.[0]?.frames?.[0]?.component?.components || [],
+                    'gjs-styles': projectData.styles || [],
+                    'gjs-assets': projectData.assets || []
+                };
+                
+                console.log('📦 Save data:', saveData);
+                
+                // Send to API
+                const response = await fetch(SAVE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(saveData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Save response:', result);
+                
+                showStatus('Đã lưu thành công!', 'success');
+            } catch (error) {
+                console.error('❌ Save error:', error);
+                showStatus('Lỗi khi lưu: ' + error.message, 'error');
+            }
+        });
+        
+        // Publish button
+        // Publish button
+        document.getElementById('btn-publish').addEventListener('click', async () => {
+            if (!confirm('Xuất bản trang này lên subdomain? Trang sẽ truy cập được công khai.')) {
+                return;
+            }
+            
+            try {
+                showStatus('Đang lưu và xuất bản...', 'info');
+                
+                // Step 1: Save content first (same as Save button)
+                console.log('Saving before publish...');
+                
+                const html = editor.getHtml();
+                const css = editor.getCss();
+                const projectData = editor.getProjectData();
+                
+                const saveData = {
+                    'gjs-html': html,
+                    'gjs-css': css,
+                    'gjs-components': projectData.pages?.[0]?.frames?.[0]?.component?.components || [],
+                    'gjs-styles': projectData.styles || [],
+                    'gjs-assets': projectData.assets || []
+                };
+                
+                const saveResponse = await fetch(SAVE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(saveData)
+                });
+                
+                if (!saveResponse.ok) {
+                    throw new Error('Không thể lưu nội dung');
+                }
+                
+                console.log('✅ Content saved, now publishing...');
+                
+                // Step 2: Publish to subdomain
+                const publishResponse = await fetch(PUBLISH_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                const result = await publishResponse.json();
+                
+                if (result.success) {
+                    showStatus(`Xuất bản thành công! Mở ${result.subdomain}.pagemade.site...`, 'success');
+                    console.log('🚀 Published to:', result.url);
+                    
+                    // Open published site in new tab
+                    setTimeout(() => {
+                        window.open(result.url, '_blank');
+                    }, 1500);
+                } else {
+                    showStatus('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Publish error:', error);
+                showStatus('Lỗi khi xuất bản: ' + error.message, 'error');
+            }
+        });
+        
+        // Hide loading when ready
+        editor.on('load', () => {
+            console.log('✅ PageMaker Editor loaded!');
+            
+            setTimeout(() => {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.style.opacity = '0';
+                loadingOverlay.style.transition = 'opacity 0.5s ease';
+                
+                setTimeout(() => {
+                    loadingOverlay.remove();
+                }, 500);
+            }, 1000);
+        });
+        
+        // Auto-save every 2 minutes
+        setInterval(() => {
+            console.log('💾 Auto-saving...');
+            document.getElementById('btn-save').click();
+        }, 2 * 60 * 1000);
+        
+        console.log('✅ PageMaker Editor v2 initialized');
+    </script>
+</body>
+</html>

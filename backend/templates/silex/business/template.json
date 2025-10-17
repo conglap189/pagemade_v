@@ -1,0 +1,102 @@
+{
+  "id": "business-pro",
+  "name": "Business Professional",
+  "description": "Professional business website với header, services, contact form và about page",
+  "category": "business", 
+  "preview_image": "assets/preview.jpg",
+  "difficulty": "easy",
+  "tags": ["corporate", "professional", "services", "contact"],
+  "pages": [
+    {
+      "name": "Homepage",
+      "file": "index.html",
+      "is_homepage": true,
+      "description": "Main homepage with hero section, services, and contact",
+      "customizable_fields": [
+        {
+          "id": "company_name",
+          "label": "Tên Công Ty", 
+          "type": "text",
+          "default": "Your Company Name",
+          "placeholder": "VD: ABC Technology Solutions"
+        },
+        {
+          "id": "hero_title",
+          "label": "Tiêu Đề Chính",
+          "type": "text", 
+          "default": "Welcome to Our Business",
+          "placeholder": "VD: Giải Pháp Công Nghệ Tốt Nhất"
+        },
+        {
+          "id": "hero_subtitle", 
+          "label": "Mô Tả Ngắn",
+          "type": "textarea",
+          "default": "We provide excellent business solutions for your company",
+          "placeholder": "VD: Chúng tôi cung cấp giải pháp công nghệ tiên tiến..."
+        },
+        {
+          "id": "contact_email",
+          "label": "Email Liên Hệ",
+          "type": "email", 
+          "default": "contact@yourcompany.com",
+          "placeholder": "VD: hello@abctech.com"
+        },
+        {
+          "id": "contact_phone",
+          "label": "Số Điện Thoại",
+          "type": "tel",
+          "default": "+84 123 456 789", 
+          "placeholder": "VD: +84 901 234 567"
+        }
+      ]
+    },
+    {
+      "name": "About Us",
+      "file": "about.html", 
+      "is_homepage": false,
+      "description": "About company page with team and history",
+      "customizable_fields": [
+        {
+          "id": "about_title",
+          "label": "Tiêu Đề About",
+          "type": "text",
+          "default": "About Our Company",
+          "placeholder": "VD: Về Chúng Tôi"
+        },
+        {
+          "id": "about_description",
+          "label": "Mô Tả Công Ty", 
+          "type": "textarea",
+          "default": "We are a leading company in our industry...",
+          "placeholder": "VD: ABC Tech được thành lập từ 2020..."
+        }
+      ]
+    }
+  ],
+  "color_schemes": [
+    {
+      "name": "Blue Professional",
+      "primary": "#2563eb",
+      "secondary": "#1e40af", 
+      "accent": "#3b82f6",
+      "background": "#f8fafc",
+      "text": "#1e293b"
+    },
+    {
+      "name": "Green Fresh", 
+      "primary": "#059669",
+      "secondary": "#047857",
+      "accent": "#10b981", 
+      "background": "#f0fdf4",
+      "text": "#1f2937"
+    },
+    {
+      "name": "Purple Creative",
+      "primary": "#7c3aed", 
+      "secondary": "#5b21b6",
+      "accent": "#8b5cf6",
+      "background": "#faf5ff",
+      "text": "#1f2937"
+    }
+  ]
+}

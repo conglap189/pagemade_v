@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">Làm trang của bạn thật dễ dàng</h1>
+        <p class="lead mb-5">Xây dựng, tùy chỉnh và xuất bản các trang đích chuyên nghiệp với trình chỉnh sửa kéo và thả của chúng tôi.</p>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg btn-custom">
+                <i class="fas fa-tachometer-alt"></i> Vào Dashboard
+            </a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg btn-custom">
+                <i class="fab fa-google"></i> Đăng Nhập với Google
+            </a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="py-5" id="features">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-12">
+                <h2 class="mb-3">Tại Sao Chọn PageMade?</h2>
+                <p class="text-muted lead">Mọi thứ bạn cần để tạo landing page ấn tượng</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card feature-card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="text-primary mb-3">
+                            <i class="fas fa-paint-brush fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Trình Soạn Thảo Trực Quan</h5>
+                        <p class="card-text text-muted">Giao diện kéo và thả thân thiện. Thiết kế trang web của bạn một cách trực quan mà không cần coding.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card feature-card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="text-success mb-3">
+                            <i class="fas fa-globe fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Domain Tùy Chỉnh</h5>
+                        <p class="card-text text-muted">Xuất bản trang của bạn trên subdomain tùy chỉnh. URL chuyên nghiệp cho khách hàng của bạn.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card feature-card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-rocket fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Xuất Bản Một Click</h5>
+                        <p class="card-text text-muted">Deploy landing page ngay lập tức. Từ thiết kế đến website live chỉ trong một click.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h3 class="mb-3">Công Cụ Mạnh Mẽ</h3>
+                <p class="text-muted mb-4">Tất cả tính năng bạn cần để tạo ra những trang web tuyệt vời</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span>Templates chuyên nghiệp</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span>Responsive design</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span>SEO tối ưu</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span>Tốc độ tải nhanh</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-primary text-white py-5">
+    <div class="container text-center">
+        <h3 class="mb-3">Sẵn sàng bắt đầu?</h3>
+        <p class="mb-4 lead">Tham gia cùng hàng nghìn người sáng tạo đang xây dựng landing page tuyệt vời</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg btn-custom">
+                <i class="fab fa-google"></i> Đăng Ký Miễn Phí
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

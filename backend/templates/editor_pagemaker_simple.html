@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PageMaker Editor Test</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- PageMaker CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='pagemaker/pagemaker.min.css') }}">
+    
+    <!-- Custom Editor Styles -->
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        #gjs {
+            height: 100vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="gjs"></div>
+    
+    <!-- PageMaker JS -->
+    <script src="{{ url_for('static', filename='pagemaker/pagemaker.min.js') }}"></script>
+    
+    <!-- Custom Blocks Library -->
+    <script src="{{ url_for('static', filename='pagemaker/custom-blocks.js') }}"></script>
+    <script src="{{ url_for('static', filename='pagemaker/tailwind-blocks.js') }}"></script>
+    
+    <script>
+        console.log('🚀 PageMaker Test Editor initializing...');
+        
+        // Initialize editor with minimal config
+        const editor = grapesjs.init({
+            container: '#gjs',
+            height: '100vh',
+            
+            // Storage
+            storageManager: false,
+            
+            // Plugins - Remove tailwind plugin for now
+            plugins: ['gjs-preset-webpage'],
+            pluginsOpts: {
+                'gjs-preset-webpage': {
+                    blocksBasicOpts: {
+                        blocks: ['column1', 'column2', 'column3', 'text', 'link', 'image'],
+                        flexGrid: true,
+                    },
+                },
+            },
+        });
+        
+        // Load existing content if available
+        try {
+            {% if page.content %}
+                const content = {{ page.content|tojson }};
+                if (content && content.gjs) {
+                    editor.loadProjectData(content.gjs);
+                    console.log('✅ Loaded existing content');
+                }
+            {% endif %}
+        } catch (error) {
+            console.error('❌ Error loading content:', error);
+        }
+        
+        // Load custom blocks
+        if (typeof window.initCustomBlocks === 'function') {
+            window.initCustomBlocks(editor);
+            console.log('✅ Custom blocks loaded');
+        }
+        
+        if (typeof window.initTailwindBlocks === 'function') {
+            window.initTailwindBlocks(editor);
+            console.log('✅ Tailwind blocks loaded');
+        }
+        
+        console.log('✅ Editor initialized successfully');
+        
+        // Auto-save functionality
+        let saveTimeout;
+        editor.on('storage:store', () => {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveContent();
+            }, 3000);
+        });
+        
+        async function saveContent() {
+            try {
+                const data = {
+                    gjs: editor.getProjectData(),
+                    html: editor.getHtml(),
+                    css: editor.getCss(),
+                };
+                
+                const response = await fetch(`/api/pages/{{ page.id }}/pagemaker/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    console.log('✅ Auto-saved');
+                } else {
+                    console.error('❌ Save failed:', response.statusText);
+                }
+            } catch (error) {
+                console.error('❌ Save error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

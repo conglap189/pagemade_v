@@ -1,0 +1,96 @@
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    {% extends "base.html" %}
+
+{% block title %}Đăng nhập - PageMade{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4><i class="fas fa-sign-in-alt me-2"></i>Đăng nhập</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Google OAuth Button -->
+                    <div class="d-grid gap-2 mb-4">
+                        <a href="{{ url_for('auth.google_login') }}" class="btn btn-danger btn-lg">
+                            <i class="fab fa-google me-2"></i>Đăng nhập với Google
+                        </a>
+                    </div>
+                    
+                    <div class="text-center mb-3">
+                        <span class="text-muted">hoặc</span>
+                    </div>
+                    
+                    <!-- Email/Password Form -->
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="your@email.com" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="Nhập mật khẩu" required>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="text-muted">Chưa có tài khoản?</p>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-success">
+                            <i class="fas fa-user-plus me-2"></i>Đăng ký ngay
+                        </a>
+                    </div>
+                    
+                    <!-- Development/Testing -->
+                    {% if config.DEBUG %}
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <p class="text-muted small">Development Mode:</p>
+                        <a href="{{ url_for('auth.create_test_account') }}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-cog me-2"></i>Admin Test Account
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add custom styling -->
+<style>
+.card {
+    border-radius: 15px;
+}
+.card-header {
+    border-top-left-radius: 15px !important;
+    border-top-right-radius: 15px !important;
+}
+.btn {
+    border-radius: 10px;
+}
+.input-group-text {
+    border-radius: 10px 0 0 10px;
+}
+.form-control {
+    border-radius: 0 10px 10px 0;
+}
+</style>
+{% endblock %}

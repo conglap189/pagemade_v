@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No Homepage - {{ site.name }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .error-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            color: #fd79a8;
+            margin-bottom: 1rem;
+        }
+        
+        .site-name {
+            color: #2d3436;
+            font-weight: bold;
+            background: #f1f2f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-outline-secondary {
+            border-radius: 50px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn-outline-secondary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .pages-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .page-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #a29bfe;
+            transition: transform 0.2s ease;
+        }
+        
+        .page-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .page-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .page-link {
+            color: #2d3436;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .page-link:hover {
+            color: #6c5ce7;
+        }
+        
+        .setup-steps {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+        
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            background: #0984e3;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-container">
+            <i class="fas fa-home error-icon"></i>
+            
+            <h1 class="h2 mb-3">No Homepage Set</h1>
+            
+            <p class="lead mb-4">
+                Site <span class="site-name">{{ site.name }}</span> 
+                chưa có trang chủ (homepage) được thiết lập.
+            </p>
+            
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                Site này đã được tạo nhưng chưa có trang nào được đặt làm homepage.
+            </div>
+            
+            {% if pages and pages|length > 0 %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+                <a href="https://pagemade.site/dashboard" class="btn btn-primary">
+                    <i class="fas fa-cog me-2"></i>
+                    Quản Lý Site
+                </a>
+                <a href="https://pagemade.site" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    PageMade.site
+                </a>
+            </div>
+            
+            <div class="pages-list">
+                <h5 class="mb-3">
+                    <i class="fas fa-list me-2 text-primary"></i>
+                    Các trang có sẵn (chưa set homepage):
+                </h5>
+                
+                {% for page in pages %}
+                <div class="page-item">
+                    <div>
+                        <a href="{{ page.get_url() }}" class="page-link">
+                            <i class="fas fa-file-alt me-2"></i>
+                            {{ page.title }}
+                        </a>
+                    </div>
+                    <small class="text-muted">
+                        {{ page.get_url() }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="setup-steps">
+                <h5 class="mb-3 text-center">
+                    <i class="fas fa-rocket me-2 text-primary"></i>
+                    Hướng dẫn thiết lập Homepage:
+                </h5>
+                
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>Đăng nhập Dashboard</strong>
+                        <p class="mb-0 text-muted small">
+                            Truy cập <a href="https://pagemade.site/dashboard">Dashboard</a> 
+                            để quản lý site của bạn
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>Chọn Site</strong>
+                        <p class="mb-0 text-muted small">
+                            Tìm và chọn site "{{ site.name }}" trong danh sách sites
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>Thiết lập Homepage</strong>
+                        <p class="mb-0 text-muted small">
+                            Chọn một trang làm homepage hoặc tạo trang mới
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <strong>Publish Site</strong>
+                        <p class="mb-0 text-muted small">
+                            Nhấn "Publish" để site có thể truy cập từ subdomain
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+                <a href="https://pagemade.site/dashboard" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Tạo Trang Đầu Tiên
+                </a>
+                <a href="https://pagemade.site" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    PageMade.site
+                </a>
+            </div>
+            
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Site này chưa có trang nào. Hãy tạo trang đầu tiên!
+            </div>
+            
+            <div class="setup-steps">
+                <h5 class="mb-3 text-center">
+                    <i class="fas fa-magic me-2 text-primary"></i>
+                    Bắt đầu với PageMade:
+                </h5>
+                
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>Tạo Trang Mới</strong>
+                        <p class="mb-0 text-muted small">
+                            Sử dụng drag & drop editor để tạo trang đầu tiên
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>Thiết kế Nội dung</strong>
+                        <p class="mb-0 text-muted small">
+                            Thêm text, hình ảnh, và các component khác
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>Đặt làm Homepage</strong>
+                        <p class="mb-0 text-muted small">
+                            Chọn "Set as Homepage" trong settings
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <strong>Publish & Go Live</strong>
+                        <p class="mb-0 text-muted small">
+                            Site sẽ có thể truy cập tại {{ site.subdomain }}.pagemade.site
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <hr class="my-4">
+            
+            <p class="text-muted mb-0">
+                <small>
+                    <i class="fas fa-user-cog me-1"></i>
+                    Bạn là chủ sở hữu site này? 
+                    <a href="https://pagemade.site/dashboard" class="text-decoration-none">
+                        Đăng nhập để thiết lập homepage
+                    </a>
+                </small>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

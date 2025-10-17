@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Cache Statistics - PageMade{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-tachometer-alt"></i> Cache Statistics</h2>
+                <div>
+                    <button class="btn btn-outline-primary" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-warning" onclick="clearCache()" id="clearCacheBtn">
+                        <i class="fas fa-trash"></i> Clear Cache
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if stats.available %}
+    <!-- Cache Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Memory Used</h6>
+                            <h4>{{ stats.used_memory }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-memory fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Hit Rate</h6>
+                            <h4>{{ stats.hit_rate }}%</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-bullseye fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Connected Clients</h6>
+                            <h4>{{ stats.connected_clients }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Uptime</h6>
+                            <h4>{{ (stats.uptime_in_seconds / 3600) | round(1) }}h</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Statistics -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> Cache Performance</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Keyspace Hits:</strong></td>
+                            <td>{{ "{:,}".format(stats.keyspace_hits) }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Keyspace Misses:</strong></td>
+                            <td>{{ "{:,}".format(stats.keyspace_misses) }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hit Rate:</strong></td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ stats.hit_rate }}%" 
+                                         aria-valuenow="{{ stats.hit_rate }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ stats.hit_rate }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Commands:</strong></td>
+                            <td>{{ "{:,}".format(stats.total_commands_processed) }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-server"></i> Redis Server Info</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Status:</strong></td>
+                            <td><span class="badge badge-success">Running</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Memory Usage:</strong></td>
+                            <td>{{ stats.used_memory }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Connected Clients:</strong></td>
+                            <td>{{ stats.connected_clients }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Uptime:</strong></td>
+                            <td>{{ (stats.uptime_in_seconds / 86400) | round(1) }} days</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cache Operations -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cogs"></i> Cache Operations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Cache Benefits:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>✅ <strong>Faster Page Loading:</strong> Content served directly from memory</li>
+                            <li>✅ <strong>Reduced Database Load:</strong> Less queries to SQLite</li>
+                            <li>✅ <strong>Better User Experience:</strong> Sub-100ms response times</li>
+                            <li>✅ <strong>Analytics Tracking:</strong> Real-time page view counting</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Clear Cache:</strong> This will remove all cached content and force regeneration from database. Use only if needed.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Redis Not Available -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-danger">
+                <h4><i class="fas fa-exclamation-triangle"></i> Redis Cache Not Available</h4>
+                <p>Redis server is not running or not accessible. Cache features are disabled.</p>
+                {% if stats.error %}
+                <p><strong>Error:</strong> {{ stats.error }}</p>
+                {% endif %}
+                <hr>
+                <p class="mb-0">
+                    <strong>To enable caching:</strong><br>
+                    1. Install Redis: <code>sudo apt install redis-server</code><br>
+                    2. Start Redis: <code>sudo systemctl start redis-server</code><br>
+                    3. Restart PageMade application
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function clearCache() {
+    if (!confirm('Are you sure you want to clear all cache? This will temporarily slow down page loading until cache is rebuilt.')) {
+        return;
+    }
+    
+    const btn = document.getElementById('clearCacheBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+    
+    fetch('/admin/cache/clear', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Cache cleared successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-trash"></i> Clear Cache';
+    });
+}
+</script>
+{% endblock %}
