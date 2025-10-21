@@ -629,11 +629,11 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- PageMaker JS -->
+    <!-- PageMaker JS (includes GrapesJS core) -->
     <script src="{{ url_for('static', filename='pagemaker/pagemaker.min.js') }}"></script>
     
-    <!-- GrapesJS Tailwind Plugin -->
-    <script src="https://unpkg.com/grapesjs-tailwind"></script>
+    <!-- GrapesJS Tailwind Plugin - Try multiple CDN sources -->
+    <script src="https://cdn.jsdelivr.net/npm/grapesjs-tailwind@1/dist/grapesjs-tailwind.min.js"></script>
     
     <!-- Custom Blocks Library -->
     <script src="{{ url_for('static', filename='pagemaker/custom-blocks.js') }}"></script>
@@ -915,6 +915,9 @@
             setTimeout(checkEmptyState, 100);
         });
         
+        // Flag to prevent auto-save during initial load
+        let isInitialLoad = true;
+        
         // Initial load - Load saved content from API
         editor.on('load', async () => {
             console.log('📥 Loading saved content from API...');
@@ -923,15 +926,33 @@
                 const response = await fetch(LOAD_URL);
                 const data = await response.json();
                 console.log('📦 Loaded data:', data);
+                console.log('📊 Components count:', data['gjs-components']?.length || 0);
                 
                 // Load content into editor
                 if (data['gjs-html'] || data['gjs-css'] || (data['gjs-components'] && data['gjs-components'].length > 0)) {
-                    editor.setComponents(data['gjs-html'] || '');
-                    editor.setStyle(data['gjs-css'] || '');
+                    // PRIORITY: Load components if available (preserves structure)
+                    if (data['gjs-components'] && data['gjs-components'].length > 0) {
+                        console.log('🔄 Loading components with full structure...');
+                        editor.setComponents(data['gjs-components']);
+                        editor.setStyle(data['gjs-styles'] || data['gjs-css'] || '');
+                        console.log('✅ Loaded from components structure');
+                    } else {
+                        // Fallback to HTML/CSS only if no components
+                        console.log('⚠️ No components, loading HTML/CSS only');
+                        editor.setComponents(data['gjs-html'] || '');
+                        editor.setStyle(data['gjs-css'] || '');
+                    }
                     console.log('✅ Content loaded successfully');
                 } else {
                     console.log('ℹ️  No saved content, starting fresh');
                 }
+                
+                // Disable initial load flag after 3 seconds
+                setTimeout(() => {
+                    isInitialLoad = false;
+                    console.log('✅ Initial load completed, auto-save enabled');
+                }, 3000);
+                
             } catch (error) {
                 console.error('❌ Load error:', error);
             }
@@ -1163,8 +1184,12 @@
             }, 1000);
         });
         
-        // Auto-save every 2 minutes
+        // Auto-save every 2 minutes (skip during initial load)
         setInterval(() => {
+            if (isInitialLoad) {
+                console.log('⏭️ Skipping auto-save during initial load');
+                return;
+            }
             console.log('💾 Auto-saving...');
             document.getElementById('btn-save').click();
         }, 2 * 60 * 1000);
