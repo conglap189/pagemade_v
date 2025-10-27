@@ -229,6 +229,47 @@
             background: #374151;
         }
         
+        .btn-preview {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            font-weight: 500;
+        }
+        
+        .btn-preview:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .btn-preview.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-preview.success {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .btn-preview.error {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+        
+        .dark .btn-preview {
+            color: #818cf8;
+            border-color: #818cf8;
+        }
+        
+        .dark .btn-preview:hover {
+            background: #818cf8;
+            color: white;
+        }
+        
         /* ===== MAIN EDITOR LAYOUT ===== */
         #editor-wrapper {
             display: flex;
@@ -707,6 +748,11 @@
                 Quay lại
             </button>
             
+            <button class="btn btn-preview" id="btn-preview" title="Xem trước trang">
+                <i class="fas fa-eye"></i>
+                <span>Preview</span>
+            </button>
+            
             <button class="btn btn-save" id="btn-save">
                 <i class="fas fa-save"></i>
                 Lưu
@@ -832,6 +878,7 @@
         const LOAD_URL = `/api/pages/${PAGE_ID}/pagemaker/load`;
         const SAVE_URL = `/api/pages/${PAGE_ID}/pagemaker/save`;
         const PUBLISH_URL = `/api/pages/${PAGE_ID}/publish`;
+        const PREVIEW_URL = `/api/pages/${PAGE_ID}/preview`;
         
         // Initialize PageMaker (formerly GrapesJS)
         const editor = pagemaker.init({
@@ -1240,10 +1287,48 @@
             }, 3000);
         }
         
-        // Save button - Custom save implementation
-        document.getElementById('btn-save').addEventListener('click', async () => {
+        // Preview button state management
+        function setPreviewButtonState(state, text = null) {
+            const btn = document.getElementById('btn-preview');
+            const icon = btn.querySelector('i');
+            const span = btn.querySelector('span');
+            
+            // Remove all state classes
+            btn.classList.remove('loading', 'success', 'error');
+            
+            switch(state) {
+                case 'loading':
+                    btn.classList.add('loading');
+                    icon.className = 'fas fa-spinner fa-spin';
+                    if (text) span.textContent = text;
+                    break;
+                case 'success':
+                    btn.classList.add('success');
+                    icon.className = 'fas fa-check';
+                    if (text) span.textContent = text;
+                    setTimeout(() => {
+                        setPreviewButtonState('default');
+                    }, 2000);
+                    break;
+                case 'error':
+                    btn.classList.add('error');
+                    icon.className = 'fas fa-exclamation-triangle';
+                    if (text) span.textContent = text;
+                    setTimeout(() => {
+                        setPreviewButtonState('default');
+                    }, 3000);
+                    break;
+                default:
+                    icon.className = 'fas fa-eye';
+                    span.textContent = 'Preview';
+                    break;
+            }
+        }
+        
+        // Auto-save function (reusable)
+        async function autoSaveContent() {
             try {
-                console.log('💾 Saving content...');
+                console.log('💾 Auto-saving content...');
                 
                 // Get current editor state
                 const html = editor.getHtml();
@@ -1259,8 +1344,6 @@
                     'gjs-assets': projectData.assets || []
                 };
                 
-                console.log('📦 Save data:', saveData);
-                
                 // Send to API
                 const response = await fetch(SAVE_URL, {
                     method: 'POST',
@@ -1275,12 +1358,70 @@
                 }
                 
                 const result = await response.json();
-                console.log('Save response:', result);
+                console.log('Auto-save response:', result);
+                return result;
+            } catch (error) {
+                console.error('❌ Auto-save error:', error);
+                throw error;
+            }
+        }
+
+        // Save button - Custom save implementation
+        document.getElementById('btn-save').addEventListener('click', async () => {
+            try {
+                console.log('💾 Saving content...');
                 
+                const result = await autoSaveContent();
                 showStatus('Đã lưu thành công!', 'success');
             } catch (error) {
                 console.error('❌ Save error:', error);
                 showStatus('Lỗi khi lưu: ' + error.message, 'error');
+            }
+        });
+
+        // Preview button handler
+        document.getElementById('btn-preview').addEventListener('click', async () => {
+            try {
+                // Set loading state
+                setPreviewButtonState('loading', 'Đang tạo preview...');
+                
+                // Auto-save current content first
+                console.log('💾 Saving before preview...');
+                await autoSaveContent();
+                
+                // Generate preview token
+                console.log('🔍 Generating preview token...');
+                const previewResponse = await fetch(PREVIEW_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!previewResponse.ok) {
+                    throw new Error(`HTTP error! status: ${previewResponse.status}`);
+                }
+                
+                const previewResult = await previewResponse.json();
+                console.log('Preview response:', previewResult);
+                
+                if (previewResult.success) {
+                    // Open preview in new tab
+                    const previewUrl = previewResult.preview_url;
+                    console.log('🚀 Opening preview:', previewUrl);
+                    
+                    window.open(previewUrl, '_blank');
+                    
+                    // Show success state
+                    setPreviewButtonState('success', 'Preview đã mở!');
+                } else {
+                    throw new Error(previewResult.message || 'Không thể tạo preview');
+                }
+                
+            } catch (error) {
+                console.error('❌ Preview error:', error);
+                setPreviewButtonState('error', 'Lỗi preview');
+                showStatus('Lỗi khi tạo preview: ' + error.message, 'error');
             }
         });
         

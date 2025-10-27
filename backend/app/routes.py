@@ -8,9 +8,11 @@ import json
 import uuid
 import re  # NEW: Import for subdomain regex matching
 import requests  # NEW: For reverse proxy
-from datetime import datetime
+from datetime import datetime, timedelta
 import html  # NEW: For HTML cleaning
 from urllib.parse import urljoin  # NEW: For URL handling
+from werkzeug.utils import secure_filename  # NEW: For secure file uploads
+import secrets  # NEW: For secure token generation
 
 # Create blueprints
 auth_bp = Blueprint('auth', __name__)
@@ -454,6 +456,92 @@ def profile():
     
     return render_template('auth/profile.html')
 
+@auth_bp.route('/upload-avatar', methods=['POST'])
+@login_required
+def upload_avatar():
+    """Upload user avatar"""
+    if 'avatar' not in request.files:
+        flash('Vui lòng chọn file ảnh!', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    file = request.files['avatar']
+    if file.filename == '':
+        flash('Vui lòng chọn file ảnh!', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Check file extension
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    if not file.filename.lower().endswith(tuple(f'.{ext}' for ext in allowed_extensions)):
+        flash('Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF, WEBP)!', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Check file size (max 5MB)
+    if len(file.read()) > 5 * 1024 * 1024:
+        flash('Kích thước file không được vượt quá 5MB!', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Reset file pointer after reading
+    file.seek(0)
+    
+    try:
+        # Create uploads directory if it doesn't exist
+        upload_dir = os.path.join(os.path.dirname(current_app.root_path), 'static', 'uploads', 'avatars')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Generate unique filename
+        filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4().hex}_{filename}"
+        file_path = os.path.join(upload_dir, unique_filename)
+        
+        # Save file
+        file.save(file_path)
+        
+        # Update user avatar URL
+        avatar_url = url_for('static', filename=f'uploads/avatars/{unique_filename}')
+        current_user.avatar_url = avatar_url
+        db.session.commit()
+        
+        flash('Cập nhật ảnh đại diện thành công!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Có lỗi xảy ra khi tải lên ảnh!', 'error')
+        current_app.logger.error(f"Avatar upload error: {e}")
+    
+    return redirect(url_for('auth.profile'))
+
+@auth_bp.route('/remove-avatar', methods=['POST'])
+@login_required
+def remove_avatar():
+    """Remove user avatar (only for non-Google accounts)"""
+    if current_user.google_id:
+        flash('Tài khoản Google không thể xóa ảnh đại diện!', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    try:
+        # Remove file if it's a local upload
+        if current_user.avatar_url:
+            # Extract filename from URL
+            filename = current_user.avatar_url.split('/')[-1]
+            # Check if it's our uploaded file (pattern: uuid_hex_filename)
+            if '_' in filename and len(filename.split('_')[0]) == 32:  # UUID hex is 32 characters
+                file_path = os.path.join(os.path.dirname(current_app.root_path), 'static', 'uploads', 'avatars', filename)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+        
+        # Clear avatar URL
+        current_user.avatar_url = None
+        db.session.commit()
+        
+        flash('Xóa ảnh đại diện thành công!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Có lỗi xảy ra khi xóa ảnh!', 'error')
+        current_app.logger.error(f"Avatar removal error: {e}")
+    
+    return redirect(url_for('auth.profile'))
+
 @auth_bp.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
@@ -773,28 +861,28 @@ def new_site():
             db.session.add(site)
             db.session.commit()
             
+            # Always create a default homepage for new site
+            default_page = Page(
+                title=f'{site.title} - Homepage',
+                slug='home',
+                description='Homepage',
+                site_id=site.id,
+                user_id=current_user.id,
+                is_homepage=True
+            )
+            db.session.add(default_page)
+            db.session.commit()
+            
             response_data = {
                 'success': True,
                 'message': 'Tạo site thành công!',
                 'site_id': site.id,
+                'homepage_id': default_page.id,
                 'redirect': '/dashboard'
             }
             
-            # If action is pagemaker, create default page and return page_id
+            # If action is pagemaker, redirect to editor
             if action == 'pagemaker':
-                # Create a default homepage
-                default_page = Page(
-                    title=f'{site.title} - Homepage',
-                    slug='home',
-                    description='Homepage',
-                    site_id=site.id,
-                    user_id=current_user.id,
-                    is_homepage=True
-                )
-                db.session.add(default_page)
-                db.session.commit()
-                
-                response_data['page_id'] = default_page.id
                 response_data['redirect'] = f'/editor/{default_page.id}'
             
             return jsonify(response_data), 201
@@ -853,6 +941,49 @@ def editor_simple(page_id):
     # Simple test version without complex UI
     return render_template('editor_pagemaker_simple.html', page=page)
 
+@main_bp.route('/preview/<string:token>')
+def preview_page(token):
+    """Display preview page using token"""
+    # Get preview data from session
+    previews = session.get('previews', {})
+    
+    if token not in previews:
+        return "Preview không tồn tại hoặc đã hết hạn", 404
+    
+    preview_data = previews[token]
+    
+    # Check if preview is expired
+    expires_at = datetime.fromisoformat(preview_data['expires_at'])
+    if datetime.utcnow() > expires_at:
+        # Remove expired preview
+        del previews[token]
+        session['previews'] = previews
+        session.modified = True
+        return "Preview đã hết hạn", 410
+    
+    # Get page content
+    try:
+        content_data = {}
+        if preview_data['content']:
+            if isinstance(preview_data['content'], str) and preview_data['content'].strip().startswith('{'):
+                content_data = json.loads(preview_data['content'])
+            elif isinstance(preview_data['content'], dict):
+                content_data = preview_data['content']
+        
+        # Extract HTML and CSS
+        html_content = content_data.get('gjs-html', content_data.get('html', ''))
+        css_content = content_data.get('gjs-css', content_data.get('css', ''))
+        
+        return render_template('preview.html', 
+                             page_title=preview_data['title'],
+                             html_content=html_content,
+                             css_content=css_content,
+                             expires_at=expires_at)
+        
+    except Exception as e:
+        current_app.logger.error(f"Preview error: {str(e)}")
+        return "Lỗi khi tải preview", 500
+
 @main_bp.route('/view/<subdomain>/<int:page_id>')
 def view_page(subdomain, page_id):
     site = Site.query.filter_by(subdomain=subdomain).first_or_404()
@@ -901,25 +1032,25 @@ def create_site():
     db.session.add(site)
     db.session.commit()
     
-    # NEW: Enhanced response for redirect to PageMaker
+    # Always create a default homepage for new site
+    default_page = Page(
+        title=f'{site.title} - Homepage',
+        slug='home',
+        description='Homepage',
+        site_id=site.id,
+        user_id=current_user.id,
+        is_homepage=True
+    )
+    db.session.add(default_page)
+    db.session.commit()
+    
+    # Enhanced response for redirect to PageMaker
     response_data = site.to_dict()
+    response_data['homepage_id'] = default_page.id
     response_data['redirect_to_pagemaker'] = data.get('redirect_to_pagemaker', False)
     
-    # Create default homepage if redirecting to PageMaker
+    # If redirecting to PageMaker, provide editor URL
     if response_data['redirect_to_pagemaker']:
-        # Create a default page to edit
-        default_page = Page(
-            title=f'{site.title} - Homepage',
-            slug='home',
-            description='Homepage',
-            site_id=site.id,
-            user_id=current_user.id,
-            is_homepage=True
-        )
-        db.session.add(default_page)
-        db.session.commit()
-        
-        # Redirect to PageMaker editor for this page
         response_data['pagemaker_url'] = url_for('main.editor', page_id=default_page.id, _external=True)
     
     return jsonify(response_data), 201
@@ -928,6 +1059,10 @@ def create_site():
 @login_required
 def create_page():
     data = request.get_json()
+    
+    if not data or 'site_id' not in data:
+        return jsonify({'error': 'Missing site_id'}), 400
+    
     site = Site.query.get_or_404(data['site_id'])
     
     if site.user_id != current_user.id:
@@ -1181,6 +1316,52 @@ def pagemaker_save(page_id):
         return jsonify({
             'success': False,
             'message': f'Error saving content: {str(e)}'
+        }), 500
+
+@api_bp.route('/pages/<int:page_id>/preview', methods=['POST'])
+@login_required
+def generate_preview(page_id):
+    """Generate preview token for page"""
+    page = Page.query.get_or_404(page_id)
+    
+    if page.site.user_id != current_user.id:
+        abort(403)
+    
+    try:
+        # Generate secure preview token
+        preview_token = secrets.token_urlsafe(32)
+        
+        # Store preview data in session (temporary storage)
+        # In production, you might want to use Redis or database
+        preview_data = {
+            'page_id': page_id,
+            'user_id': current_user.id,
+            'title': page.title,
+            'content': page.content,
+            'created_at': datetime.utcnow().isoformat(),
+            'expires_at': (datetime.utcnow() + timedelta(minutes=30)).isoformat()
+        }
+        
+        # Store in session (for demo - in production use Redis)
+        if 'previews' not in session:
+            session['previews'] = {}
+        session['previews'][preview_token] = preview_data
+        session.modified = True
+        
+        # Generate preview URL
+        preview_url = url_for('main.preview_page', token=preview_token, _external=True)
+        
+        return jsonify({
+            'success': True,
+            'preview_token': preview_token,
+            'preview_url': preview_url,
+            'expires_in': 1800  # 30 minutes
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error generating preview: {str(e)}'
         }), 500
 
 # NEW: API route to publish/unpublish entire site

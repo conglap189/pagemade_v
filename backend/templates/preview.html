@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview: {{ page_title }}</title>
+    
+    <!-- Preview Bar Styles -->
+    <style>
+        .preview-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #1f2937;
+            color: white;
+            padding: 12px 20px;
+            z-index: 9999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        
+        .preview-bar .info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .preview-bar .info .badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .preview-bar .info .countdown {
+            background: #ef4444;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .preview-bar .actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .preview-bar .actions button {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .preview-bar .actions button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+        
+        .preview-bar .actions button.primary {
+            background: #667eea;
+            border-color: #667eea;
+        }
+        
+        .preview-bar .actions button.primary:hover {
+            background: #5a67d8;
+        }
+        
+        .preview-content {
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .preview-bar {
+                padding: 10px 15px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .preview-bar .info {
+                width: 100%;
+                justify-content: space-between;
+                font-size: 14px;
+            }
+            
+            .preview-bar .actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .preview-bar .actions button {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+            
+            .preview-content {
+                margin-top: 120px;
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .preview-bar {
+                background: #111827;
+                border-bottom: 1px solid #374151;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Preview Bar -->
+    <div class="preview-bar">
+        <div class="info">
+            <div class="badge">
+                <i class="fas fa-eye"></i>
+                <span>Preview Mode</span>
+            </div>
+            <div class="countdown" id="countdown">
+                <i class="fas fa-clock"></i>
+                <span id="countdown-text">30:00</span>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button onclick="refreshPreview()" title="Làm mới preview">
+                <i class="fas fa-sync"></i>
+                <span>Refresh</span>
+            </button>
+            <button onclick="copyPreviewLink()" title="Sao chép link preview">
+                <i class="fas fa-link"></i>
+                <span>Copy Link</span>
+            </button>
+            <button class="primary" onclick="closePreview()" title="Đóng preview">
+                <i class="fas fa-times"></i>
+                <span>Close</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Preview Content -->
+    <div class="preview-content">
+        <!-- User's CSS -->
+        <style>
+            {{ css_content|safe }}
+        </style>
+        
+        <!-- User's HTML -->
+        {{ html_content|safe }}
+    </div>
+    
+    <script>
+        // Countdown timer
+        let timeLeft = 30 * 60; // 30 minutes
+        const countdownEl = document.getElementById('countdown-text');
+        
+        function updateCountdown() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Change color when less than 5 minutes
+            const countdownContainer = document.getElementById('countdown');
+            if (timeLeft < 300) { // 5 minutes
+                countdownContainer.style.background = '#dc2626';
+                countdownContainer.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span id="countdown-text">' + countdownEl.textContent + '</span>';
+            }
+            
+            if (timeLeft <= 0) {
+                // Preview expired
+                document.querySelector('.preview-content').innerHTML = `
+                    <div style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        height: 70vh;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        text-align: center;
+                        padding: 20px;
+                    ">
+                        <div style="
+                            width: 80px;
+                            height: 80px;
+                            background: #fee2e2;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-bottom: 20px;
+                        ">
+                            <i class="fas fa-clock" style="color: #dc2626; font-size: 32px;"></i>
+                        </div>
+                        <h2 style="color: #1f2937; margin-bottom: 10px;">Preview đã hết hạn</h2>
+                        <p style="color: #6b7280; margin-bottom: 20px;">Preview chỉ có hiệu lực trong 30 phút. Vui lòng quay lại editor để tạo preview mới.</p>
+                        <button onclick="window.close()" style="
+                            background: #667eea;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">Đóng cửa sổ</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            timeLeft--;
+        }
+        
+        // Update countdown every second
+        setInterval(updateCountdown, 1000);
+        updateCountdown(); // Initial call
+        
+        // Refresh preview
+        function refreshPreview() {
+            location.reload();
+        }
+        
+        // Copy preview link
+        function copyPreviewLink() {
+            const previewUrl = window.location.href;
+            navigator.clipboard.writeText(previewUrl).then(() => {
+                // Show success message
+                const button = event.target.closest('button');
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i><span>Đã sao chép!</span>';
+                button.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy link:', err);
+                alert('Không thể sao chép link. Vui lòng sao chép thủ công: ' + previewUrl);
+            });
+        }
+        
+        // Close preview
+        function closePreview() {
+            if (window.confirm('Bạn có chắc muốn đóng preview?')) {
+                window.close();
+            }
+        }
+        
+        // Auto-refresh warning before expiry
+        setTimeout(() => {
+            if (timeLeft > 0 && timeLeft < 300) { // Less than 5 minutes
+                if (confirm('Preview sắp hết hạn trong 5 phút. Bạn có muốn làm mới để gia hạn?')) {
+                    refreshPreview();
+                }
+            }
+        }, 25 * 60 * 1000); // 25 minutes
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePreview();
+            } else if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                e.preventDefault();
+                refreshPreview();
+            }
+        });
+        
+        // Prevent right-click on preview bar (optional security)
+        document.querySelector('.preview-bar').addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
