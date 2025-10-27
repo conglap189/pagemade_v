@@ -44,6 +44,12 @@
             position: relative;
         }
         
+        /* Dark mode styles */
+        .dark #top-toolbar {
+            background: #1f2937;
+            border-bottom: 1px solid #374151;
+        }
+        
         #top-toolbar .left {
             display: flex;
             align-items: center;
@@ -75,9 +81,17 @@
             color: #1f2937;
         }
         
+        .dark .page-title {
+            color: #f9fafb;
+        }
+        
         .page-subtitle {
             font-size: 12px;
             color: #6b7280;
+        }
+        
+        .dark .page-subtitle {
+            color: #9ca3af;
         }
         
         .device-switcher {
@@ -86,6 +100,10 @@
             padding: 4px;
             background: #f3f4f6;
             border-radius: 8px;
+        }
+        
+        .dark .device-switcher {
+            background: #374151;
         }
         
         .device-btn {
@@ -104,10 +122,25 @@
             color: #1f2937;
         }
         
+        .dark .device-btn {
+            color: #9ca3af;
+        }
+        
+        .dark .device-btn:hover {
+            background: #4b5563;
+            color: #f9fafb;
+        }
+        
         .device-btn.active {
             background: white;
             color: #667eea;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .dark .device-btn.active {
+            background: #1f2937;
+            color: #667eea;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         
         #top-toolbar .right {
@@ -128,6 +161,11 @@
             cursor: pointer;
         }
         
+        .dark .lang-selector {
+            background: #374151;
+            color: #9ca3af;
+        }
+        
         .btn {
             padding: 10px 20px;
             border: none;
@@ -138,6 +176,7 @@
             transition: all 0.2s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
         
@@ -150,9 +189,21 @@
             background: #e5e7eb;
         }
         
+        .dark .btn-save {
+            background: #374151;
+            color: #f9fafb;
+        }
+        
+        .dark .btn-save:hover {
+            background: #4b5563;
+        }
+        
         .btn-publish {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #10b981;
             color: white;
+            border-radius: 8px;
+            font-weight: 500;
+            justify-content: center;
         }
         
         .btn-publish:hover {
@@ -170,6 +221,14 @@
             background: #f3f4f6;
         }
         
+        .dark .btn-back {
+            color: #9ca3af;
+        }
+        
+        .dark .btn-back:hover {
+            background: #374151;
+        }
+        
         /* ===== MAIN EDITOR LAYOUT ===== */
         #editor-wrapper {
             display: flex;
@@ -177,6 +236,10 @@
             background: #f9fafb;
             margin: 0;
             padding: 0;
+        }
+        
+        .dark #editor-wrapper {
+            background: #111827;
         }
         
         /* ===== LEFT SIDEBAR ===== */
@@ -189,6 +252,11 @@
             align-items: center;
             padding: 12px 0;
             gap: 4px;
+        }
+        
+        .dark #left-sidebar {
+            background: #1f2937;
+            border-right: 1px solid #374151;
         }
         
         .sidebar-btn {
@@ -214,9 +282,22 @@
             color: #667eea;
         }
         
+        .dark .sidebar-btn {
+            color: #9ca3af;
+        }
+        
+        .dark .sidebar-btn:hover {
+            background: #374151;
+            color: #667eea;
+        }
+        
         .sidebar-btn.active {
             background: #ede9fe;
             color: #667eea;
+        }
+        
+        .dark .sidebar-btn.active {
+            background: #312e81;
         }
         
         .sidebar-btn.active::before {
@@ -256,6 +337,11 @@
             flex-direction: column;
         }
         
+        .dark #left-panel {
+            background: #1f2937;
+            border-right: 1px solid #374151;
+        }
+        
         #left-panel.active {
             display: flex;
         }
@@ -265,6 +351,10 @@
             border-bottom: 1px solid #e5e7eb;
         }
         
+        .dark .panel-header {
+            border-bottom: 1px solid #374151;
+        }
+        
         .panel-title {
             font-size: 14px;
             font-weight: 600;
@@ -272,9 +362,17 @@
             margin-bottom: 4px;
         }
         
+        .dark .panel-title {
+            color: #f9fafb;
+        }
+        
         .panel-subtitle {
             font-size: 12px;
             color: #6b7280;
+        }
+        
+        .dark .panel-subtitle {
+            color: #9ca3af;
         }
         
         .panel-content {
@@ -292,6 +390,10 @@
             margin: 0;
             padding: 0;
             background: #f3f4f6;
+        }
+        
+        .dark #canvas-area {
+            background: #111827;
         }
         
         #gjs {
@@ -341,6 +443,10 @@
         /* ===== GrapesJS Custom Styles ===== */
         .gjs-one-bg {
             background-color: #f9fafb;
+        }
+        
+        .dark .gjs-one-bg {
+            background-color: #111827;
         }
         
         .gjs-two-color {
@@ -426,7 +532,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #10b981;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -435,23 +541,72 @@
             color: white;
         }
         
+        .loading-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+        
+        .loading-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            background: white;
+            padding: 8px;
+        }
+        
+        .spinner-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 32px;
+        }
+        
         .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255,255,255,0.3);
+            width: 80px;
+            height: 80px;
+            border: 3px solid rgba(255,255,255,0.2);
             border-radius: 50%;
             border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-bottom: 20px;
+            animation: spin 1.2s linear infinite;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .spinner-inner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-bottom-color: #fff;
+            animation: spin 0.8s linear infinite reverse;
+            position: absolute;
+            top: 10px;
+            left: 10px;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
         #loading-text {
-            font-size: 18px;
-            margin-top: 10px;
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        
+        .loading-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
         }
         
         /* Status Messages */
@@ -495,8 +650,17 @@
 <body>
     <!-- Loading Overlay -->
     <div id="loading-overlay">
-        <div class="spinner"></div>
-        <div id="loading-text">Đang khởi tạo Pagemade Editor...</div>
+        <div class="loading-logo">
+            <img src="{{ url_for('static', filename='images/branding/logo.svg') }}" alt="PageMade">
+        </div>
+        
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        
+        <div id="loading-text">Đang khởi tạo PageMade Editor</div>
+        <div class="loading-subtitle">Đang tải các công cụ thiết kế...</div>
     </div>
     
     <!-- Top Toolbar -->
@@ -525,6 +689,13 @@
         </div>
         
         <div class="right">
+            <!-- Dark Mode Toggle -->
+            <button id="darkModeToggle" 
+                class="flex items-center justify-center text-black rounded-full cursor-pointer bg-gray-200 dark:bg-gray-800 h-9 w-9 dark:text-white transition-all duration-300 hover:bg-gray-300 dark:hover:bg-gray-700">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block"></i>
+            </button>
+            
             <div class="lang-selector">
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='15'%3E%3Crect fill='%23da251d' width='20' height='15'/%3E%3Cpolygon fill='%23ff0' points='10,4 11,7 14,7 11.5,9 12.5,12 10,10 7.5,12 8.5,9 6,7 9,7'/%3E%3C/svg%3E" width="20" height="15" alt="VN">
                 <span>Tiếng Việt</span>
@@ -542,7 +713,6 @@
             </button>
             
             <button class="btn btn-publish" id="btn-publish">
-                <i class="fas fa-rocket"></i>
                 Xuất bản
             </button>
         </div>
@@ -641,6 +811,17 @@
     
     <script>
         console.log('🚀 PageMaker Editor v2 initializing...');
+        
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const html = document.documentElement;
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        html.classList.toggle('dark', currentTheme === 'dark');
+        darkModeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+        });
         
         // Page data from backend
         const PAGE_ID = {{ page.id }};

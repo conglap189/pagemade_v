@@ -69,6 +69,7 @@
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
         
@@ -85,11 +86,14 @@
         .btn-publish {
             background: #10b981;
             color: white;
+            border-radius: 8px;
+            font-weight: 500;
+            justify-content: center;
         }
         
         .btn-publish:hover {
             background: #059669;
-            transform: translateY(-1px);
+            transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(16,185,129,0.3);
         }
         
@@ -209,7 +213,7 @@
                 💾 Lưu nháp
             </button>
             <button class="btn btn-publish" id="btn-publish">
-                🚀 Xuất bản
+                Xuất bản
             </button>
         </div>
     </div>
