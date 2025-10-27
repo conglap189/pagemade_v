@@ -1,248 +1,357 @@
 {% extends "base.html" %}
 
-{% block title %}{{ site.title }} Pagemade {% endblock %}
+{% block title %}{{ site.title }} - PageMade{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2>{{ site.title }}</h2>
-                    <p class="text-muted">
-                        <i class="fas fa-link"></i> {{ site.subdomain }}.pagemade.site
-                        <span class="ms-3">
-                            <i class="fas fa-calendar"></i> Tạo ngày {{ site.created_at.strftime('%d/%m/%Y') }}
-                        </span>
-                    </p>
-                </div>
-                <a href="{{ url_for('main.new_page', site_id=site.id) }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Thêm Page
-                </a>
+<div class="min-h-screen">
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center space-x-4 mb-4 sm:mb-0">
+          <a href="{{ url_for('main.dashboard') }}" 
+             class="inline-flex items-center px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Quay lại
+          </a>
+          <div class="h-6 w-px bg-slate-300 dark:bg-slate-600"></div>
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+              <span class="text-white text-lg font-bold">{{ site.title[0].upper() }}</span>
             </div>
-
-            {% if site.description %}
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h6>Mô tả:</h6>
-                    <p class="text-muted">{{ site.description }}</p>
-                </div>
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800 dark:text-white">{{ site.title }}</h1>
+              <p class="text-slate-600 dark:text-slate-400 text-sm">{{ site.pages|length }} trang</p>
             </div>
-            {% endif %}
-
-            <!-- Pages List -->
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Pages ({{ pages|length }})</h5>
-                    <a href="{{ url_for('main.new_page', site_id=site.id) }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus"></i> Thêm Page
-                    </a>
-                </div>
-                <div class="card-body">
-                    {% if pages %}
-                        <div class="row">
-                            {% for page in pages %}
-                            <div class="col-md-6 mb-3">
-                                <div class="card page-card">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h6 class="card-title mb-0">{{ page.title }}</h6>
-                                            {% if page.is_published %}
-                                                <span class="published-badge">Published</span>
-                                            {% else %}
-                                                <span class="draft-badge">Draft</span>
-                                            {% endif %}
-                                        </div>
-                                        
-                                        {% if page.description %}
-                                        <p class="card-text text-muted small">{{ page.description }}</p>
-                                        {% endif %}
-                                        
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                Template: {{ page.template|title }}
-                                            </small>
-                                            <small class="text-muted">
-                                                {{ page.updated_at.strftime('%d/%m/%Y') }}
-                                            </small>
-                                        </div>
-                                        
-                                        <div class="mt-3 d-flex gap-2">
-                                            <a href="{{ url_for('main.editor', page_id=page.id) }}" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-edit"></i> Chỉnh sửa
-                                            </a>
-                                            
-                                            {% if page.is_published %}
-                                                <a href="{{ url_for('main.view_page', subdomain=site.subdomain, page_id=page.id) }}" 
-                                                   class="btn btn-success btn-sm" target="_blank">
-                                                    <i class="fas fa-external-link-alt"></i> Xem
-                                                </a>
-                                            {% else %}
-                                                <button class="btn btn-outline-success btn-sm" onclick="publishPage({{ page.id }})">
-                                                    <i class="fas fa-upload"></i> Publish
-                                                </button>
-                                            {% endif %}
-                                            
-                                            <button class="btn btn-outline-danger btn-sm" onclick="deletePage({{ page.id }})">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
-                            <h5>Chưa có page nào</h5>
-                            <p class="text-muted">Tạo page đầu tiên để bắt đầu xây dựng nội dung</p>
-                            <a href="{{ url_for('main.new_page', site_id=site.id) }}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Tạo Page Đầu Tiên
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+          </div>
         </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6><i class="fas fa-info-circle"></i> Thông tin Site</h6>
-                </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-4">Tên:</dt>
-                        <dd class="col-sm-8">{{ site.title }}</dd>
-                        
-                        <dt class="col-sm-4">URL:</dt>
-                        <dd class="col-sm-8">
-                            <a href="http://{{ site.subdomain }}.pagemade.site" target="_blank" class="text-decoration-none">
-                                {{ site.subdomain }}.pagemade.site
-                                <i class="fas fa-external-link-alt fa-sm"></i>
-                            </a>
-                        </dd>
-                        
-                        <dt class="col-sm-4">Pages:</dt>
-                        <dd class="col-sm-8">{{ pages|length }}</dd>
-                        
-                        <dt class="col-sm-4">Published:</dt>
-                        <dd class="col-sm-8">
-                            {%- set published_count = pages|selectattr('is_published')|list|length -%}
-                            {{ published_count }}
-                        </dd>
-                        
-                        <dt class="col-sm-4">Tạo:</dt>
-                        <dd class="col-sm-8">{{ site.created_at.strftime('%d/%m/%Y %H:%M') }}</dd>
-                        
-                        <dt class="col-sm-4">Cập nhật:</dt>
-                        <dd class="col-sm-8">{{ site.updated_at.strftime('%d/%m/%Y %H:%M') }}</dd>
-                    </dl>
-                </div>
-            </div>
-
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6><i class="fas fa-tools"></i> Actions</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('main.new_page', site_id=site.id) }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Thêm Page
-                        </a>
-                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Về Dashboard
-                        </a>
-                        <button class="btn btn-outline-danger" onclick="deleteSite({{ site.id }})">
-                            <i class="fas fa-trash"></i> Xóa Site
-                        </button>
-                    </div>
-                </div>
-            </div>
+        
+        <div class="flex items-center space-x-3">
+          <a href="{{ url_for('main.new_page', site_id=site.id) }}" 
+             class="inline-flex items-center px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+            <i class="fas fa-plus mr-2"></i>
+            Trang mới
+          </a>
+          <button onclick="deleteSite()" 
+                  class="inline-flex items-center px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+            <i class="fas fa-trash mr-2"></i>
+            Xóa site
+          </button>
         </div>
+      </div>
+      
+      <!-- Site Info -->
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% if site.subdomain %}
+          <div class="flex items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <i class="fas fa-link text-blue-500 mr-3"></i>
+            <div>
+              <p class="text-sm text-slate-600 dark:text-slate-400">URL</p>
+              <a href="http://{{ site.subdomain }}.yourdomain.com" target="_blank" 
+                 class="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                {{ site.subdomain }}.yourdomain.com
+              </a>
+            </div>
+          </div>
+        {% endif %}
+        
+        <div class="flex items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+          <i class="fas fa-calendar text-green-500 mr-3"></i>
+          <div>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Ngày tạo</p>
+            <p class="text-slate-800 dark:text-slate-200 font-medium">{{ site.created_at.strftime('%d/%m/%Y') }}</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+          <i class="fas fa-file-alt text-purple-500 mr-3"></i>
+          <div>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Tổng trang</p>
+            <p class="text-slate-800 dark:text-slate-200 font-medium">{{ site.pages|length }}</p>
+          </div>
+        </div>
+      </div>
     </div>
+
+    {% if site.description %}
+      <!-- Description Card -->
+      <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 mb-8">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+              <i class="fas fa-info-circle text-white"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-1">Mô tả</h3>
+            <p class="text-sm text-blue-800 dark:text-blue-200">{{ site.description }}</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Tổng trang</p>
+            <p class="text-3xl font-bold text-slate-800 dark:text-white mt-1">{{ site.pages|length }}</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <i class="fas fa-file-alt text-blue-600 dark:text-blue-400 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Đã xuất bản</p>
+            <p class="text-3xl font-bold text-slate-800 dark:text-white mt-1">
+              {{ site.pages|selectattr('is_published')|list|length }}
+            </p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+            <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Bản nháp</p>
+            <p class="text-3xl font-bold text-slate-800 dark:text-white mt-1">
+              {{ site.pages|rejectattr('is_published')|list|length }}
+            </p>
+          </div>
+          <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+            <i class="fas fa-edit text-yellow-600 dark:text-yellow-400 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pages Grid -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div class="px-6 py-6 border-b border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Trang</h2>
+            <p class="text-slate-600 dark:text-slate-400 mt-1">Quản lý và chỉnh sửa các trang của bạn</p>
+          </div>
+          <a href="{{ url_for('main.new_page', site_id=site.id) }}" 
+             class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all">
+            <i class="fas fa-plus mr-2"></i>
+            Thêm trang
+          </a>
+        </div>
+      </div>
+      
+      <div class="p-6">
+
+        {% if site.pages %}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for page in site.pages %}
+              <div class="group relative bg-gradient-to-br from-slate-50 to-white dark:from-slate-700 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-600 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                   x-data="{ open: false }">
+                
+                <!-- Page Header -->
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-slate-800 dark:text-white mb-1 truncate">{{ page.title }}</h3>
+                    {% if page.is_published %}
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        <i class="fas fa-check-circle mr-1"></i> Đã xuất bản
+                      </span>
+                    {% else %}
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                        <i class="fas fa-edit mr-1"></i> Bản nháp
+                      </span>
+                    {% endif %}
+                  </div>
+                  
+                  <!-- Dropdown Menu -->
+                  <div class="relative ml-2">
+                    <button @click="open = !open" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">
+                      <i class="fas fa-ellipsis-v text-slate-600 dark:text-slate-300"></i>
+                    </button>
+                    
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         @click.away="open = false"
+                         class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-700 rounded-xl shadow-xl border border-slate-200 dark:border-slate-600 z-10">
+                      <a href="{{ url_for('main.editor', page_id=page.id) }}" 
+                         class="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-t-xl transition-colors">
+                        <i class="fas fa-edit w-4"></i>
+                        <span>Chỉnh sửa</span>
+                      </a>
+                      {% if page.is_published %}
+                        <a href="{{ url_for('main.view_page', subdomain=site.subdomain, page_id=page.id) }}" 
+                           target="_blank"
+                           class="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+                          <i class="fas fa-external-link-alt w-4"></i>
+                          <span>Xem trực tiếp</span>
+                        </a>
+                      {% endif %}
+                      <div class="border-t border-slate-200 dark:border-slate-600"></div>
+                      <button data-page-id="{{ page.id }}" 
+                              class="delete-page-btn w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-xl transition-colors">
+                        <i class="fas fa-trash w-4"></i>
+                        <span>Xóa</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Page Description -->
+                {% if page.description %}
+                  <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{{ page.description }}</p>
+                {% endif %}
+
+                <!-- Page Meta -->
+                <div class="space-y-2 mb-4 text-xs text-slate-500 dark:text-slate-400">
+                  <div class="flex items-center">
+                    <i class="fas fa-layer-group w-4 mr-2"></i>
+                    <span>Template: {{ page.template|title }}</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-clock w-4 mr-2"></i>
+                    <span>Cập nhật {{ page.updated_at.strftime('%d/%m/%Y') }}</span>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex space-x-3">
+                  <a href="{{ url_for('main.editor', page_id=page.id) }}" 
+                     class="flex-1 text-center px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-medium">
+                    <i class="fas fa-edit mr-2"></i>Chỉnh sửa
+                  </a>
+                  {% if page.is_published %}
+                    <a href="{{ url_for('main.view_page', subdomain=site.subdomain, page_id=page.id) }}" 
+                       target="_blank"
+                       class="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                  {% else %}
+                    <button data-page-id="{{ page.id }}" 
+                            class="publish-page-btn px-4 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                      <i class="fas fa-upload"></i>
+                    </button>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <!-- Empty State -->
+          <div class="text-center py-16">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full mb-6">
+              <i class="fas fa-file-alt text-5xl text-blue-500 dark:text-blue-400"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-300 mb-2">Chưa có trang nào</h3>
+            <p class="text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto">
+              Tạo trang đầu tiên để bắt đầu xây dựng nội dung cho website của bạn.
+            </p>
+            <a href="{{ url_for('main.new_page', site_id=site.id) }}" 
+               class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-medium text-lg">
+              <i class="fas fa-plus mr-3"></i>
+              Tạo trang đầu tiên
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </main>
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block scripts %}
 <script>
-function publishPage(pageId) {
-    if (confirm('Bạn có muốn publish page này?')) {
-        const btn = event.target.closest('button');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
-        
-        fetch(`/api/pages/${pageId}/publish`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+document.addEventListener('DOMContentLoaded', function() {
+  // Publish page functionality
+  document.querySelectorAll('.publish-page-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const pageId = this.getAttribute('data-page-id');
+      if (confirm('Xuất bản trang này?')) {
+        fetch(`/page/${pageId}/publish`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
         })
         .then(response => response.json())
         .then(data => {
-            if (data.message) {
-                location.reload();
-            } else {
-                alert('Có lỗi xảy ra khi publish page');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-upload"></i> Publish';
-            }
+          if (data.success) {
+            window.location.reload();
+          } else {
+            alert(data.message || 'Không thể xuất bản trang');
+          }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi publish page');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-upload"></i> Publish';
+          console.error('Error:', error);
+          alert('Có lỗi xảy ra');
         });
-    }
-}
+      }
+    });
+  });
 
-function deletePage(pageId) {
-    if (confirm('Bạn có chắc muốn xóa page này?')) {
-        fetch(`/api/pages/${pageId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+  // Delete page functionality
+  document.querySelectorAll('.delete-page-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const pageId = this.getAttribute('data-page-id');
+      if (confirm('Bạn có chắc chắn muốn xóa trang này? Hành động này không thể hoàn tác.')) {
+        fetch(`/page/${pageId}/delete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
         })
         .then(response => response.json())
         .then(data => {
-            if (data.message) {
-                location.reload();
-            } else {
-                alert('Có lỗi xảy ra khi xóa page');
-            }
+          if (data.success) {
+            window.location.reload();
+          } else {
+            alert(data.message || 'Không thể xóa trang');
+          }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi xóa page');
+          console.error('Error:', error);
+          alert('Có lỗi xảy ra');
         });
-    }
-}
+      }
+    });
+  });
+});
 
-function deleteSite(siteId) {
-    if (confirm('Bạn có chắc muốn xóa site này? Tất cả pages trong site cũng sẽ bị xóa.')) {
-        fetch(`/api/sites/${siteId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message) {
-                window.location.href = '/dashboard';
-            } else {
-                alert('Có lỗi xảy ra khi xóa site');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi xóa site');
-        });
-    }
+function deleteSite() {
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ site này? Điều này sẽ xóa tất cả các trang và không thể hoàn tác.')) {
+    fetch(`/site/{{ site.id }}/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        window.location.href = '{{ url_for("main.dashboard") }}';
+      } else {
+        alert(data.message || 'Không thể xóa site');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra');
+    });
+  }
 }
 </script>
 {% endblock %}

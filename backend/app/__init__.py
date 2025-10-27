@@ -33,15 +33,20 @@ def create_app(config_name=None):
     oauth.init_app(app)
     cache.init_app(app)
     
-    # Configure CORS for Silex integration - support both dev and production
-    cors_origins = ['http://localhost:6805']  # Development
+    # Configure CORS for Next.js integration - support both dev and production
+    cors_origins = ['http://localhost:6805', 'http://localhost:3000', 'http://localhost:3002']  # Development
     if config_name == 'production':
         cors_origins.extend([
             'https://pagemade.site',
             'http://pagemade.site'
         ])
     
-    CORS(app, origins=cors_origins, supports_credentials=True)
+    CORS(app, 
+         origins=cors_origins, 
+         supports_credentials=True,
+         allow_headers=['Content-Type', 'Authorization'],
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+    
     
     # Configure login manager
     login_manager.login_view = 'auth.login'

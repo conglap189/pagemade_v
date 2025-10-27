@@ -1,39 +1,39 @@
+
 {% extends "base.html" %}
 
 {% block title %}Tạo Page Mới - {{ site.title }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-7">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Tạo Page Mới cho "{{ site.title }}"</h5>
-                </div>
-                <div class="card-body">
-                    <form id="newPageForm">
-                        <input type="hidden" id="site_id" value="{{ site.id }}">
-                        
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Tên Page *</label>
-                            <input type="text" class="form-control" id="title" name="title" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Mô tả</label>
-                            <textarea class="form-control" id="description" name="description" rows="2"></textarea>
-                        </div>
-                        
-                        <div class="d-flex gap-2 justify-content-between mt-3">
-                            <a href="{{ url_for('main.site_detail', site_id=site.id) }}" class="btn btn-outline-secondary">
-                                Quay lại
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                Tạo Page
-                            </button>
-                        </div>
-                    </form>
-                </div>
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div class="w-full max-w-xl mx-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="px-8 py-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-2xl">
+                <h2 class="text-2xl font-bold text-white dark:text-white">Tạo Page Mới cho "{{ site.title }}"</h2>
+            </div>
+            <div class="px-8 py-8">
+                <form id="newPageForm">
+                    <input type="hidden" id="site_id" value="{{ site.id }}">
+                    <div class="mb-6">
+                        <label for="title" class="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Tên Page <span class="text-red-500">*</span></label>
+                        <input type="text" id="title" name="title" required
+                            class="block w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-400">
+                    </div>
+                    <div class="mb-6">
+                        <label for="description" class="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Mô tả</label>
+                        <textarea id="description" name="description" rows="2"
+                            class="block w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-400"></textarea>
+                    </div>
+                    <div class="flex gap-3 justify-between mt-8">
+                        <a href="{{ url_for('main.site_detail', site_id=site.id) }}"
+                            class="inline-flex items-center px-6 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 font-medium transition-all duration-200">
+                            <i class="fas fa-arrow-left mr-2"></i>Quay lại
+                        </a>
+                        <button type="submit"
+                            class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-medium">
+                            <i class="fas fa-plus mr-2"></i>Tạo Page
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -44,24 +44,20 @@
 <script>
 document.getElementById('newPageForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const formData = {
         title: document.getElementById('title').value,
         description: document.getElementById('description').value,
         site_id: parseInt(document.getElementById('site_id').value)
     };
-    
     // Basic validation
     if (!formData.title) {
         alert('Vui lòng nhập tên page');
         return;
     }
-    
     // Submit form
     const submitBtn = document.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Đang tạo...';
-    
     fetch('/api/pages', {
         method: 'POST',
         headers: {

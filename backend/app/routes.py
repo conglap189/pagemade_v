@@ -545,6 +545,143 @@ def create_test_account():
     flash('Không tìm thấy tài khoản admin!', 'error')
     return redirect(url_for('auth.login'))
 
+
+# ================================
+# API ROUTES FOR NEXT.JS FRONTEND
+# ================================
+
+@auth_bp.route('/api/login', methods=['POST'])
+def api_login():
+    """JSON API endpoint for Next.js login"""
+    try:
+        print("🔐 API Login request received")
+        data = request.get_json()
+        print(f"📦 Request data: {data}")
+        
+        if not data:
+            print("❌ No data provided")
+            return jsonify({'success': False, 'message': 'No data provided'}), 400
+        
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        print(f"📧 Email: {email}")
+        print(f"🔑 Password length: {len(password) if password else 0}")
+        
+        if not email or not password:
+            print("❌ Missing email or password")
+            return jsonify({'success': False, 'message': 'Email và password là bắt buộc'}), 400
+        
+        # Find user by email
+        user = User.query.filter_by(email=email).first()
+        print(f"👤 User found: {user is not None}")
+        
+        if not user:
+            print("❌ User not found")
+            return jsonify({'success': False, 'message': 'Email hoặc password không đúng'}), 401
+            
+        if not user.check_password(password):
+            print("❌ Password check failed")
+            return jsonify({'success': False, 'message': 'Email hoặc password không đúng'}), 401
+        
+        print("✅ Password check passed")
+        # Successful login
+        user.update_last_login()
+        db.session.commit()
+        login_user(user, remember=True)
+        print(f"✅ User logged in: {user.email}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Đăng nhập thành công',
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'email': user.email,
+                'avatar_url': user.avatar_url
+            },
+            'redirect': '/dashboard'
+        }), 200
+        
+    except Exception as e:
+        print(f"💥 API Login error: {e}")
+        current_app.logger.error(f"API Login error: {e}")
+        return jsonify({'success': False, 'message': 'Lỗi server, vui lòng thử lại'}), 500
+
+
+@auth_bp.route('/api/signup', methods=['POST'])
+def api_signup():
+    """JSON API endpoint for Next.js signup"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'message': 'No data provided'}), 400
+        
+        name = data.get('name', '').strip()
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        # Validation
+        if not all([name, email, password]):
+            return jsonify({'success': False, 'message': 'Vui lòng điền đầy đủ thông tin'}), 400
+        
+        if len(password) < 6:
+            return jsonify({'success': False, 'message': 'Mật khẩu phải có ít nhất 6 ký tự'}), 400
+        
+        # Check if email already exists
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return jsonify({'success': False, 'message': 'Email này đã được đăng ký'}), 409
+        
+        # Create new user
+        new_user = User(
+            name=name,
+            email=email,
+            role='user'
+        )
+        new_user.set_password(password)
+        new_user.update_last_login()
+        
+        db.session.add(new_user)
+        db.session.commit()
+        
+        # Auto login after registration
+        login_user(new_user, remember=True)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Tài khoản đã được tạo thành công',
+            'user': {
+                'id': new_user.id,
+                'name': new_user.name,
+                'email': new_user.email,
+                'avatar_url': new_user.avatar_url
+            },
+            'redirect': '/dashboard'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"API Signup error: {e}")
+        return jsonify({'success': False, 'message': 'Có lỗi xảy ra, vui lòng thử lại'}), 500
+
+
+@auth_bp.route('/api/me', methods=['GET'])
+@login_required
+def api_me():
+    """Get current logged in user info"""
+    return jsonify({
+        'success': True,
+        'user': {
+            'id': current_user.id,
+            'name': current_user.name,
+            'email': current_user.email,
+            'avatar_url': current_user.avatar_url,
+            'role': current_user.role
+        }
+    }), 200
+
+
 # Main routes
 @main_bp.route('/')
 def index():
@@ -552,8 +689,8 @@ def index():
     subdomain = get_subdomain()
     
     if not subdomain:
-        # Main site - Show admin dashboard/homepage
-        return render_template('index.html')
+        # Main site - Redirect to the frontend
+        return redirect('http://localhost:3000')
     
     # Subdomain - Show user site
     return serve_user_site(subdomain)
@@ -566,10 +703,7 @@ def serve_page(page_slug):
     if not subdomain:
         # Main site - Handle normal routes or 404
         # Check if this is an existing main site route
-        if page_slug in ['dashboard', 'new-site', 'editor', 'auth', 'api']:
-            # Let other routes handle this
-            abort(404)
-        return render_template('404.html'), 404
+        return redirect('http://localhost:3000/' + page_slug)
     
     # Subdomain - Serve specific page
     return serve_user_page(subdomain, page_slug)
@@ -578,20 +712,102 @@ def serve_page(page_slug):
 @login_required
 def dashboard():
     sites = Site.query.filter_by(user_id=current_user.id).all()
-    sites_with_pages = []
+    
+    # Calculate stats
+    total_pages = 0
+    published_pages = 0
     
     for site in sites:
         pages = Page.query.filter_by(site_id=site.id).all()
-        sites_with_pages.append({
-            'site': site,
-            'pages': pages
-        })
+        site.pages = pages  # Add pages to site object
+        total_pages += len(pages)
+        published_pages += sum(1 for page in pages if page.is_published)
     
-    return render_template('dashboard.html', sites_with_pages=sites_with_pages)
+    return render_template('dashboard.html', 
+                         sites=sites, 
+                         total_pages=total_pages,
+                         published_pages=published_pages)
 
-@main_bp.route('/new-site')
+@main_bp.route('/new-site', methods=['GET', 'POST'])
 @login_required
 def new_site():
+    if request.method == 'POST':
+        try:
+            # Get form data
+            title = request.form.get('title', '').strip()
+            subdomain = request.form.get('subdomain', '').strip().lower()
+            description = request.form.get('description', '').strip()
+            action = request.form.get('action', 'dashboard')
+            
+            # Validation
+            if not title or not subdomain:
+                return jsonify({
+                    'success': False,
+                    'message': 'Vui lòng điền đầy đủ thông tin bắt buộc'
+                }), 400
+            
+            # Subdomain format validation
+            import re
+            if not re.match(r'^[a-z0-9-]+$', subdomain):
+                return jsonify({
+                    'success': False,
+                    'message': 'Subdomain chỉ được chứa chữ thường, số và dấu gạch ngang'
+                }), 400
+            
+            # Check if subdomain is available
+            existing_site = Site.query.filter_by(subdomain=subdomain).first()
+            if existing_site:
+                return jsonify({
+                    'success': False,
+                    'message': 'Subdomain đã được sử dụng'
+                }), 400
+            
+            # Create site
+            site = Site(
+                title=title,
+                subdomain=subdomain,
+                description=description,
+                user_id=current_user.id
+            )
+            
+            db.session.add(site)
+            db.session.commit()
+            
+            response_data = {
+                'success': True,
+                'message': 'Tạo site thành công!',
+                'site_id': site.id,
+                'redirect': '/dashboard'
+            }
+            
+            # If action is pagemaker, create default page and return page_id
+            if action == 'pagemaker':
+                # Create a default homepage
+                default_page = Page(
+                    title=f'{site.title} - Homepage',
+                    slug='home',
+                    description='Homepage',
+                    site_id=site.id,
+                    user_id=current_user.id,
+                    is_homepage=True
+                )
+                db.session.add(default_page)
+                db.session.commit()
+                
+                response_data['page_id'] = default_page.id
+                response_data['redirect'] = f'/editor/{default_page.id}'
+            
+            return jsonify(response_data), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Create site error: {e}")
+            return jsonify({
+                'success': False,
+                'message': 'Có lỗi xảy ra khi tạo site. Vui lòng thử lại!'
+            }), 500
+    
+    # GET request - show form
     return render_template('new_site.html')
 
 @main_bp.route('/site/<int:site_id>')
@@ -1026,6 +1242,21 @@ def delete_site(site_id):
     db.session.commit()
     
     return jsonify({'message': 'Site deleted successfully'})
+
+@api_bp.route('/sites/<int:site_id>/delete', methods=['POST'])
+@login_required
+def delete_site_form(site_id):
+    """Handle site deletion from HTML forms"""
+    site = Site.query.get_or_404(site_id)
+    
+    if site.user_id != current_user.id:
+        abort(403)
+    
+    db.session.delete(site)
+    db.session.commit()
+    
+    flash('Site deleted successfully!', 'success')
+    return redirect(url_for('main.dashboard'))
 
 # NEW: API to publish entire website from Silex
 @api_bp.route('/publish-site', methods=['POST'])
