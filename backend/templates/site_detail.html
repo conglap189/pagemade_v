@@ -50,9 +50,9 @@
             <i class="fas fa-link text-gray-500 mr-3"></i>
             <div>
               <p class="text-sm text-slate-600 dark:text-slate-400">URL</p>
-              <a href="http://{{ site.subdomain }}.yourdomain.com" target="_blank" 
+              <a href="http://{{ site.subdomain }}.pagemade.site" target="_blank" 
                  class="text-blue-600 dark:text-blue-400 hover:underline font-medium">
-                {{ site.subdomain }}.yourdomain.com
+                {{ site.subdomain }}.pagemade.site
               </a>
             </div>
           </div>
@@ -230,6 +230,12 @@
                     <i class="fas fa-clock w-4 mr-2 text-gray-500"></i>
                     <span>Cập nhật {{ page.updated_at.strftime('%d/%m/%Y') }}</span>
                   </div>
+                  {% if page.is_published %}
+                  <div class="flex items-center">
+                    <i class="fas fa-external-link-alt w-4 mr-2 text-gray-500"></i>
+                    <span>URL: <a href="{{ page.get_url() }}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline">{{ page.get_url() }}</a></span>
+                  </div>
+                  {% endif %}
                 </div>
 
                 <!-- Actions -->

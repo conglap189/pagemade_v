@@ -1,10 +1,9 @@
-
 {% extends "base.html" %}
 
 {% block title %}Tạo Page Mới - {{ site.title }}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="w-full max-w-xl mx-auto">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700">
             <div class="px-8 py-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-2xl">
@@ -13,16 +12,29 @@
             <div class="px-8 py-8">
                 <form id="newPageForm">
                     <input type="hidden" id="site_id" value="{{ site.id }}">
+                    
+                    <!-- Tên Page -->
                     <div class="mb-6">
                         <label for="title" class="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Tên Page <span class="text-red-500">*</span></label>
                         <input type="text" id="title" name="title" required
                             class="block w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-400">
                     </div>
+
+                    <!-- URL Dự kiến -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">URL Dự kiến</label>
+                        <div class="bg-slate-50 dark:bg-slate-700 rounded-xl border border-slate-300 dark:border-slate-600 px-4 py-3">
+                            <span id="urlPreview" class="text-slate-600 dark:text-slate-300 font-medium">{{ site.subdomain }}.pagemade.site/</span>
+                        </div>
+                    </div>
+
+                    <!-- Mô tả -->
                     <div class="mb-6">
                         <label for="description" class="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Mô tả</label>
                         <textarea id="description" name="description" rows="2"
                             class="block w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-400"></textarea>
                     </div>
+                    
                     <div class="flex gap-3 justify-between mt-8">
                         <a href="{{ url_for('main.site_detail', site_id=site.id) }}"
                             class="btn btn-secondary btn-secondary-md">
@@ -40,48 +52,109 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block scripts %}
 <script>
-document.getElementById('newPageForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = {
-        title: document.getElementById('title').value,
-        description: document.getElementById('description').value,
-        site_id: parseInt(document.getElementById('site_id').value)
-    };
-    // Basic validation
-    if (!formData.title) {
-        alert('Vui lòng nhập tên page');
-        return;
+// Function to create slug from title
+function createSlug(title) {
+    return title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[đĐ]/g, 'd')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+}
+
+// Function to update URL preview
+function updateUrlPreview() {
+    var title = document.getElementById('title').value;
+    var urlPreview = document.getElementById('urlPreview');
+    var subdomain = '{{ site.subdomain }}';
+    
+    if (title.trim() === '') {
+        urlPreview.textContent = subdomain + '.pagemade.site/';
+    } else {
+        var slug = createSlug(title);
+        urlPreview.textContent = subdomain + '.pagemade.site/' + slug;
     }
-    // Submit form
-    const submitBtn = document.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Đang tạo...';
-    fetch('/api/pages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(data.error);
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Tạo Page';
-        } else {
-            // Success - redirect to editor
-            window.location.href = `/editor/${data.id}`;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi tạo page');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Tạo Page';
-    });
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded - initializing new page form');
+    
+    // Add event listener for real-time preview
+    var titleInput = document.getElementById('title');
+    if (titleInput) {
+        titleInput.addEventListener('input', updateUrlPreview);
+        console.log('Title input event listener added');
+        // Initialize URL preview
+        updateUrlPreview();
+    } else {
+        console.error('Title input not found');
+    }
+    
+    // Handle form submission
+    var form = document.getElementById('newPageForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
+            
+            var formData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                site_id: parseInt(document.getElementById('site_id').value)
+            };
+            
+            console.log('Form data:', formData);
+            
+            // Basic validation
+            if (!formData.title) {
+                alert('Vui lòng nhập tên page');
+                return;
+            }
+            
+            // Submit form
+            var submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Đang tạo...';
+            
+            fetch('{{ url_for("api.create_page") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('API response:', data);
+                if (data.error) {
+                    alert(data.error);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Tạo Page';
+                } else {
+                    console.log('Redirecting to editor with page_id:', data.id);
+                    // Success - redirect to editor (which loads editor_pagemaker_v2.html)
+                    window.location.href = '/editor/' + data.id;
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tạo page');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Tạo Page';
+            });
+        });
+        console.log('Form submit event listener added');
+    } else {
+        console.error('Form not found');
+    }
 });
 </script>
 {% endblock %}

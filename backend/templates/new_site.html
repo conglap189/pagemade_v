@@ -236,20 +236,9 @@ document.getElementById('newSiteForm').addEventListener('submit', async function
     if (result.success) {
       btnText.textContent = 'Thành công!';
       btn.classList.remove('opacity-75');
-      // Redirect tuỳ action
+      // Redirect theo backend trả về
       setTimeout(() => {
-        if (action === 'dashboard') {
-          window.location.href = '/dashboard';
-        } else if (action === 'pagemaker') {
-          // Nếu backend trả về page_id, dùng nó, nếu không thì chỉ redirect tới editor_pagemaker.html
-          if (result.page_id) {
-            window.location.href = `/editor/${result.page_id}`;
-          } else {
-            window.location.href = '/editor_pagemaker.html';
-          }
-        } else {
-          window.location.href = '/dashboard';
-        }
+        window.location.href = result.redirect || '/dashboard';
       }, 500);
     } else {
       throw new Error(result.message || 'Không thể tạo site');
