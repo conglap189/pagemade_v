@@ -11,10 +11,10 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-4xl font-bold text-slate-800 dark:text-white mb-2">
-            Welcome back, {{ current_user.name }}! 👋
+            Xin chào, {{ current_user.name }}! 
           </h1>
           <p class="text-slate-600 dark:text-slate-400 text-lg">
-            Here's what's happening with your sites today.
+            Đây là những trang của bạn.
           </p>
         </div>
         <div class="mt-4 sm:mt-0">
@@ -23,7 +23,7 @@
             <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd" clip-rule="evenodd" d="M10 3C10.5523 3 11 3.44772 11 4V9H16C16.5523 9 17 9.44772 17 10C17 10.5523 16.5523 11 16 11H11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11H4C3.44772 11 3 10.5523 3 10C3 9.44772 3.44772 9 4 9H9V4C9 3.44772 9.44772 3 10 3Z" fill="currentColor"/>
             </svg>
-            Create New Site
+            Tạo trang mới
           </a>
         </div>
       </div>
@@ -35,9 +35,9 @@
       <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-700 transform hover:scale-105 transition-all duration-300">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Total Sites</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Tổng </p>
             <p class="text-4xl font-bold text-slate-800 dark:text-white mb-1">{{ sites|length }}</p>
-            <p class="text-slate-500 dark:text-slate-400 text-xs">Active projects</p>
+            <p class="text-slate-500 dark:text-slate-400 text-xs">Dự án đang hoạt động</p>
           </div>
           <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
             <i class="fas fa-globe text-blue-600 dark:text-blue-400 text-2xl"></i>
@@ -53,9 +53,9 @@
       <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-700 transform hover:scale-105 transition-all duration-300">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Total Pages</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Tổng</p>
             <p class="text-4xl font-bold text-slate-800 dark:text-white mb-1">{{ total_pages }}</p>
-            <p class="text-slate-500 dark:text-slate-400 text-xs">Created pages</p>
+            <p class="text-slate-500 dark:text-slate-400 text-xs">Trang đã tạo</p>
           </div>
           <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center">
             <i class="fas fa-file-alt text-purple-600 dark:text-purple-400 text-2xl"></i>
@@ -71,9 +71,9 @@
       <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-700 transform hover:scale-105 transition-all duration-300">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Published</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Xuất bản</p>
             <p class="text-4xl font-bold text-slate-800 dark:text-white mb-1">{{ published_pages }}</p>
-            <p class="text-slate-500 dark:text-slate-400 text-xs">Live pages</p>
+            <p class="text-slate-500 dark:text-slate-400 text-xs">Trang đang hoạt động</p>
           </div>
           <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center">
             <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-2xl"></i>
@@ -91,8 +91,8 @@
       <div class="px-6 py-6 border-b border-slate-200 dark:border-slate-700">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Your Sites</h2>
-            <p class="text-slate-600 dark:text-slate-400 mt-1">Manage and organize your projects</p>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Trang của bạn</h2>
+            <p class="text-slate-600 dark:text-slate-400 mt-1">Quản lý và tổ chức các dự án của bạn</p>
           </div>
           <div class="flex items-center space-x-3">
             <button class="p-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
@@ -182,7 +182,7 @@
                 <div class="flex space-x-3">
                   <a href="{{ url_for('main.site_detail', site_id=site.id) }}" 
                      class="flex-1 text-center px-4 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-medium">
-                    <i class="fas fa-arrow-right mr-2"></i>Open
+                    <i class="fas fa-arrow-right mr-2"></i>Quản lý trang
                   </a>
                   <a href="{{ url_for('main.new_page', site_id=site.id) }}" 
                      class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
