@@ -438,10 +438,15 @@ def logout():
 def profile():
     """User profile management"""
     if request.method == 'POST':
+        # Check if this is an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
         # Update profile
         name = request.form.get('name', '').strip()
         
         if not name:
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'Tên không được để trống!'})
             flash('Tên không được để trống!', 'error')
             return render_template('auth/profile.html')
         
@@ -455,11 +460,15 @@ def profile():
                 # Check file extension
                 allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
                 if not file.filename or not file.filename.lower().endswith(tuple(f'.{ext}' for ext in allowed_extensions)):
+                    if is_ajax:
+                        return jsonify({'success': False, 'message': 'Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF, WEBP)!'})
                     flash('Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF, WEBP)!', 'error')
                     return render_template('auth/profile.html')
                 
                 # Check file size (max 5MB)
                 if len(file.read()) > 5 * 1024 * 1024:
+                    if is_ajax:
+                        return jsonify({'success': False, 'message': 'Kích thước file không được vượt quá 5MB!'})
                     flash('Kích thước file không được vượt quá 5MB!', 'error')
                     return render_template('auth/profile.html')
                 
@@ -483,11 +492,23 @@ def profile():
                 current_user.avatar_url = avatar_url
             
             db.session.commit()
+            
+            if is_ajax:
+                return jsonify({
+                    'success': True, 
+                    'message': 'Cập nhật thông tin thành công!',
+                    'avatar_url': current_user.avatar_url
+                })
+            
             flash('Cập nhật thông tin thành công!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash('Có lỗi xảy ra!', 'error')
             current_app.logger.error(f"Profile update error: {e}")
+            
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'Có lỗi xảy ra!'})
+            
+            flash('Có lỗi xảy ra!', 'error')
     
     return render_template('auth/profile.html')
 
@@ -496,24 +517,20 @@ def profile():
 def upload_avatar():
     """Upload user avatar"""
     if 'avatar' not in request.files:
-        flash('Vui lòng chọn file ảnh!', 'error')
-        return redirect(url_for('auth.profile'))
+        return jsonify({'success': False, 'message': 'Vui lòng chọn file ảnh!'})
     
     file = request.files['avatar']
     if file.filename == '':
-        flash('Vui lòng chọn file ảnh!', 'error')
-        return redirect(url_for('auth.profile'))
+        return jsonify({'success': False, 'message': 'Vui lòng chọn file ảnh!'})
     
     # Check file extension
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
     if not file.filename or not file.filename.lower().endswith(tuple(f'.{ext}' for ext in allowed_extensions)):
-        flash('Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF, WEBP)!', 'error')
-        return redirect(url_for('auth.profile'))
+        return jsonify({'success': False, 'message': 'Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF, WEBP)!'})
     
     # Check file size (max 5MB)
     if len(file.read()) > 5 * 1024 * 1024:
-        flash('Kích thước file không được vượt quá 5MB!', 'error')
-        return redirect(url_for('auth.profile'))
+        return jsonify({'success': False, 'message': 'Kích thước file không được vượt quá 5MB!'})
     
     # Reset file pointer after reading
     file.seek(0)
@@ -536,20 +553,27 @@ def upload_avatar():
         current_user.avatar_url = avatar_url
         db.session.commit()
         
-        flash('Cập nhật ảnh đại diện thành công!', 'success')
+        return jsonify({
+            'success': True, 
+            'message': 'Cập nhật ảnh đại diện thành công!',
+            'avatar_url': avatar_url
+        })
         
     except Exception as e:
         db.session.rollback()
-        flash('Có lỗi xảy ra khi tải lên ảnh!', 'error')
         current_app.logger.error(f"Avatar upload error: {e}")
-    
-    return redirect(url_for('auth.profile'))
+        return jsonify({'success': False, 'message': 'Có lỗi xảy ra khi tải lên ảnh!'})
 
 @auth_bp.route('/remove-avatar', methods=['POST'])
 @login_required
 def remove_avatar():
     """Remove user avatar (only for non-Google accounts)"""
+    # Check if this is an AJAX request
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
     if current_user.google_id:
+        if is_ajax:
+            return jsonify({'success': False, 'message': 'Tài khoản Google không thể xóa ảnh đại diện!'})
         flash('Tài khoản Google không thể xóa ảnh đại diện!', 'error')
         return redirect(url_for('auth.profile'))
     
@@ -568,12 +592,19 @@ def remove_avatar():
         current_user.avatar_url = None
         db.session.commit()
         
+        if is_ajax:
+            return jsonify({'success': True, 'message': 'Xóa ảnh đại diện thành công!'})
+        
         flash('Xóa ảnh đại diện thành công!', 'success')
         
     except Exception as e:
         db.session.rollback()
-        flash('Có lỗi xảy ra khi xóa ảnh!', 'error')
         current_app.logger.error(f"Avatar removal error: {e}")
+        
+        if is_ajax:
+            return jsonify({'success': False, 'message': 'Có lỗi xảy ra khi xóa ảnh!'})
+        
+        flash('Có lỗi xảy ra khi xóa ảnh!', 'error')
     
     return redirect(url_for('auth.profile'))
 

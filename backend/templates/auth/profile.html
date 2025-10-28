@@ -34,7 +34,7 @@
             </div>
           </div>
           
-          <form method="POST" class="space-y-6" enctype="multipart/form-data">
+          <form id="profile-form" method="POST" class="space-y-6" enctype="multipart/form-data" onsubmit="updateProfile(event)">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -221,25 +221,50 @@
 </div>
 
 <script>
-// Avatar preview functions
+// Avatar preview and auto-upload functions
 function previewAvatar(input) {
   const file = input.files[0];
   if (file) {
+    console.log('File selected:', file.name);
+    
     // Preview image before upload
     const reader = new FileReader();
     reader.onload = function(event) {
-      // Update avatar preview in profile
-      const avatarContainer = document.querySelector('.rounded-full.h-24.w-24, .bg-gradient-to-br.h-24.w-24');
-      if (avatarContainer) {
-        if (avatarContainer.tagName === 'IMG') {
-          avatarContainer.src = event.target.result;
+      console.log('File loaded, updating preview...');
+      
+      // Update avatar preview in profile page - try multiple selectors
+      let avatarContainer = document.querySelector('.rounded-full.h-24.w-24');
+      let avatarDiv = document.querySelector('.bg-gradient-to-br.from-blue-500.to-purple-600.rounded-full');
+      
+      if (avatarContainer && avatarContainer.tagName === 'IMG') {
+        // Update existing img
+        avatarContainer.src = event.target.result;
+        console.log('Updated existing img');
+      } else if (avatarDiv) {
+        // Replace div with img
+        const img = document.createElement('img');
+        img.src = event.target.result;
+        img.alt = 'Avatar';
+        img.className = 'rounded-full h-24 w-24 mx-auto mb-4 border-4 border-slate-200 dark:border-slate-600';
+        avatarDiv.parentNode.replaceChild(img, avatarDiv);
+        console.log('Replaced div with img');
+      } else {
+        // Try to find the avatar container by parent
+        const avatarCard = document.querySelector('.text-center .rounded-full.h-24.w-24, .text-center .bg-gradient-to-br');
+        if (avatarCard) {
+          if (avatarCard.tagName === 'IMG') {
+            avatarCard.src = event.target.result;
+            console.log('Updated img by parent selector');
+          } else {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.alt = 'Avatar';
+            img.className = 'rounded-full h-24 w-24 mx-auto mb-4 border-4 border-slate-200 dark:border-slate-600';
+            avatarCard.parentNode.replaceChild(img, avatarCard);
+            console.log('Replaced div by parent selector');
+          }
         } else {
-          // Replace div with img
-          const img = document.createElement('img');
-          img.src = event.target.result;
-          img.alt = 'Avatar';
-          img.className = 'rounded-full h-24 w-24 mx-auto mb-4 border-4 border-slate-200 dark:border-slate-600';
-          avatarContainer.parentNode.replaceChild(img, avatarContainer);
+          console.log('Avatar container not found at all');
         }
       }
       
@@ -248,33 +273,250 @@ function previewAvatar(input) {
       navbarAvatars.forEach(img => {
         img.src = event.target.result;
       });
+      console.log('Updated navbar avatars:', navbarAvatars.length);
     };
     reader.readAsDataURL(file);
+    
+    // Auto-upload avatar after selection
+    uploadAvatar(input);
+  } else {
+    console.log('No file selected');
   }
 }
 
-function removeAvatarPreview() {
-  // Reset to default avatar
-  const avatarContainer = document.querySelector('.rounded-full.h-24.w-24');
-  if (avatarContainer) {
-    // Replace img with default div
-    const div = document.createElement('div');
-    div.className = 'bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center h-24 w-24 mx-auto mb-4 shadow-lg';
-    div.innerHTML = `<span class="text-white text-3xl font-bold">{{ current_user.name[0].upper() if current_user.name else 'U' }}</span>`;
-    avatarContainer.parentNode.replaceChild(div, avatarContainer);
-  }
+function uploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
   
-  // Clear file input
-  document.getElementById('avatar-input').value = '';
+  console.log('Starting avatar upload...');
   
-  // Reset navbar avatars to default
-  const navbarAvatars = document.querySelectorAll('img[alt="Avatar"]');
-  navbarAvatars.forEach(img => {
-    const div = document.createElement('div');
-    div.className = 'w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center';
-    div.innerHTML = `<span class="text-white text-sm font-bold">{{ current_user.name[0].upper() if current_user.name else 'U' }}</span>`;
-    img.parentNode.replaceChild(div, img);
+  const formData = new FormData();
+  formData.append('avatar', file);
+  
+  fetch('/auth/upload-avatar', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => {
+    console.log('Response status:', response.status);
+    return response.json();
+  })
+  .then(data => {
+    console.log('Response data:', data);
+    if (data.success) {
+      // Update navbar avatars with new URL
+      const navbarAvatars = document.querySelectorAll('img[alt="Avatar"]');
+      console.log('Found navbar avatars:', navbarAvatars.length);
+      navbarAvatars.forEach(img => {
+        img.src = data.avatar_url + '?t=' + Date.now();
+      });
+      
+      // Also update any avatar images in navbar (including divs that should be replaced)
+      const allAvatarContainers = document.querySelectorAll('.w-8.h-8.rounded-full, .w-10.h-10.rounded-full');
+      console.log('Found all avatar containers:', allAvatarContainers.length);
+      allAvatarContainers.forEach(container => {
+        if (container.tagName === 'IMG') {
+          // Update existing img
+          container.src = data.avatar_url + '?t=' + Date.now();
+        } else {
+          // Replace div with img
+          const img = document.createElement('img');
+          img.src = data.avatar_url + '?t=' + Date.now();
+          img.alt = 'Avatar';
+          img.className = container.className;
+          container.parentNode.replaceChild(img, container);
+        }
+      });
+      
+      // Also try to find and update any navbar avatar by more specific selectors
+      const navbarButton = document.querySelector('button[x-data] .flex.items-center.space-x-3');
+      if (navbarButton) {
+        const avatarInButton = navbarButton.querySelector('.w-8.h-8.rounded-full, .w-8.h-8 img');
+        if (avatarInButton) {
+          if (avatarInButton.tagName === 'IMG') {
+            avatarInButton.src = data.avatar_url + '?t=' + Date.now();
+          } else {
+            const img = document.createElement('img');
+            img.src = data.avatar_url + '?t=' + Date.now();
+            img.alt = 'Avatar';
+            img.className = avatarInButton.className;
+            avatarInButton.parentNode.replaceChild(img, avatarInButton);
+          }
+        }
+      }
+      
+      // Update dropdown avatar too
+      const dropdownAvatar = document.querySelector('.absolute.right-0 .w-10.h-10.rounded-full, .absolute.right-0 .w-10.h-10 img');
+      if (dropdownAvatar) {
+        if (dropdownAvatar.tagName === 'IMG') {
+          dropdownAvatar.src = data.avatar_url + '?t=' + Date.now();
+        } else {
+          const img = document.createElement('img');
+          img.src = data.avatar_url + '?t=' + Date.now();
+          img.alt = 'Avatar';
+          img.className = dropdownAvatar.className;
+          dropdownAvatar.parentNode.replaceChild(img, dropdownAvatar);
+        }
+      }
+      
+      // Show success notification without reload
+      showFlashNotification(data.message, 'success');
+    } else {
+      // Show error notification without reload
+      showFlashNotification(data.message, 'error');
+      // Reset file input on error
+      input.value = '';
+    }
+  })
+  .catch(error => {
+    console.error('Upload error:', error);
+    showFlashNotification('Có lỗi xảy ra khi tải lên ảnh!', 'error');
+    // Reset file input on error
+    input.value = '';
   });
+}
+
+function removeAvatarPreview() {
+  // Call server to remove avatar
+  fetch('/auth/remove-avatar', {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Reset to default avatar in profile
+      const avatarContainer = document.querySelector('.rounded-full.h-24.w-24');
+      if (avatarContainer) {
+        // Replace img with default div
+        const div = document.createElement('div');
+        div.className = 'bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center h-24 w-24 mx-auto mb-4 shadow-lg';
+        div.innerHTML = `<span class="text-white text-3xl font-bold">{{ current_user.name[0].upper() if current_user.name else 'U' }}</span>`;
+        avatarContainer.parentNode.replaceChild(div, avatarContainer);
+      }
+      
+      // Clear file input
+      document.getElementById('avatar-input').value = '';
+      
+      // Reset navbar avatars to default
+      const navbarAvatars = document.querySelectorAll('img[alt="Avatar"]');
+      navbarAvatars.forEach(img => {
+        const div = document.createElement('div');
+        div.className = 'w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center';
+        div.innerHTML = `<span class="text-white text-sm font-bold">{{ current_user.name[0].upper() if current_user.name else 'U' }}</span>`;
+        img.parentNode.replaceChild(div, img);
+      });
+      
+      // Show success notification
+      showFlashNotification(data.message, 'success');
+    } else {
+      showFlashNotification(data.message, 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Remove avatar error:', error);
+    showFlashNotification('Có lỗi xảy ra khi xóa ảnh!', 'error');
+  });
+}
+
+function updateProfile(event) {
+  event.preventDefault();
+  
+  const formData = new FormData(event.target);
+  const newName = document.getElementById('name').value;
+  
+  fetch('/auth/profile', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      showFlashNotification(data.message, 'success');
+      
+      // Update name display in profile page
+      const nameDisplay = document.querySelector('h3.text-xl.font-bold');
+      if (nameDisplay) {
+        nameDisplay.textContent = newName;
+      }
+      
+      // Update name in navbar
+      updateNavbarName(newName);
+      
+      // Update navbar avatars if avatar was updated
+      if (data.avatar_url) {
+        const navbarAvatars = document.querySelectorAll('img[alt="Avatar"]');
+        navbarAvatars.forEach(img => {
+          img.src = data.avatar_url + '?t=' + Date.now();
+        });
+      }
+    } else {
+      showFlashNotification(data.message, 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Profile update error:', error);
+    showFlashNotification('Có lỗi xảy ra!', 'error');
+  });
+}
+
+function updateNavbarName(newName) {
+  // Update name in navbar elements
+  const navbarNames = document.querySelectorAll('.navbar-user-name');
+  navbarNames.forEach(element => {
+    element.textContent = newName;
+  });
+  
+  // Update avatar initials
+  const avatarInitials = document.querySelectorAll('.navbar-user-initial');
+  avatarInitials.forEach(element => {
+    element.textContent = newName.charAt(0).toUpperCase();
+  });
+}
+
+function showFlashNotification(message, category = 'success') {
+  // Create flash notification element
+  const flashDiv = document.createElement('div');
+  flashDiv.setAttribute('x-data', '{ show: true }');
+  flashDiv.setAttribute('x-show', 'show');
+  flashDiv.setAttribute('x-transition', '');
+  flashDiv.setAttribute('x-init', 'setTimeout(() => show = false, 2000)');
+  flashDiv.className = 'fixed top-0 right-4 z-[999999] space-y-2 pt-4';
+  flashDiv.style.cssText = 'z-index: 999999 !important; position: fixed !important; top: 0 !important; pointer-events: auto !important;';
+  
+  // Create notification content
+  const notification = document.createElement('div');
+  notification.className = `max-w-md px-4 py-3 rounded-xl shadow-2xl glass animate-slide-up
+    ${category === 'error' ? 'bg-red-500/90 text-white border-red-400/50' : 
+      category === 'warning' ? 'bg-yellow-500/90 text-white border-yellow-400/50' : 
+      'bg-green-500/90 text-white border-green-400/50'}`;
+  
+  notification.innerHTML = `
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <i class="fas ${category === 'error' ? 'fa-exclamation-circle' : 
+                        category === 'warning' ? 'fa-exclamation-triangle' : 
+                        'fa-check-circle'}"></i>
+        <span class="font-medium">${message}</span>
+      </div>
+      <button @click="show = false" class="ml-4 hover:opacity-75 transition-opacity">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `;
+  
+  flashDiv.appendChild(notification);
+  document.body.appendChild(flashDiv);
+  
+  // Auto remove after animation
+  setTimeout(() => {
+    flashDiv.remove();
+  }, 2500);
 }
 
 // Handle flash messages and refresh navbar if needed
