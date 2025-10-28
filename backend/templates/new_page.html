@@ -3,52 +3,73 @@
 {% block title %}Tạo Page Mới - {{ site.title }}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="w-full max-w-xl mx-auto">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700">
-            <div class="px-8 py-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-2xl">
-                <h2 class="text-2xl font-bold text-white dark:text-white">Tạo Page Mới cho "{{ site.title }}"</h2>
-            </div>
-            <div class="px-8 py-8">
-                <form id="newPageForm">
-                    <input type="hidden" id="site_id" value="{{ site.id }}">
-                    
-                    <!-- Tên Page -->
-                    <div class="mb-6">
-                        <label for="title" class="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Tên Page <span class="text-red-500">*</span></label>
-                        <input type="text" id="title" name="title" required
-                            class="block w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-400">
-                    </div>
-
-                    <!-- URL Dự kiến -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">URL Dự kiến</label>
-                        <div class="bg-slate-50 dark:bg-slate-700 rounded-xl border border-slate-300 dark:border-slate-600 px-4 py-3">
-                            <span id="urlPreview" class="text-slate-600 dark:text-slate-300 font-medium">{{ site.subdomain }}.pagemade.site/</span>
-                        </div>
-                    </div>
-
-                    <!-- Mô tả -->
-                    <div class="mb-6">
-                        <label for="description" class="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Mô tả</label>
-                        <textarea id="description" name="description" rows="2"
-                            class="block w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-400"></textarea>
-                    </div>
-                    
-                    <div class="flex gap-3 justify-between mt-8">
-                        <a href="{{ url_for('main.site_detail', site_id=site.id) }}"
-                            class="btn btn-secondary btn-secondary-md">
-                            <i class="fas fa-arrow-left"></i>Quay lại
-                        </a>
-                        <button type="submit"
-                            class="btn btn-primary btn-primary-md">
-                            <i class="fas fa-plus"></i>Tạo Page
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="min-h-screen py-8 px-4">
+  <div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">Tạo Page Mới</h1>
+      <p class="text-slate-600 dark:text-slate-400">Tạo page mới cho "{{ site.title }}"</p>
     </div>
+
+    <!-- Form Card -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
+      <form id="newPageForm" class="space-y-6">
+        <input type="hidden" id="site_id" value="{{ site.id }}">
+        
+        <!-- Tên Page -->
+        <div>
+          <label for="title" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+            Tên Page <span class="text-red-500">*</span>
+          </label>
+          <input type="text" 
+                 id="title" 
+                 name="title" 
+                 required
+                 placeholder="Ví dụ: Trang chủ, Giới thiệu, Sản phẩm"
+                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
+          <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+            Chú ý dấu cách
+          </p>
+        </div>
+
+        <!-- URL Dự kiến -->
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+            URL Dự kiến
+          </label>
+          <div class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 flex items-center">
+            <span id="urlPreview" class="text-gray-600 dark:text-gray-400">{{ site.subdomain }}.pagemade.site/</span>
+          </div>
+        </div>
+
+        <!-- Mô tả -->
+        <div>
+          <label for="description" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+            Mô tả
+          </label>
+          <textarea id="description" 
+                    name="description" 
+                    rows="2"
+                    placeholder="Mô tả ngắn về nội dung page này..."
+                    class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"></textarea>
+        </div>
+        
+        <!-- Submit Buttons -->
+        <div class="flex items-center justify-between pt-4">
+          <a href="{{ url_for('main.site_detail', site_id=site.id) }}" 
+             class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại
+          </a>
+          
+          <button type="submit"
+                  class="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-white transition rounded-lg bg-emerald-500 shadow-theme-xs hover:bg-emerald-600">
+            <span>Tạo Page</span>
+          </button>
+        </div>
+                </form>
+    </div>
+  </div>
 </div>
 {% endblock %}
 

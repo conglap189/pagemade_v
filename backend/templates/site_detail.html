@@ -192,18 +192,18 @@
                          x-transition:leave-end="opacity-0 scale-95"
                          @click.away="open = false"
                          class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-700 rounded-xl shadow-xl border border-slate-200 dark:border-slate-600 z-10">
-                      <a href="{{ url_for('main.editor', page_id=page.id) }}" 
-                         class="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-t-xl transition-colors">
-                        <i class="fas fa-edit w-4"></i>
-                        <span>Chỉnh sửa</span>
-                      </a>
+                       <a href="{{ url_for('main.editor', page_id=page.id) }}" 
+                          class="flex items-center gap-2 px-4 py-3 text-sm font-medium text-blue-600 transition rounded-lg hover:bg-blue-50 rounded-t-xl">
+                         <i class="fas fa-edit w-4"></i>
+                         <span>Chỉnh sửa</span>
+                       </a>
                       {% if page.is_published %}
-                        <a href="{{ url_for('main.view_page', subdomain=site.subdomain, page_id=page.id) }}" 
-                           target="_blank"
-                           class="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
-                          <i class="fas fa-external-link-alt w-4"></i>
-                          <span>Xem trực tiếp</span>
-                        </a>
+                         <a href="{{ url_for('main.view_page', subdomain=site.subdomain, page_id=page.id) }}" 
+                            target="_blank"
+                            class="flex items-center gap-2 px-4 py-3 text-sm font-medium text-emerald-600 transition rounded-lg hover:bg-emerald-50">
+                           <i class="fas fa-external-link-alt w-4"></i>
+                           <span>Xem trực tiếp</span>
+                         </a>
                       {% endif %}
                       <div class="border-t border-slate-200 dark:border-slate-600"></div>
                       <button data-page-id="{{ page.id }}" 
@@ -241,7 +241,7 @@
                 <!-- Actions -->
                 <div class="flex space-x-3">
                   <a href="{{ url_for('main.editor', page_id=page.id) }}" 
-                     class="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-medium text-white shadow-theme-xs transition hover:bg-emerald-600 flex-1 justify-center">
+                     class="inline-flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-blue-600 transition hover:bg-blue-50 flex-1 justify-center">
                     <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path fill-rule="evenodd" clip-rule="evenodd" d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579ZM11.3787 5.79289L3 14.1716V17H5.82842L14.2071 8.62132L11.3787 5.79289Z" fill="currentColor"/>
                     </svg>
