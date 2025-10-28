@@ -13,8 +13,8 @@
                 <div class="card-body">
                     <!-- Google OAuth Button -->
                     <div class="d-grid gap-2 mb-4">
-                        <a href="{{ url_for('auth.google_login') }}" class="btn btn-danger btn-lg">
-                            <i class="fab fa-google me-2"></i>Đăng ký với Google
+                        <a href="{{ url_for('auth.google_login') }}" class="btn btn-light w-full justify-center">
+                            <i class="fab fa-google text-red-500"></i>Đăng ký với Google
                         </a>
                     </div>
                     
@@ -61,8 +61,8 @@
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-user-plus me-2"></i>Tạo tài khoản
+                            <button type="submit" class="btn btn-success btn-primary-md btn-full">
+                                <i class="fas fa-user-plus"></i>Tạo tài khoản
                             </button>
                         </div>
                     </form>
@@ -71,8 +71,8 @@
                     
                     <div class="text-center">
                         <p class="text-muted">Đã có tài khoản?</p>
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-md btn-full">
+                            <i class="fas fa-sign-in-alt"></i>Đăng nhập
                         </a>
                     </div>
                 </div>

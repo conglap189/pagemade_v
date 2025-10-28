@@ -131,6 +131,123 @@
       background: rgba(0, 0, 0, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
+
+    /* TailAdmin Button Styles */
+    .btn {
+      @apply inline-flex items-center gap-2 text-sm font-medium transition rounded-lg;
+    }
+    
+    /* Primary Buttons */
+    .btn-primary {
+      @apply bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600;
+    }
+    
+    .btn-primary-sm {
+      @apply px-4 py-3;
+    }
+    
+    .btn-primary-md {
+      @apply px-5 py-3.5;
+    }
+    
+    /* Secondary Buttons */
+    .btn-secondary {
+      @apply bg-white text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03];
+    }
+    
+    .btn-secondary-sm {
+      @apply px-4 py-3;
+    }
+    
+    .btn-secondary-md {
+      @apply px-5 py-3.5;
+    }
+    
+    /* Success Buttons */
+    .btn-success {
+      @apply bg-emerald-500 text-white shadow-theme-xs hover:bg-emerald-600;
+    }
+    
+    /* Danger Buttons */
+    .btn-danger {
+      @apply bg-red-500 text-white shadow-theme-xs hover:bg-red-600;
+    }
+    
+    /* Warning Buttons */
+    .btn-warning {
+      @apply bg-amber-500 text-white shadow-theme-xs hover:bg-amber-600;
+    }
+    
+    /* Light Buttons */
+    .btn-light {
+      @apply bg-white text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03];
+    }
+    
+    /* Outline Buttons */
+    .btn-outline-primary {
+      @apply bg-transparent text-brand-500 ring-1 ring-inset ring-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10;
+    }
+    
+    .btn-outline-secondary {
+      @apply bg-transparent text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03];
+    }
+    
+    /* Ghost Buttons */
+    .btn-ghost {
+      @apply bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.05];
+    }
+    
+    /* Button Sizes */
+    .btn-sm {
+      @apply px-3 py-2 text-xs;
+    }
+    
+    .btn-md {
+      @apply px-4 py-2.5 text-sm;
+    }
+    
+    .btn-lg {
+      @apply px-6 py-3 text-base;
+    }
+    
+    .btn-xl {
+      @apply px-8 py-4 text-lg;
+    }
+    
+    /* Full Width */
+    .btn-full {
+      @apply w-full justify-center;
+    }
+    
+    /* Custom brand color (if not defined in tailwind config) */
+    .bg-brand-500 {
+      background-color: #3b82f6;
+    }
+    
+    .hover\:bg-brand-600:hover {
+      background-color: #2563eb;
+    }
+    
+    .text-brand-500 {
+      color: #3b82f6;
+    }
+    
+    .ring-brand-500 {
+      --tw-ring-color: #3b82f6;
+    }
+    
+    .hover\:bg-brand-50:hover {
+      background-color: #eff6ff;
+    }
+    
+    .dark .hover\:bg-brand-500\/10:hover {
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Shadow theme */
+    .shadow-theme-xs {
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
   </style>
 </head>
 

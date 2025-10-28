@@ -17,8 +17,8 @@
           </a>
           <div class="h-6 w-px bg-slate-300 dark:bg-slate-600"></div>
           <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
-              <span class="text-white text-lg font-bold">{{ site.title[0].upper() }}</span>
+            <div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center">
+              <span class="text-slate-600 dark:text-slate-300 text-lg font-bold">{{ site.title[0].upper() }}</span>
             </div>
             <div>
               <h1 class="text-2xl font-bold text-slate-800 dark:text-white">{{ site.title }}</h1>
@@ -29,13 +29,15 @@
         
         <div class="flex items-center space-x-3">
           <a href="{{ url_for('main.new_page', site_id=site.id) }}" 
-             class="inline-flex items-center px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-            <i class="fas fa-plus mr-2"></i>
+             class="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-medium text-white shadow-theme-xs transition hover:bg-emerald-600">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M10 3C10.5523 3 11 3.44772 11 4V9H16C16.5523 9 17 9.44772 17 10C17 10.5523 16.5523 11 16 11H11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11H4C3.44772 11 3 10.5523 3 10C3 9.44772 3.44772 9 4 9H9V4C9 3.44772 9.44772 3 10 3Z" fill="currentColor"/>
+            </svg>
             Trang mới
           </a>
           <button onclick="deleteSite()" 
-                  class="inline-flex items-center px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
-            <i class="fas fa-trash mr-2"></i>
+                  class="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-3 text-sm font-medium text-white shadow-theme-xs transition hover:bg-red-600">
+            <i class="fas fa-trash w-4"></i>
             Xóa site
           </button>
         </div>
@@ -45,7 +47,7 @@
       <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         {% if site.subdomain %}
           <div class="flex items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-            <i class="fas fa-link text-blue-500 mr-3"></i>
+            <i class="fas fa-link text-gray-500 mr-3"></i>
             <div>
               <p class="text-sm text-slate-600 dark:text-slate-400">URL</p>
               <a href="http://{{ site.subdomain }}.yourdomain.com" target="_blank" 
@@ -57,7 +59,7 @@
         {% endif %}
         
         <div class="flex items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-          <i class="fas fa-calendar text-green-500 mr-3"></i>
+          <i class="fas fa-calendar text-gray-500 mr-3"></i>
           <div>
             <p class="text-sm text-slate-600 dark:text-slate-400">Ngày tạo</p>
             <p class="text-slate-800 dark:text-slate-200 font-medium">{{ site.created_at.strftime('%d/%m/%Y') }}</p>
@@ -65,7 +67,7 @@
         </div>
         
         <div class="flex items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-          <i class="fas fa-file-alt text-purple-500 mr-3"></i>
+          <i class="fas fa-file-alt text-gray-500 mr-3"></i>
           <div>
             <p class="text-sm text-slate-600 dark:text-slate-400">Tổng trang</p>
             <p class="text-slate-800 dark:text-slate-200 font-medium">{{ site.pages|length }}</p>
@@ -143,8 +145,10 @@
             <p class="text-slate-600 dark:text-slate-400 mt-1">Quản lý và chỉnh sửa các trang của bạn</p>
           </div>
           <a href="{{ url_for('main.new_page', site_id=site.id) }}" 
-             class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all">
-            <i class="fas fa-plus mr-2"></i>
+             class="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-white transition rounded-lg bg-emerald-500 shadow-theme-xs hover:bg-emerald-600">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M10 3C10.5523 3 11 3.44772 11 4V9H16C16.5523 9 17 9.44772 17 10C17 10.5523 16.5523 11 16 11H11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11H4C3.44772 11 3 10.5523 3 10C3 9.44772 3.44772 9 4 9H9V4C9 3.44772 9.44772 3 10 3Z" fill="currentColor"/>
+            </svg>
             Thêm trang
           </a>
         </div>
@@ -219,11 +223,11 @@
                 <!-- Page Meta -->
                 <div class="space-y-2 mb-4 text-xs text-slate-500 dark:text-slate-400">
                   <div class="flex items-center">
-                    <i class="fas fa-layer-group w-4 mr-2"></i>
+                    <i class="fas fa-layer-group w-4 mr-2 text-gray-500"></i>
                     <span>Template: {{ page.template|title }}</span>
                   </div>
                   <div class="flex items-center">
-                    <i class="fas fa-clock w-4 mr-2"></i>
+                    <i class="fas fa-clock w-4 mr-2 text-gray-500"></i>
                     <span>Cập nhật {{ page.updated_at.strftime('%d/%m/%Y') }}</span>
                   </div>
                 </div>
@@ -231,21 +235,30 @@
                 <!-- Actions -->
                 <div class="flex space-x-3">
                   <a href="{{ url_for('main.editor', page_id=page.id) }}" 
-                     class="flex-1 text-center px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-medium">
-                    <i class="fas fa-edit mr-2"></i>Chỉnh sửa
+                     class="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-medium text-white shadow-theme-xs transition hover:bg-emerald-600 flex-1 justify-center">
+                    <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579ZM11.3787 5.79289L3 14.1716V17H5.82842L14.2071 8.62132L11.3787 5.79289Z" fill="currentColor"/>
+                    </svg>
+                    Chỉnh sửa
                   </a>
-                  {% if page.is_published %}
-                    <a href="{{ url_for('main.view_page', subdomain=site.subdomain, page_id=page.id) }}" 
-                       target="_blank"
-                       class="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
-                      <i class="fas fa-eye"></i>
-                    </a>
-                  {% else %}
-                    <button data-page-id="{{ page.id }}" 
-                            class="publish-page-btn px-4 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                      <i class="fas fa-upload"></i>
-                    </button>
-                  {% endif %}
+                      {% if page.is_published %}
+                        <a href="{{ url_for('main.view_page', subdomain=site.subdomain, page_id=page.id) }}" 
+                           target="_blank"
+                           class="inline-flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                           title="Xem trực tiếp">
+                          <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10 12C11.1046 12 12 11.1046 12 10C12 8.89543 11.1046 8 10 8C8.89543 8 8 8.89543 8 10C8 11.1046 8.89543 12 10 12ZM10 14C12.2091 14 14 12.2091 14 10C14 7.79086 12.2091 6 10 6C7.79086 6 6 7.79086 6 10C6 12.2091 7.79086 14 10 14ZM10 16C13.3137 16 16 13.3137 16 10C16 6.68629 13.3137 4 10 4C6.68629 4 4 6.68629 4 10C4 13.3137 6.68629 16 10 16Z" fill="currentColor"/>
+                          </svg>
+                        </a>
+                      {% else %}
+                        <button data-page-id="{{ page.id }}" 
+                                class="publish-page-btn group inline-flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-amber-600 dark:text-amber-400 transition hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                                title="Xuất bản">
+                          <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M3 17C3 16.4477 3.44772 16,4 16H16C16.5523 16,17 16.4477 17 17C17 17.5523 16.5523 18,16 18H4C3.44772 18 3,17.5523 3 17ZM6.29289 6.70711C5.90237 6.31658 5.90237 5.68342 6.29289 5.29289L9.29289 2.29289C9.68342 1.90237 10.3166 1.90237 10.7071 2.29289L13.7071 5.29289C14.0976 5.68342 14.0976 6.31658 13.7071 6.70711C13.3166 7.09763 12.6834 7.09763 12.2929 6.70711L11 5.41421V12C11 12.5523 10.5523 13,10 13C9.44772 13 9,12.5523 9 12V5.41421L7.70711 6.70711C7.31658 7.09763 6.68342 7.09763 6.29289 6.70711Z" fill="currentColor"/>
+                          </svg>
+                        </button>
+                      {% endif %}
                 </div>
               </div>
             {% endfor %}
@@ -261,8 +274,10 @@
               Tạo trang đầu tiên để bắt đầu xây dựng nội dung cho website của bạn.
             </p>
             <a href="{{ url_for('main.new_page', site_id=site.id) }}" 
-               class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-medium text-lg">
-              <i class="fas fa-plus mr-3"></i>
+               class="inline-flex items-center gap-2 px-6 py-4 text-base font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+              <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M10 3C10.5523 3 11 3.44772 11 4V9H16C16.5523 9 17 9.44772 17 10C17 10.5523 16.5523 11 16 11H11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11H4C3.44772 11 3 10.5523 3 10C3 9.44772 3.44772 9 4 9H9V4C9 3.44772 9.44772 3 10 3Z" fill="currentColor"/>
+              </svg>
               Tạo trang đầu tiên
             </a>
           </div>
