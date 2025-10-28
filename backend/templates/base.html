@@ -48,6 +48,7 @@
             'slide-up': 'slideUp 0.3s ease-out',
             'bounce-gentle': 'bounceGentle 2s infinite',
           },
+
           keyframes: {
             fadeIn: {
               '0%': { opacity: '0' },
@@ -84,6 +85,55 @@
   {% block styles %}{% endblock %}
   
   <style>
+    /* x-cloak for Alpine.js */
+    [x-cloak] { display: none !important; }
+    
+    /* Smooth dropdown animations */
+    [x-transition] {
+      will-change: transform, opacity;
+    }
+    
+    /* Optimize dropdown performance */
+    .dropdown-menu {
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      perspective: 1000px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Hardware acceleration for smooth animations */
+    .dropdown-menu * {
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+    
+    /* Specific navbar dropdown optimization */
+    [x-data] .dropdown-menu {
+      transform: translate3d(0, 0, 0);
+      -webkit-transform: translate3d(0, 0, 0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      -webkit-perspective: 1000;
+      perspective: 1000;
+    }
+    
+    /* Smooth navbar transitions */
+    [x-data] [x-transition] {
+      -webkit-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Simple navbar fix */
+    .navbar-user-menu {
+      position: relative;
+    }
+    
+    .navbar-user-menu .dropdown-menu {
+      right: 0;
+      transform-origin: top right;
+    }
+    
     /* Smooth scrollbar */
     ::-webkit-scrollbar {
       width: 8px;
