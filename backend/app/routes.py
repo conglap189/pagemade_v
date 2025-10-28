@@ -447,6 +447,41 @@ def profile():
         
         try:
             current_user.name = name
+            
+            # Handle avatar upload
+            if 'avatar' in request.files and request.files['avatar'].filename:
+                file = request.files['avatar']
+                
+                # Check file extension
+                allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+                if not file.filename or not file.filename.lower().endswith(tuple(f'.{ext}' for ext in allowed_extensions)):
+                    flash('Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF, WEBP)!', 'error')
+                    return render_template('auth/profile.html')
+                
+                # Check file size (max 5MB)
+                if len(file.read()) > 5 * 1024 * 1024:
+                    flash('Kích thước file không được vượt quá 5MB!', 'error')
+                    return render_template('auth/profile.html')
+                
+                # Reset file pointer after reading
+                file.seek(0)
+                
+                # Create uploads directory if it doesn't exist
+                upload_dir = os.path.join(os.path.dirname(current_app.root_path), 'static', 'uploads', 'avatars')
+                os.makedirs(upload_dir, exist_ok=True)
+                
+                # Generate unique filename
+                filename = secure_filename(file.filename or "")
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                file_path = os.path.join(upload_dir, unique_filename)
+                
+                # Save file
+                file.save(file_path)
+                
+                # Update user avatar URL
+                avatar_url = url_for('static', filename=f'uploads/avatars/{unique_filename}')
+                current_user.avatar_url = avatar_url
+            
             db.session.commit()
             flash('Cập nhật thông tin thành công!', 'success')
         except Exception as e:
@@ -471,7 +506,7 @@ def upload_avatar():
     
     # Check file extension
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-    if not file.filename.lower().endswith(tuple(f'.{ext}' for ext in allowed_extensions)):
+    if not file.filename or not file.filename.lower().endswith(tuple(f'.{ext}' for ext in allowed_extensions)):
         flash('Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF, WEBP)!', 'error')
         return redirect(url_for('auth.profile'))
     
@@ -489,7 +524,7 @@ def upload_avatar():
         os.makedirs(upload_dir, exist_ok=True)
         
         # Generate unique filename
-        filename = secure_filename(file.filename)
+        filename = secure_filename(file.filename or "")
         unique_filename = f"{uuid.uuid4().hex}_{filename}"
         file_path = os.path.join(upload_dir, unique_filename)
         

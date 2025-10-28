@@ -3,12 +3,21 @@
 {% block title %}Thông tin cá nhân - PageMade{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12">
-  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen">
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">Thông tin cá nhân</h1>
-      <p class="text-slate-600 dark:text-slate-400">Quản lý thông tin tài khoản và cài đặt của bạn</p>
+    <div class="mb-12">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-4xl font-bold text-slate-800 dark:text-white mb-2">
+            Thông tin cá nhân
+          </h1>
+          <p class="text-slate-600 dark:text-slate-400 text-lg">
+            Quản lý thông tin tài khoản và cài đặt của bạn
+          </p>
+        </div>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -16,8 +25,8 @@
       <div class="lg:col-span-2">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
           <div class="flex items-center mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
-              <i class="fas fa-user text-white text-xl"></i>
+            <div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center mr-4">
+              <i class="fas fa-user text-slate-600 dark:text-slate-400 text-xl"></i>
             </div>
             <div>
               <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Thông tin cá nhân</h2>
@@ -25,7 +34,7 @@
             </div>
           </div>
           
-          <form method="POST" class="space-y-6">
+          <form method="POST" class="space-y-6" enctype="multipart/form-data">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -76,16 +85,16 @@
                 <div class="flex items-center px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-100 dark:bg-slate-600">
                   <i class="fas fa-calendar text-green-500 mr-3"></i>
                   <span class="text-slate-700 dark:text-slate-300">
-                    {{ current_user.created_at.strftime('%d/%m/%Y') if current_user.created_at }}
+                    {{ current_user.created_at.strftime('%b %d, %Y') if current_user.created_at }}
                   </span>
                 </div>
               </div>
             </div>
             
             <div class="pt-6 border-t border-slate-200 dark:border-slate-700">
-              <button type="submit" 
-                      class="btn btn-primary btn-custom">
-                <i class="fas fa-save"></i>
+<button type="submit" 
+                       class="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-emerald-600 transition rounded-lg hover:bg-emerald-50">
+                <i class="fas fa-save me-2"></i>
                 Cập nhật thông tin
               </button>
             </div>
@@ -108,10 +117,34 @@
           <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-1">{{ current_user.name }}</h3>
           <p class="text-slate-600 dark:text-slate-400 text-sm">{{ current_user.email }}</p>
           
-          <button class="btn btn-outline-primary mt-4" style="font-size: 0.875rem;">
-            <i class="fas fa-camera"></i>
-            Thay đổi ảnh đại diện
-          </button>
+          <input type="file" 
+                 id="avatar-input" 
+                 name="avatar" 
+                 accept="image/*" 
+                 class="hidden"
+                 onchange="previewAvatar(this)">
+          
+          <div class="space-y-2 mt-4">
+<button type="button" 
+                     onclick="document.getElementById('avatar-input').click()"
+                     class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-blue-600 transition rounded-lg hover:bg-blue-50 w-full">
+              <svg class="fill-current" width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" fill="currentColor"/>
+              </svg>
+              Thay đổi ảnh đại diện
+            </button>
+            
+            {% if current_user.avatar_url and not current_user.google_id %}
+<button type="button" 
+                       onclick="removeAvatarPreview()"
+                       class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-600 transition rounded-lg hover:bg-red-50 w-full">
+                <svg class="fill-current" width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" fill="currentColor"/>
+                </svg>
+                Xóa ảnh đại diện
+              </button>
+            {% endif %}
+          </div>
         </div>
         
         <!-- Account Actions -->
@@ -122,9 +155,11 @@
           </h3>
           <div class="space-y-3">
             {% if current_user.password_hash %}
-              <a href="{{ url_for('auth.change_password') }}" 
-                 class="btn btn-light w-full justify-start" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">
-                <i class="fas fa-key" style="color: #d97706;"></i>
+<a href="{{ url_for('auth.change_password') }}" 
+                  class="inline-flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-amber-600 transition rounded-lg hover:bg-amber-50">
+                <svg class="fill-current" width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" fill="currentColor"/>
+                </svg>
                 <span class="font-medium">Đổi mật khẩu</span>
               </a>
             {% else %}
@@ -135,16 +170,18 @@
             {% endif %}
             
             {% if current_user.is_admin() %}
-              <a href="{{ url_for('auth.admin_users') }}" 
-                 class="btn btn-light w-full justify-start" style="background: rgba(239, 68, 68, 0.1); color: #dc2626;">
-                <i class="fas fa-users-cog" style="color: #dc2626;"></i>
+<a href="{{ url_for('auth.admin_users') }}" 
+                  class="inline-flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-purple-600 transition rounded-lg hover:bg-purple-50">
+                <svg class="fill-current" width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" fill="currentColor"/>
+                </svg>
                 <span class="font-medium">Quản lý Users</span>
               </a>
             {% endif %}
             
-            <a href="{{ url_for('auth.logout') }}" 
-               class="btn btn-light w-full justify-start">
-              <i class="fas fa-sign-out-alt"></i>
+<a href="{{ url_for('auth.logout') }}" 
+                class="inline-flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-red-600 transition rounded-lg hover:bg-red-50">
+              <i class="fas fa-sign-out-alt w-4"></i>
               <span class="font-medium">Đăng xuất</span>
             </a>
           </div>
@@ -176,9 +213,87 @@
               </div>
             </div>
           {% endif %}
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+// Avatar preview functions
+function previewAvatar(input) {
+  const file = input.files[0];
+  if (file) {
+    // Preview image before upload
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      // Update avatar preview in profile
+      const avatarContainer = document.querySelector('.rounded-full.h-24.w-24, .bg-gradient-to-br.h-24.w-24');
+      if (avatarContainer) {
+        if (avatarContainer.tagName === 'IMG') {
+          avatarContainer.src = event.target.result;
+        } else {
+          // Replace div with img
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          img.alt = 'Avatar';
+          img.className = 'rounded-full h-24 w-24 mx-auto mb-4 border-4 border-slate-200 dark:border-slate-600';
+          avatarContainer.parentNode.replaceChild(img, avatarContainer);
+        }
+      }
+      
+      // Update navbar avatars
+      const navbarAvatars = document.querySelectorAll('img[alt="Avatar"]');
+      navbarAvatars.forEach(img => {
+        img.src = event.target.result;
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function removeAvatarPreview() {
+  // Reset to default avatar
+  const avatarContainer = document.querySelector('.rounded-full.h-24.w-24');
+  if (avatarContainer) {
+    // Replace img with default div
+    const div = document.createElement('div');
+    div.className = 'bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center h-24 w-24 mx-auto mb-4 shadow-lg';
+    div.innerHTML = `<span class="text-white text-3xl font-bold">{{ current_user.name[0].upper() if current_user.name else 'U' }}</span>`;
+    avatarContainer.parentNode.replaceChild(div, avatarContainer);
+  }
+  
+  // Clear file input
+  document.getElementById('avatar-input').value = '';
+  
+  // Reset navbar avatars to default
+  const navbarAvatars = document.querySelectorAll('img[alt="Avatar"]');
+  navbarAvatars.forEach(img => {
+    const div = document.createElement('div');
+    div.className = 'w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center';
+    div.innerHTML = `<span class="text-white text-sm font-bold">{{ current_user.name[0].upper() if current_user.name else 'U' }}</span>`;
+    img.parentNode.replaceChild(div, img);
+  });
+}
+
+// Handle flash messages and refresh navbar if needed
+document.addEventListener('DOMContentLoaded', function() {
+  // Check for success message and refresh navbar avatars
+  const flashMessages = document.querySelectorAll('.alert, .flash');
+  flashMessages.forEach(msg => {
+    if (msg.textContent.includes('thành công') && msg.textContent.includes('ảnh')) {
+      // Force refresh navbar avatars after a delay
+      setTimeout(() => {
+        const navbarAvatars = document.querySelectorAll('img[alt="Avatar"]');
+        navbarAvatars.forEach(img => {
+          // Add timestamp to prevent caching
+          const src = img.src;
+          img.src = src.includes('?') ? src : src + '?t=' + Date.now();
+        });
+      }, 500);
+    }
+  });
+});
+</script>
 {% endblock %}

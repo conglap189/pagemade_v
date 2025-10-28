@@ -248,6 +248,17 @@
     .shadow-theme-xs {
       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
+    
+    /* Loading spinner animation */
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
   </style>
 </head>
 
