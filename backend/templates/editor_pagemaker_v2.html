@@ -422,6 +422,13 @@
             padding: 12px;
         }
         
+        /* Blocks container - minimal styling, let plugin handle the rest */
+        #blocks-container {
+            display: block !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+        
         /* ===== CANVAS AREA ===== */
         #canvas-area {
             flex: 1;
@@ -476,12 +483,79 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
         
-        /* ===== RIGHT PANEL (Style Manager) ===== */
+        /* ===== RIGHT PANEL (Styles + Properties) ===== */
         #right-panel {
-            display: none !important; /* Hidden - Style Manager moved to left panel */
+            width: 320px;
+            background: white;
+            border-left: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         
-        /* ===== GrapesJS Custom Styles ===== */
+        .dark #right-panel {
+            background: #1f2937;
+            border-left: 1px solid #374151;
+        }
+        
+        /* Tabs for Styles & Properties */
+        .right-panel-tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .dark .right-panel-tabs {
+            background: #111827;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .right-panel-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .right-panel-tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .right-panel-tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+        }
+        
+        .dark .right-panel-tab.active {
+            background: #1f2937;
+        }
+        
+        .right-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+            padding: 12px;
+        }
+        
+        .right-panel-content.active {
+            display: block;
+        }
+        
+        /* Style container inside right panel */
+        #styles-tab #styles-container,
+        #properties-tab #traits-container {
+            padding: 0;
+        }
+        
+        /* ===== PageMaker Custom Styles ===== */
         .gjs-one-bg {
             background-color: #f9fafb;
         }
@@ -504,7 +578,7 @@
             color: #667eea;
         }
         
-        /* ✅ Hide GrapesJS default panels/toolbars */
+        /* ✅ Hide PageMaker default panels/toolbars */
         .gjs-pn-panels {
             display: none !important;
         }
@@ -768,55 +842,34 @@
     <div id="editor-wrapper">
         <!-- Left Sidebar -->
         <div id="left-sidebar">
-            <button class="sidebar-btn active" data-panel="blocks" title="Blocks">
+            <button class="sidebar-btn" data-panel="blocks" title="Blocks">
                 <i class="fas fa-th-large"></i>
             </button>
             
-            <button class="sidebar-btn" data-panel="layers" title="Layers">
+            <button class="sidebar-btn" data-panel="layers" title="Layers" style="display: none;">
                 <i class="fas fa-layer-group"></i>
-            </button>
-            
-            <button class="sidebar-btn" data-panel="styles" title="Styles">
-                <i class="fas fa-palette"></i>
-            </button>
-            
-            <button class="sidebar-btn" data-panel="assets" title="Assets" style="display: none;">
-                <i class="fas fa-image"></i>
-            </button>
-            
-            <button class="sidebar-btn" data-panel="pages" title="Pages" style="display: none;">
-                <i class="fas fa-file-alt"></i>
-                <span class="sidebar-badge">1</span>
             </button>
             
             <div style="flex: 1;"></div>
             
-            <button class="sidebar-btn" data-panel="settings" title="Settings">
+            <button class="sidebar-btn" data-panel="settings" title="Settings" style="display: none;">
                 <i class="fas fa-cog"></i>
             </button>
             
-            <button class="sidebar-btn" data-panel="help" title="Help">
+            <button class="sidebar-btn" data-panel="help" title="Help" style="display: none;">
                 <i class="fas fa-question-circle"></i>
             </button>
         </div>
         
-        <!-- Left Panel (Blocks, Layers, Styles) -->
+        <!-- Left Panel (Blocks only) -->
         <div id="left-panel" class="active">
             <div class="panel-header">
                 <div class="panel-title">Blocks</div>
                 <div class="panel-subtitle">Kéo & thả để thêm vào trang</div>
             </div>
             
-            <div class="panel-content" id="blocks-container" style="display: block;">
-                <!-- GrapesJS blocks will be injected here -->
-            </div>
-            
-            <div class="panel-content" id="layers-container" style="display: none;">
-                <!-- GrapesJS layers will be injected here -->
-            </div>
-            
-            <div class="panel-content" id="styles-container" style="display: none;">
-                <!-- GrapesJS style manager will be injected here -->
+            <div class="panel-content" id="blocks-container">
+                <!-- PageMaker blocks will be injected here -->
             </div>
         </div>
         
@@ -825,19 +878,27 @@
             <div id="gjs"></div>
         </div>
         
-        <!-- Right Panel (Style Manager) -->
+        <!-- Right Panel (Styles + Properties with Tabs) -->
         <div id="right-panel">
-            <div class="panel-header">
-                <div class="panel-title">Style Manager</div>
-                <div class="panel-subtitle">Tùy chỉnh giao diện</div>
+            <div class="right-panel-tabs">
+                <button class="right-panel-tab active" data-tab="styles">
+                    <i class="fas fa-palette"></i> Styles
+                </button>
+                <button class="right-panel-tab" data-tab="properties">
+                    <i class="fas fa-cog"></i> Properties
+                </button>
             </div>
             
-            <div class="panel-content" id="styles-container">
-                <!-- GrapesJS style manager will be injected here -->
+            <div class="right-panel-content active" id="styles-tab">
+                <div id="styles-container">
+                    <!-- PageMaker style manager will be injected here -->
+                </div>
             </div>
             
-            <div class="panel-content" id="traits-container">
-                <!-- GrapesJS traits will be injected here -->
+            <div class="right-panel-content" id="properties-tab">
+                <div id="traits-container">
+                    <!-- PageMaker properties panel will be injected here -->
+                </div>
             </div>
         </div>
     </div>
@@ -845,20 +906,16 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- PageMaker JS (includes GrapesJS core) -->
+    <!-- PageMaker Core Engine -->
     <script src="{{ url_for('static', filename='pagemaker/pagemaker.min.js') }}"></script>
     
-    <!-- GrapesJS Tailwind Plugin - Try multiple CDN sources -->
+    <!-- PageMaker Tailwind Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/grapesjs-tailwind@1/dist/grapesjs-tailwind.min.js"></script>
-    
-    <!-- Custom Blocks Library -->
-    <script src="{{ url_for('static', filename='pagemaker/custom-blocks.js') }}"></script>
-    <script src="{{ url_for('static', filename='pagemaker/tailwind-blocks.js') }}"></script>
     
     <script>
         console.log('🚀 PageMaker Editor v2 initializing...');
         
-        // Dark mode toggle
+        // ===== DARK MODE TOGGLE =====
         const darkModeToggle = document.getElementById('darkModeToggle');
         const html = document.documentElement;
         const currentTheme = localStorage.getItem('theme') || 'light';
@@ -869,7 +926,67 @@
             localStorage.setItem('theme', newTheme);
         });
         
-        // Page data from backend
+        // ===== LEFT SIDEBAR TOGGLE (Initialize before editor) =====
+        const leftSidebar = document.getElementById('left-sidebar');
+        const leftPanel = document.getElementById('left-panel');
+        const sidebarButtons = leftSidebar.querySelectorAll('.sidebar-btn');
+        
+        sidebarButtons.forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const panel = btn.getAttribute('data-panel');
+                const isActive = btn.classList.contains('active');
+                
+                // If clicking same button - deactivate it
+                if (isActive) {
+                    btn.classList.remove('active');
+                    leftPanel.classList.remove('active');
+                } else {
+                    // Activate new button
+                    sidebarButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    leftPanel.classList.add('active');
+                    
+                    // Render blocks if this is blocks panel
+                    if (panel === 'blocks' && window.editor) {
+                        setTimeout(() => {
+                            const blocksContainer = document.getElementById('blocks-container');
+                            const blockManager = window.editor.BlockManager;
+                            const blocksEl = blockManager.render();
+                            
+                            if (blocksContainer && blocksEl) {
+                                blocksContainer.innerHTML = '';
+                                blocksContainer.appendChild(blocksEl);
+                            }
+                        }, 50);
+                    }
+                }
+            });
+        });
+        
+
+        
+        // ===== RIGHT PANEL TABS (Initialize before editor) =====
+        const rightPanelTabs = document.querySelectorAll('.right-panel-tab');
+        const rightPanelContents = document.querySelectorAll('.right-panel-content');
+        
+        rightPanelTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                
+                // Remove active from all tabs and contents
+                rightPanelTabs.forEach(t => t.classList.remove('active'));
+                rightPanelContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            });
+        });
+        
+        // ===== PAGE DATA =====
         const PAGE_ID = {{ page.id }};
         const SITE_ID = {{ page.site_id }};
         const PAGE_TITLE = "{{ page.title }}";
@@ -880,7 +997,7 @@
         const PUBLISH_URL = `/api/pages/${PAGE_ID}/publish`;
         const PREVIEW_URL = `/api/pages/${PAGE_ID}/preview`;
         
-        // Initialize PageMaker (formerly GrapesJS)
+        // Initialize PageMaker Editor
         const editor = pagemaker.init({
             container: '#gjs',
             height: '100%',
@@ -894,61 +1011,537 @@
             storageManager: false,
             
             // Plugins
-            plugins: ['gjs-preset-webpage', 'grapesjs-tailwind'],
+            plugins: ['grapesjs-tailwind'],
             pluginsOpts: {
-                'gjs-preset-webpage': {
-                    blocksBasicOpts: {
-                        blocks: ['column1', 'column2', 'column3', 'text', 'link', 'image', 'video', 'map'],
-                        flexGrid: true,
-                    },
-                    blocks: ['link-block', 'quote', 'text-basic'],
-                },
                 'grapesjs-tailwind': {
-                    // Custom Tailwind config for PageMaker
-                    config: {
-                        theme: {
-                            extend: {
-                                colors: {
-                                    'pagemaker': {
-                                        50: '#f0f0ff',
-                                        500: '#667eea',
-                                        900: '#312e81',
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    openCategory: 'Blog', // Default open category
+                    loadBlocks: true, // Load all Tailwind blocks
                 }
             },
             
             // Block Manager
             blockManager: {
                 appendTo: '#blocks-container',
+                // ✅ Sort blocks by category
+                custom: true,
             },
             
-            // Style Manager
+            // Style Manager - Complete CSS Properties
             styleManager: {
                 appendTo: '#styles-container',
                 sectors: [
                     {
-                        name: 'Dimension',
+                        name: 'Layout',
                         open: false,
-                        buildProps: ['width', 'min-height', 'padding', 'margin'],
+                        buildProps: ['display', 'flex-direction', 'justify-content', 'align-items', 'align-content', 'flex-wrap', 'gap', 'float', 'clear', 'overflow', 'overflow-x', 'overflow-y'],
+                        properties: [
+                            {
+                                type: 'select',
+                                property: 'display',
+                                default: 'block',
+                                options: [
+                                    { value: 'block', name: 'Block' },
+                                    { value: 'inline', name: 'Inline' },
+                                    { value: 'inline-block', name: 'Inline Block' },
+                                    { value: 'flex', name: 'Flex' },
+                                    { value: 'inline-flex', name: 'Inline Flex' },
+                                    { value: 'grid', name: 'Grid' },
+                                    { value: 'inline-grid', name: 'Inline Grid' },
+                                    { value: 'none', name: 'None' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'flex-direction',
+                                default: 'row',
+                                options: [
+                                    { value: 'row', name: 'Row' },
+                                    { value: 'row-reverse', name: 'Row Reverse' },
+                                    { value: 'column', name: 'Column' },
+                                    { value: 'column-reverse', name: 'Column Reverse' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'justify-content',
+                                default: 'flex-start',
+                                options: [
+                                    { value: 'flex-start', name: 'Start' },
+                                    { value: 'center', name: 'Center' },
+                                    { value: 'flex-end', name: 'End' },
+                                    { value: 'space-between', name: 'Space Between' },
+                                    { value: 'space-around', name: 'Space Around' },
+                                    { value: 'space-evenly', name: 'Space Evenly' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'align-items',
+                                default: 'stretch',
+                                options: [
+                                    { value: 'stretch', name: 'Stretch' },
+                                    { value: 'flex-start', name: 'Start' },
+                                    { value: 'center', name: 'Center' },
+                                    { value: 'flex-end', name: 'End' },
+                                    { value: 'baseline', name: 'Baseline' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'flex-wrap',
+                                default: 'nowrap',
+                                options: [
+                                    { value: 'nowrap', name: 'No Wrap' },
+                                    { value: 'wrap', name: 'Wrap' },
+                                    { value: 'wrap-reverse', name: 'Wrap Reverse' },
+                                ],
+                            },
+                        ]
+                    },
+                    {
+                        name: 'Size',
+                        open: false,
+                        buildProps: ['width', 'height', 'max-width', 'min-width', 'max-height', 'min-height'],
+                        properties: [
+                            {
+                                property: 'width',
+                                type: 'integer',
+                                units: ['px', '%', 'vw', 'em', 'rem', 'auto'],
+                                default: 'auto',
+                            },
+                            {
+                                property: 'height',
+                                type: 'integer',
+                                units: ['px', '%', 'vh', 'em', 'rem', 'auto'],
+                                default: 'auto',
+                            },
+                            {
+                                property: 'max-width',
+                                type: 'integer',
+                                units: ['px', '%', 'vw', 'em', 'rem', 'none'],
+                                default: 'none',
+                            },
+                            {
+                                property: 'min-width',
+                                type: 'integer',
+                                units: ['px', '%', 'vw', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'max-height',
+                                type: 'integer',
+                                units: ['px', '%', 'vh', 'em', 'rem', 'none'],
+                                default: 'none',
+                            },
+                            {
+                                property: 'min-height',
+                                type: 'integer',
+                                units: ['px', '%', 'vh', 'em', 'rem'],
+                                default: '0',
+                            },
+                        ]
+                    },
+                    {
+                        name: 'Space',
+                        open: false,
+                        buildProps: ['margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left'],
+                        properties: [
+                            {
+                                property: 'margin-top',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem', 'auto'],
+                                default: '0',
+                            },
+                            {
+                                property: 'margin-right',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem', 'auto'],
+                                default: '0',
+                            },
+                            {
+                                property: 'margin-bottom',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem', 'auto'],
+                                default: '0',
+                            },
+                            {
+                                property: 'margin-left',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem', 'auto'],
+                                default: '0',
+                            },
+                            {
+                                property: 'padding-top',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'padding-right',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'padding-bottom',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'padding-left',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem'],
+                                default: '0',
+                            },
+                        ]
+                    },
+                    {
+                        name: 'Position',
+                        open: false,
+                        buildProps: ['position', 'top', 'right', 'bottom', 'left', 'z-index'],
+                        properties: [
+                            {
+                                type: 'select',
+                                property: 'position',
+                                default: 'static',
+                                options: [
+                                    { value: 'static', name: 'Static' },
+                                    { value: 'relative', name: 'Relative' },
+                                    { value: 'absolute', name: 'Absolute' },
+                                    { value: 'fixed', name: 'Fixed' },
+                                    { value: 'sticky', name: 'Sticky' },
+                                ],
+                            },
+                            {
+                                property: 'top',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem', 'auto'],
+                                default: 'auto',
+                            },
+                            {
+                                property: 'right',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem', 'auto'],
+                                default: 'auto',
+                            },
+                            {
+                                property: 'bottom',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem', 'auto'],
+                                default: 'auto',
+                            },
+                            {
+                                property: 'left',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem', 'auto'],
+                                default: 'auto',
+                            },
+                            {
+                                property: 'z-index',
+                                type: 'integer',
+                                default: 'auto',
+                            },
+                        ]
                     },
                     {
                         name: 'Typography',
                         open: false,
-                        buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align'],
+                        buildProps: ['font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing', 'word-spacing', 'text-align', 'text-decoration', 'text-transform', 'color', 'text-shadow'],
+                        properties: [
+                            {
+                                property: 'font-family',
+                                type: 'select',
+                                default: 'inherit',
+                                options: [
+                                    { value: 'inherit', name: 'Inherit' },
+                                    { value: 'Arial, sans-serif', name: 'Arial' },
+                                    { value: 'Helvetica, sans-serif', name: 'Helvetica' },
+                                    { value: 'Georgia, serif', name: 'Georgia' },
+                                    { value: '"Times New Roman", serif', name: 'Times New Roman' },
+                                    { value: '"Courier New", monospace', name: 'Courier New' },
+                                    { value: 'Verdana, sans-serif', name: 'Verdana' },
+                                    { value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', name: 'System Font' },
+                                ],
+                            },
+                            {
+                                property: 'font-size',
+                                type: 'integer',
+                                units: ['px', 'em', 'rem', '%', 'pt'],
+                                default: '16px',
+                            },
+                            {
+                                type: 'select',
+                                property: 'font-weight',
+                                default: '400',
+                                options: [
+                                    { value: '100', name: 'Thin (100)' },
+                                    { value: '200', name: 'Extra Light (200)' },
+                                    { value: '300', name: 'Light (300)' },
+                                    { value: '400', name: 'Normal (400)' },
+                                    { value: '500', name: 'Medium (500)' },
+                                    { value: '600', name: 'Semi Bold (600)' },
+                                    { value: '700', name: 'Bold (700)' },
+                                    { value: '800', name: 'Extra Bold (800)' },
+                                    { value: '900', name: 'Black (900)' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'font-style',
+                                default: 'normal',
+                                options: [
+                                    { value: 'normal', name: 'Normal' },
+                                    { value: 'italic', name: 'Italic' },
+                                    { value: 'oblique', name: 'Oblique' },
+                                ],
+                            },
+                            {
+                                property: 'line-height',
+                                type: 'integer',
+                                units: ['', 'px', 'em', 'rem', '%'],
+                                default: 'normal',
+                            },
+                            {
+                                property: 'letter-spacing',
+                                type: 'integer',
+                                units: ['px', 'em', 'rem'],
+                                default: 'normal',
+                            },
+                            {
+                                type: 'select',
+                                property: 'text-align',
+                                default: 'left',
+                                options: [
+                                    { value: 'left', name: 'Left' },
+                                    { value: 'center', name: 'Center' },
+                                    { value: 'right', name: 'Right' },
+                                    { value: 'justify', name: 'Justify' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'text-decoration',
+                                default: 'none',
+                                options: [
+                                    { value: 'none', name: 'None' },
+                                    { value: 'underline', name: 'Underline' },
+                                    { value: 'overline', name: 'Overline' },
+                                    { value: 'line-through', name: 'Line Through' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'text-transform',
+                                default: 'none',
+                                options: [
+                                    { value: 'none', name: 'None' },
+                                    { value: 'uppercase', name: 'UPPERCASE' },
+                                    { value: 'lowercase', name: 'lowercase' },
+                                    { value: 'capitalize', name: 'Capitalize' },
+                                ],
+                            },
+                            {
+                                property: 'color',
+                                type: 'color',
+                                default: '#000000',
+                            },
+                            {
+                                property: 'text-shadow',
+                                type: 'stack',
+                                default: 'none',
+                            },
+                        ]
                     },
                     {
-                        name: 'Decorations',
+                        name: 'Background',
                         open: false,
-                        buildProps: ['opacity', 'border-radius', 'border', 'box-shadow', 'background'],
+                        buildProps: ['background-color', 'background-image', 'background-size', 'background-position', 'background-repeat', 'background-attachment'],
+                        properties: [
+                            {
+                                property: 'background-color',
+                                type: 'color',
+                                default: 'transparent',
+                            },
+                            {
+                                property: 'background-image',
+                                type: 'file',
+                                default: 'none',
+                            },
+                            {
+                                type: 'select',
+                                property: 'background-size',
+                                default: 'auto',
+                                options: [
+                                    { value: 'auto', name: 'Auto' },
+                                    { value: 'cover', name: 'Cover' },
+                                    { value: 'contain', name: 'Contain' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'background-position',
+                                default: 'left top',
+                                options: [
+                                    { value: 'left top', name: 'Left Top' },
+                                    { value: 'center top', name: 'Center Top' },
+                                    { value: 'right top', name: 'Right Top' },
+                                    { value: 'left center', name: 'Left Center' },
+                                    { value: 'center center', name: 'Center Center' },
+                                    { value: 'right center', name: 'Right Center' },
+                                    { value: 'left bottom', name: 'Left Bottom' },
+                                    { value: 'center bottom', name: 'Center Bottom' },
+                                    { value: 'right bottom', name: 'Right Bottom' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'background-repeat',
+                                default: 'repeat',
+                                options: [
+                                    { value: 'repeat', name: 'Repeat' },
+                                    { value: 'repeat-x', name: 'Repeat X' },
+                                    { value: 'repeat-y', name: 'Repeat Y' },
+                                    { value: 'no-repeat', name: 'No Repeat' },
+                                ],
+                            },
+                            {
+                                type: 'select',
+                                property: 'background-attachment',
+                                default: 'scroll',
+                                options: [
+                                    { value: 'scroll', name: 'Scroll' },
+                                    { value: 'fixed', name: 'Fixed' },
+                                    { value: 'local', name: 'Local' },
+                                ],
+                            },
+                        ]
                     },
                     {
-                        name: 'Extra',
+                        name: 'Borders',
                         open: false,
-                        buildProps: ['transition', 'perspective', 'transform'],
+                        buildProps: ['border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width', 'border-style', 'border-color', 'border-top-left-radius', 'border-top-right-radius', 'border-bottom-right-radius', 'border-bottom-left-radius'],
+                        properties: [
+                            {
+                                property: 'border-top-width',
+                                type: 'integer',
+                                units: ['px', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'border-right-width',
+                                type: 'integer',
+                                units: ['px', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'border-bottom-width',
+                                type: 'integer',
+                                units: ['px', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'border-left-width',
+                                type: 'integer',
+                                units: ['px', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                type: 'select',
+                                property: 'border-style',
+                                default: 'solid',
+                                options: [
+                                    { value: 'none', name: 'None' },
+                                    { value: 'solid', name: 'Solid' },
+                                    { value: 'dotted', name: 'Dotted' },
+                                    { value: 'dashed', name: 'Dashed' },
+                                    { value: 'double', name: 'Double' },
+                                    { value: 'groove', name: 'Groove' },
+                                    { value: 'ridge', name: 'Ridge' },
+                                    { value: 'inset', name: 'Inset' },
+                                    { value: 'outset', name: 'Outset' },
+                                ],
+                            },
+                            {
+                                property: 'border-color',
+                                type: 'color',
+                                default: '#000000',
+                            },
+                            {
+                                property: 'border-top-left-radius',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'border-top-right-radius',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'border-bottom-right-radius',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem'],
+                                default: '0',
+                            },
+                            {
+                                property: 'border-bottom-left-radius',
+                                type: 'integer',
+                                units: ['px', '%', 'em', 'rem'],
+                                default: '0',
+                            },
+                        ]
+                    },
+                    {
+                        name: 'Effects',
+                        open: false,
+                        buildProps: ['opacity', 'box-shadow', 'transform', 'transition', 'cursor', 'filter'],
+                        properties: [
+                            {
+                                property: 'opacity',
+                                type: 'slider',
+                                default: '1',
+                                min: 0,
+                                max: 1,
+                                step: 0.01,
+                            },
+                            {
+                                property: 'box-shadow',
+                                type: 'stack',
+                                default: 'none',
+                            },
+                            {
+                                property: 'transform',
+                                type: 'stack',
+                                default: 'none',
+                            },
+                            {
+                                property: 'transition',
+                                type: 'stack',
+                                default: 'none',
+                            },
+                            {
+                                type: 'select',
+                                property: 'cursor',
+                                default: 'auto',
+                                options: [
+                                    { value: 'auto', name: 'Auto' },
+                                    { value: 'default', name: 'Default' },
+                                    { value: 'pointer', name: 'Pointer' },
+                                    { value: 'text', name: 'Text' },
+                                    { value: 'move', name: 'Move' },
+                                    { value: 'not-allowed', name: 'Not Allowed' },
+                                    { value: 'grab', name: 'Grab' },
+                                    { value: 'grabbing', name: 'Grabbing' },
+                                ],
+                            },
+                            {
+                                property: 'filter',
+                                type: 'stack',
+                                default: 'none',
+                            },
+                        ]
                     }
                 ],
             },
@@ -990,19 +1583,11 @@
             },
         });
         
-        // ===== Load Custom Blocks =====
+        // Expose editor to window for debugging and panel toggle
+        window.editor = editor;
+        console.log('✅ Editor initialized');
         
-        // Load original custom blocks
-        if (typeof window.initCustomBlocks === 'function') {
-            window.initCustomBlocks(editor);
-            console.log('✅ Custom blocks library loaded');
-        }
-        
-        // Load Tailwind blocks
-        if (typeof window.initTailwindBlocks === 'function') {
-            window.initTailwindBlocks(editor);
-            console.log('✅ Tailwind blocks library loaded');
-        }
+        console.log('✅ Using PageMaker Tailwind plugin blocks');
         
         // ===== Empty State Management =====
         
@@ -1148,37 +1733,27 @@
         
         // Initial load - Load saved content from API
         editor.on('load', async () => {
-            console.log('📥 Loading saved content from API...');
-            
             try {
                 const response = await fetch(LOAD_URL);
                 const data = await response.json();
-                console.log('📦 Loaded data:', data);
-                console.log('📊 Components count:', data['gjs-components']?.length || 0);
                 
                 // Load content into editor
                 if (data['gjs-html'] || data['gjs-css'] || (data['gjs-components'] && data['gjs-components'].length > 0)) {
                     // PRIORITY: Load components if available (preserves structure)
                     if (data['gjs-components'] && data['gjs-components'].length > 0) {
-                        console.log('🔄 Loading components with full structure...');
                         editor.setComponents(data['gjs-components']);
                         editor.setStyle(data['gjs-styles'] || data['gjs-css'] || '');
-                        console.log('✅ Loaded from components structure');
                     } else {
                         // Fallback to HTML/CSS only if no components
-                        console.log('⚠️ No components, loading HTML/CSS only');
                         editor.setComponents(data['gjs-html'] || '');
                         editor.setStyle(data['gjs-css'] || '');
                     }
-                    console.log('✅ Content loaded successfully');
-                } else {
-                    console.log('ℹ️  No saved content, starting fresh');
+                    console.log('✅ Content loaded');
                 }
                 
                 // Disable initial load flag after 3 seconds
                 setTimeout(() => {
                     isInitialLoad = false;
-                    console.log('✅ Initial load completed, auto-save enabled');
                 }, 3000);
                 
             } catch (error) {
@@ -1189,6 +1764,41 @@
             
             // Set default device to Desktop
             editor.setDevice('Desktop');
+            
+            // ===== AUTO RENDER BLOCKS on page load =====
+            setTimeout(() => {
+                const blocksBtn = document.querySelector('.sidebar-btn[data-panel="blocks"]');
+                const blocksContainer = document.getElementById('blocks-container');
+                const leftPanel = document.getElementById('left-panel');
+                
+                if (blocksBtn && blocksContainer && leftPanel) {
+                    // Show left panel using class
+                    leftPanel.classList.add('active');
+                    blocksBtn.classList.add('active');
+                    
+                    // Render blocks
+                    const blockManager = editor.BlockManager;
+                    const blocksEl = blockManager.render();
+                    
+                    if (blocksEl) {
+                        blocksContainer.innerHTML = '';
+                        blocksContainer.appendChild(blocksEl);
+                        console.log('✅ Blocks rendered');
+                    }
+                }
+            }, 1000);
+            
+            // ===== Load Custom Blocks System =====
+            // Import custom blocks from /static/pagemaker/custom-blocks/
+            // These blocks will MERGE into existing categories from PageMaker Tailwind plugin
+            import('/static/pagemaker/custom-blocks/index.js')
+                .then(module => {
+                    module.default(editor);
+                    console.log('✅ Custom Blocks System loaded');
+                })
+                .catch(err => {
+                    // Silent fail - OK if no custom blocks defined yet
+                });
         });
         
         // ===== Auto-switch to Styles when component selected =====
@@ -1210,68 +1820,6 @@
                 
                 const device = btn.dataset.device;
                 editor.setDevice(device);
-            });
-        });
-        
-        // Sidebar Panel Switcher
-        document.querySelectorAll('.sidebar-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const panel = btn.dataset.panel;
-                
-                // Toggle active state
-                document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                // Update left panel content
-                const panelHeader = document.querySelector('#left-panel .panel-header');
-                const blocksContainer = document.getElementById('blocks-container');
-                const layersContainer = document.getElementById('layers-container');
-                const stylesContainer = document.getElementById('styles-container');
-                
-                // Hide all containers first
-                blocksContainer.style.display = 'none';
-                layersContainer.style.display = 'none';
-                stylesContainer.style.display = 'none';
-                
-                switch(panel) {
-                    case 'blocks':
-                        panelHeader.querySelector('.panel-title').textContent = 'Blocks';
-                        panelHeader.querySelector('.panel-subtitle').textContent = 'Kéo & thả để thêm vào trang';
-                        blocksContainer.style.display = 'block';
-                        editor.BlockManager.render();
-                        break;
-                        
-                    case 'layers':
-                        panelHeader.querySelector('.panel-title').textContent = 'Layers';
-                        panelHeader.querySelector('.panel-subtitle').textContent = 'Cấu trúc trang';
-                        layersContainer.style.display = 'block';
-                        editor.LayerManager.render();
-                        break;
-                        
-                    case 'styles':
-                        panelHeader.querySelector('.panel-title').textContent = 'Styles';
-                        panelHeader.querySelector('.panel-subtitle').textContent = 'Tùy chỉnh CSS';
-                        stylesContainer.style.display = 'block';
-                        editor.StyleManager.render();
-                        break;
-                        
-                    case 'assets':
-                        panelHeader.querySelector('.panel-title').textContent = 'Assets';
-                        panelHeader.querySelector('.panel-subtitle').textContent = 'Quản lý hình ảnh';
-                        blocksContainer.style.display = 'block';
-                        blocksContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Assets manager coming soon...</div>';
-                        break;
-                        
-                    case 'pages':
-                        panelHeader.querySelector('.panel-title').textContent = 'Pages';
-                        panelHeader.querySelector('.panel-subtitle').textContent = 'Quản lý trang';
-                        blocksContainer.style.display = 'block';
-                        blocksContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Pages manager coming soon...</div>';
-                        break;
-                }
-                
-                // Show left panel
-                document.getElementById('left-panel').classList.add('active');
             });
         });
         
@@ -1335,7 +1883,7 @@
                 const css = editor.getCss();
                 const projectData = editor.getProjectData();
                 
-                // Prepare data in GrapesJS storage format
+                // Prepare save data
                 const saveData = {
                     'gjs-html': html,
                     'gjs-css': css,
@@ -1386,11 +1934,9 @@
                 setPreviewButtonState('loading', 'Đang tạo preview...');
                 
                 // Auto-save current content first
-                console.log('💾 Saving before preview...');
                 await autoSaveContent();
                 
                 // Generate preview token
-                console.log('🔍 Generating preview token...');
                 const previewResponse = await fetch(PREVIEW_URL, {
                     method: 'POST',
                     headers: {
@@ -1403,13 +1949,10 @@
                 }
                 
                 const previewResult = await previewResponse.json();
-                console.log('Preview response:', previewResult);
                 
                 if (previewResult.success) {
                     // Open preview in new tab
                     const previewUrl = previewResult.preview_url;
-                    console.log('🚀 Opening preview:', previewUrl);
-                    
                     window.open(previewUrl, '_blank');
                     
                     // Show success state
