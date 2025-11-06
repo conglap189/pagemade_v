@@ -5,128 +5,142 @@
 {% block content %}
 <div class="min-h-screen">
   <!-- Main Content -->
-  <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
     <!-- Header -->
-    <div class="mb-12">
+    <div class="mb-8">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-4xl font-bold text-slate-800 dark:text-white mb-2">
             Xin chào, {{ current_user.name }}! 
           </h1>
           <p class="text-slate-600 dark:text-slate-400 text-lg">
-            Đây là những trang của bạn.
+            Dưới đây là những trang của bạn.
           </p>
         </div>
-        <div class="mt-4 sm:mt-0">
-          <a href="{{ url_for('main.new_site') }}" 
-             class="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-white transition rounded-lg bg-emerald-500 shadow-theme-xs hover:bg-emerald-600">
-            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M10 3C10.5523 3 11 3.44772 11 4V9H16C16.5523 9 17 9.44772 17 10C17 10.5523 16.5523 11 16 11H11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11H4C3.44772 11 3 10.5523 3 10C3 9.44772 3.44772 9 4 9H9V4C9 3.44772 9.44772 3 10 3Z" fill="currentColor"/>
-            </svg>
-            Tạo trang mới
-          </a>
-        </div>
+
       </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
       <!-- Total Sites -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-700 transform hover:scale-105 transition-all duration-300">
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Tổng </p>
-            <p class="text-4xl font-bold text-slate-800 dark:text-white mb-1">{{ sites|length }}</p>
-            <p class="text-slate-500 dark:text-slate-400 text-xs">Dự án đang hoạt động</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Tổng </p>
+            <p class="text-title-sm font-bold text-gray-800 dark:text-white/90 mb-1">{{ sites|length }}</p>
+            <p class="text-theme-xs text-gray-500 dark:text-gray-400">Dự án đang hoạt động</p>
           </div>
-          <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
-            <i class="fas fa-globe text-blue-600 dark:text-blue-400 text-2xl"></i>
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
+            <i class="fas fa-globe text-blue-600 dark:text-blue-400 text-xl"></i>
           </div>
         </div>
         <div class="mt-4 flex items-center text-sm">
-          <span class="text-green-600 dark:text-green-400 font-medium">+12%</span>
-          <span class="text-slate-500 dark:text-slate-400 ml-2">from last month</span>
+          <span class="flex items-center gap-1 rounded-full bg-success-50 py-0.5 pl-2 pr-2.5 text-sm font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+            <svg class="fill-current" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M5.56462 1.62393C5.70193 1.47072 5.90135 1.37432 6.12329 1.37432C6.1236 1.37432 6.12391 1.37432 6.12422 1.37432C6.31631 1.37415 6.50845 1.44731 6.65505 1.59381L9.65514 4.5918C9.94814 4.88459 9.94831 5.35947 9.65552 5.65246C9.36273 5.94546 8.88785 5.94562 8.59486 5.65283L6.87329 3.93247L6.87329 10.125C6.87329 10.5392 6.53751 10.875 6.12329 10.875C5.70908 10.875 5.37329 10.5392 5.37329 10.125L5.37329 3.93578L3.65516 5.65282C3.36218 5.94562 2.8873 5.94547 2.5945 5.65248C2.3017 5.35949 2.30185 4.88462 2.59484 4.59182L5.56462 1.62393Z" fill=""/>
+            </svg>
+            +12%
+          </span>
+          <span class="text-gray-500 dark:text-gray-400 ml-2 text-theme-xs">from last month</span>
         </div>
       </div>
 
       <!-- Total Pages -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-700 transform hover:scale-105 transition-all duration-300">
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Tổng</p>
-            <p class="text-4xl font-bold text-slate-800 dark:text-white mb-1">{{ total_pages }}</p>
-            <p class="text-slate-500 dark:text-slate-400 text-xs">Trang đã tạo</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Tổng</p>
+            <p class="text-title-sm font-bold text-gray-800 dark:text-white/90 mb-1">{{ total_pages }}</p>
+            <p class="text-theme-xs text-gray-500 dark:text-gray-400">Trang đã tạo</p>
           </div>
-          <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center">
-            <i class="fas fa-file-alt text-purple-600 dark:text-purple-400 text-2xl"></i>
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
+            <i class="fas fa-file-alt text-purple-600 dark:text-purple-400 text-xl"></i>
           </div>
         </div>
         <div class="mt-4 flex items-center text-sm">
-          <span class="text-green-600 dark:text-green-400 font-medium">+8%</span>
-          <span class="text-slate-500 dark:text-slate-400 ml-2">from last month</span>
+          <span class="flex items-center gap-1 rounded-full bg-success-50 py-0.5 pl-2 pr-2.5 text-sm font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+            <svg class="fill-current" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M5.56462 1.62393C5.70193 1.47072 5.90135 1.37432 6.12329 1.37432C6.1236 1.37432 6.12391 1.37432 6.12422 1.37432C6.31631 1.37415 6.50845 1.44731 6.65505 1.59381L9.65514 4.5918C9.94814 4.88459 9.94831 5.35947 9.65552 5.65246C9.36273 5.94546 8.88785 5.94562 8.59486 5.65283L6.87329 3.93247L6.87329 10.125C6.87329 10.5392 6.53751 10.875 6.12329 10.875C5.70908 10.875 5.37329 10.5392 5.37329 10.125L5.37329 3.93578L3.65516 5.65282C3.36218 5.94562 2.8873 5.94547 2.5945 5.65248C2.3017 5.35949 2.30185 4.88462 2.59484 4.59182L5.56462 1.62393Z" fill=""/>
+            </svg>
+            +8%
+          </span>
+          <span class="text-gray-500 dark:text-gray-400 ml-2 text-theme-xs">from last month</span>
         </div>
       </div>
 
       <!-- Published Pages -->
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-700 transform hover:scale-105 transition-all duration-300">
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Xuất bản</p>
-            <p class="text-4xl font-bold text-slate-800 dark:text-white mb-1">{{ published_pages }}</p>
-            <p class="text-slate-500 dark:text-slate-400 text-xs">Trang đang hoạt động</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Xuất bản</p>
+            <p class="text-title-sm font-bold text-gray-800 dark:text-white/90 mb-1">{{ published_pages }}</p>
+            <p class="text-theme-xs text-gray-500 dark:text-gray-400">Trang đang hoạt động</p>
           </div>
-          <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center">
-            <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-2xl"></i>
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
+            <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
           </div>
         </div>
         <div class="mt-4 flex items-center text-sm">
-          <span class="text-green-600 dark:text-green-400 font-medium">+15%</span>
-          <span class="text-slate-500 dark:text-slate-400 ml-2">from last month</span>
+          <span class="flex items-center gap-1 rounded-full bg-success-50 py-0.5 pl-2 pr-2.5 text-sm font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+            <svg class="fill-current" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M5.56462 1.62393C5.70193 1.47072 5.90135 1.37432 6.12329 1.37432C6.1236 1.37432 6.12391 1.37432 6.12422 1.37432C6.31631 1.37415 6.50845 1.44731 6.65505 1.59381L9.65514 4.5918C9.94814 4.88459 9.94831 5.35947 9.65552 5.65246C9.36273 5.94546 8.88785 5.94562 8.59486 5.65283L6.87329 3.93247L6.87329 10.125C6.87329 10.5392 6.53751 10.875 6.12329 10.875C5.70908 10.875 5.37329 10.5392 5.37329 10.125L5.37329 3.93578L3.65516 5.65282C3.36218 5.94562 2.8873 5.94547 2.5945 5.65248C2.3017 5.35949 2.30185 4.88462 2.59484 4.59182L5.56462 1.62393Z" fill=""/>
+            </svg>
+            +15%
+          </span>
+          <span class="text-gray-500 dark:text-gray-400 ml-2 text-theme-xs">from last month</span>
         </div>
       </div>
     </div>
 
     <!-- Sites Grid -->
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-      <div class="px-6 py-6 border-b border-slate-200 dark:border-slate-700">
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+      <div class="px-6 py-6 border-b border-gray-200 dark:border-gray-800">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Trang của bạn</h2>
-            <p class="text-slate-600 dark:text-slate-400 mt-1">Quản lý và tổ chức các dự án của bạn</p>
+            <h2 class="text-title-sm font-bold text-gray-800 dark:text-white/90">Trang của bạn</h2>
+            <p class="text-gray-600 dark:text-gray-400 mt-1 text-theme-sm">Quản lý và tổ chức các dự án của bạn</p>
           </div>
           <div class="flex items-center space-x-3">
-            <button class="p-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+            <button class="p-2 text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
               <i class="fas fa-search"></i>
             </button>
-            <button class="p-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+            <button class="p-2 text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
               <i class="fas fa-filter"></i>
             </button>
+            <a href="{{ url_for('main.new_site') }}" 
+               class="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-white transition rounded-lg bg-emerald-500 shadow-theme-xs hover:bg-emerald-600">
+              <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M10 3C10.5523 3 11 3.44772 11 4V9H16C16.5523 9 17 9.44772 17 10C17 10.5523 16.5523 11 16 11H11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11H4C3.44772 11 3 10.5523 3 10C3 9.44772 3.44772 9 4 9H9V4C9 3.44772 9.44772 3 10 3Z" fill="currentColor"/>
+              </svg>
+              Tạo trang mới
+            </a>
           </div>
         </div>
       </div>
 
       <div class="p-6">
         {% if sites %}
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {% for site in sites %}
-              <div class="group relative bg-gradient-to-br from-slate-50 to-white dark:from-slate-700 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-600 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+              <div class="group relative rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 hover:shadow-lg transition-all duration-300"
                    x-data="{ open: false }">
                 <!-- Site Header -->
                 <div class="flex items-start justify-between mb-4">
                   <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center">
-                      <span class="text-slate-600 dark:text-slate-300 text-lg font-bold">{{ site.title[0].upper() }}</span>
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
+                      <span class="text-gray-800 dark:text-white/90 text-lg font-bold">{{ site.title[0].upper() }}</span>
                     </div>
                     <div>
-                      <h3 class="font-bold text-slate-800 dark:text-white">{{ site.title }}</h3>
-                      <p class="text-xs text-slate-500 dark:text-slate-400">{{ site.pages|length }} pages</p>
+                      <h3 class="font-bold text-gray-800 dark:text-white/90">{{ site.title }}</h3>
+                      <p class="text-theme-xs text-gray-500 dark:text-gray-400">{{ site.pages|length }} pages</p>
                     </div>
                   </div>
                   
                   <!-- Dropdown Menu -->
                   <div class="relative">
-                    <button @click="open = !open" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">
-                      <i class="fas fa-ellipsis-v text-slate-600 dark:text-slate-300"></i>
+                    <button @click="open = !open" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                      <i class="fas fa-ellipsis-v text-gray-600 dark:text-gray-400"></i>
                     </button>
                     
                     <div x-show="open" 
@@ -137,18 +151,18 @@
                          x-transition:leave-start="opacity-100 scale-100"
                          x-transition:leave-end="opacity-0 scale-95"
                          @click.away="open = false"
-                         class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-700 rounded-xl shadow-xl border border-slate-200 dark:border-slate-600 z-10">
+                         class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-10">
                       <a href="{{ url_for('main.site_detail', site_id=site.id) }}" 
-                         class="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-t-xl transition-colors">
+                         class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-xl transition-colors">
                         <i class="fas fa-eye w-4"></i>
                         <span>View Details</span>
                       </a>
                       <a href="{{ url_for('main.new_page', site_id=site.id) }}" 
-                         class="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+                         class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                         <i class="fas fa-plus w-4"></i>
                         <span>New Page</span>
                       </a>
-                      <div class="border-t border-slate-200 dark:border-slate-600"></div>
+                      <div class="border-t border-gray-200 dark:border-gray-700"></div>
                       <form method="POST" action="{{ url_for('api.delete_site_form', site_id=site.id) }}" 
                             onsubmit="return confirm('Are you sure you want to delete this site?');">
                         <button type="submit" 
@@ -163,17 +177,17 @@
 
                 <!-- Site Info -->
                 <div class="space-y-3 mb-6">
-                  <div class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                  <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
                     <i class="fas fa-calendar-alt w-4 mr-3"></i>
                     <span>Created {{ site.created_at.strftime('%b %d, %Y') }}</span>
                   </div>
                   {% if site.subdomain %}
-                    <div class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                    <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
                       <i class="fas fa-link w-4 mr-3"></i>
-                      <a href="http://{{ site.subdomain }}.pagemade.site" target="_blank" 
-                         class="text-blue-600 dark:text-blue-400 hover:underline truncate">
-                        {{ site.subdomain }}.pagemade.site
-                      </a>
+                       <a href="http://{{ site.subdomain }}.pagemade.site" target="_blank" 
+                          class="text-blue-600 dark:text-blue-400 hover:underline truncate">
+                         {{ site.subdomain }}.pagemade.site
+                       </a>
                     </div>
                   {% endif %}
                 </div>
@@ -188,7 +202,7 @@
                     Quản lý trang
                   </a>
                   <a href="{{ url_for('main.new_page', site_id=site.id) }}" 
-                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                     class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
                     <svg class="fill-current" width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path fill-rule="evenodd" clip-rule="evenodd" d="M10 3C10.5523 3 11 3.44772 11 4V9H16C16.5523 9 17 9.44772 17 10C17 10.5523 16.5523 11 16 11H11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11H4C3.44772 11 3 10.5523 3 10C3 9.44772 3.44772 9 4 9H9V4C9 3.44772 9.44772 3 10 3Z" fill="currentColor"/>
                     </svg>
@@ -200,11 +214,11 @@
         {% else %}
           <!-- Empty State -->
           <div class="text-center py-16">
-            <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full mb-6">
-              <i class="fas fa-folder-open text-5xl text-blue-500 dark:text-blue-400"></i>
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full mb-6">
+              <i class="fas fa-folder-open text-5xl text-gray-800 dark:text-white/90"></i>
             </div>
-            <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-300 mb-2">No sites yet</h3>
-            <p class="text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto">
+            <h3 class="text-title-sm font-bold text-gray-800 dark:text-white/90 mb-2">No sites yet</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto text-theme-sm">
               Get started by creating your first site. Build beautiful landing pages with our drag-and-drop editor.
             </p>
             <a href="{{ url_for('main.new_site') }}" 
