@@ -376,6 +376,7 @@
             border-right: 1px solid #e5e7eb;
             display: none;
             flex-direction: column;
+            transition: all 0.3s ease;
         }
         
         .dark #left-panel {
@@ -436,8 +437,9 @@
             flex-direction: column;
             position: relative;
             margin: 0;
-            padding: 0;
+            padding: 10px;
             background: #f3f4f6;
+            transition: all 0.3s ease;
         }
         
         .dark #canvas-area {
@@ -449,6 +451,35 @@
             position: relative;
             margin: 0;
             padding: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .dark #gjs {
+            background: #1f2937;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Canvas states for different sidebar combinations */
+        #canvas-area.both-sidebars {
+            padding: 10px;
+        }
+        
+        #canvas-area.left-only {
+            padding: 10px 10px 10px 10px;
+        }
+        
+        #canvas-area.right-only {
+            padding: 10px 10px 10px 10px;
+        }
+        
+        #canvas-area.no-sidebars {
+            padding: 10px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         
         /* ===== EMPTY STATE ===== */
@@ -491,6 +522,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: all 0.3s ease;
         }
         
         .dark #right-panel {
@@ -536,6 +568,39 @@
         
         .dark .right-panel-tab.active {
             background: #1f2937;
+        }
+        
+        /* Close button for right panel */
+        .right-panel-close {
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 1px solid #e5e7eb;
+            margin-left: auto;
+        }
+        
+        .dark .right-panel-close {
+            color: #9ca3af;
+            border-left-color: #374151;
+        }
+        
+        .right-panel-close:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .dark .right-panel-close:hover {
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        /* Hide right panel state */
+        #right-panel.hidden {
+            display: none;
         }
         
         .right-panel-content {
@@ -887,6 +952,9 @@
                 <button class="right-panel-tab" data-tab="properties">
                     <i class="fas fa-cog"></i> Properties
                 </button>
+                <button class="right-panel-close" id="right-panel-close" title="Đóng">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
             <div class="right-panel-content active" id="styles-tab">
@@ -926,6 +994,28 @@
             localStorage.setItem('theme', newTheme);
         });
         
+        // ===== CANVAS RESPONSIVE LOGIC =====
+        const canvasArea = document.getElementById('canvas-area');
+        
+        function updateCanvasLayout() {
+            const leftPanelVisible = leftPanel.classList.contains('active');
+            const rightPanelVisible = !rightPanel.classList.contains('hidden');
+            
+            // Remove all canvas state classes
+            canvasArea.classList.remove('both-sidebars', 'left-only', 'right-only', 'no-sidebars');
+            
+            // Add appropriate class based on sidebar states
+            if (leftPanelVisible && rightPanelVisible) {
+                canvasArea.classList.add('both-sidebars');
+            } else if (leftPanelVisible && !rightPanelVisible) {
+                canvasArea.classList.add('left-only');
+            } else if (!leftPanelVisible && rightPanelVisible) {
+                canvasArea.classList.add('right-only');
+            } else {
+                canvasArea.classList.add('no-sidebars');
+            }
+        }
+        
         // ===== LEFT SIDEBAR TOGGLE (Initialize before editor) =====
         const leftSidebar = document.getElementById('left-sidebar');
         const leftPanel = document.getElementById('left-panel');
@@ -963,6 +1053,9 @@
                         }, 50);
                     }
                 }
+                
+                // Update canvas layout after sidebar toggle
+                setTimeout(updateCanvasLayout, 100);
             });
         });
         
@@ -1785,6 +1878,9 @@
                         blocksContainer.appendChild(blocksEl);
                         console.log('✅ Blocks rendered');
                     }
+                    
+                    // Update canvas layout after initial load
+                    setTimeout(updateCanvasLayout, 100);
                 }
             }, 1000);
             
@@ -1801,13 +1897,47 @@
                 });
         });
         
+        // ===== RIGHT PANEL TOGGLE LOGIC =====
+        const rightPanel = document.getElementById('right-panel');
+        const rightPanelClose = document.getElementById('right-panel-close');
+        let isRightPanelVisible = true; // Start visible
+        
+        // Close button functionality
+        rightPanelClose.addEventListener('click', () => {
+            rightPanel.classList.add('hidden');
+            isRightPanelVisible = false;
+            // Update canvas layout after hiding right panel
+            setTimeout(updateCanvasLayout, 100);
+        });
+        
+        // Function to show right panel
+        function showRightPanel() {
+            if (!isRightPanelVisible) {
+                rightPanel.classList.remove('hidden');
+                isRightPanelVisible = true;
+                // Update canvas layout after showing right panel
+                setTimeout(updateCanvasLayout, 100);
+            }
+        }
+        
         // ===== Auto-switch to Styles when component selected =====
         editor.on('component:selected', (component) => {
+            // Show right panel when component is selected
+            showRightPanel();
+            
             // Auto switch to Styles tab when user selects a component
-            const stylesBtn = document.querySelector('.sidebar-btn[data-panel="styles"]');
-            if (stylesBtn) {
-                stylesBtn.click(); // Trigger click to switch to Styles tab
+            const stylesTab = document.querySelector('.right-panel-tab[data-tab="styles"]');
+            if (stylesTab) {
+                stylesTab.click(); // Trigger click to switch to Styles tab
             }
+        });
+        
+        // Hide right panel when clicking on canvas (no component selected)
+        editor.on('component:deselected', () => {
+            // Optional: hide panel when deselecting component
+            // Comment out if you want panel to stay visible
+            // rightPanel.classList.add('hidden');
+            // isRightPanelVisible = false;
         });
         
         // ===== UI Controls =====

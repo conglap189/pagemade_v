@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Editor Integration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Editor Integration Test</h1>
+    
+    <div class="test-section info">
+        <h3>Test Configuration</h3>
+        <p><strong>Goal:</strong> Verify grapesjs-tailwind + Custom Basic blocks work together</p>
+        <p><strong>Expected:</strong> Basic category should have both grapesjs-tailwind blocks AND custom blocks</p>
+    </div>
+
+    <div class="test-section">
+        <h3>📋 Test Checklist</h3>
+        <ol>
+            <li>✅ grapesjs-tailwind plugin enabled in editor config</li>
+            <li>✅ Custom Basic blocks import configured</li>
+            <li>✅ Test Form block added with 🧪 emoji</li>
+            <li>✅ Enhanced blocks with unique IDs (basic-*)</li>
+            <li>⏳ Manual testing required</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h3>🔧 Configuration Summary</h3>
+        <h4>Editor Configuration:</h4>
+        <pre>
+plugins: ['grapesjs-tailwind']
+pluginsOpts: {
+    'grapesjs-tailwind': {
+        blocks: ['basic-blocks', 'cta-blocks', 'header-blocks', ...]
+    }
+}
+        </pre>
+        
+        <h4>Custom Blocks Loading:</h4>
+        <pre>
+import('/static/pagemaker/custom-blocks/basic/blocks.js')
+    .then(module => {
+        module.default(editor);
+        console.log('✅ Custom Basic Blocks loaded (including Test Form)');
+    })
+        </pre>
+    </div>
+
+    <div class="test-section">
+        <h3>🎯 Expected Results</h3>
+        <p><strong>Basic Category should contain:</strong></p>
+        <ul>
+            <li>🟦 <strong>grapesjs-tailwind blocks:</strong> Text, Image, Button, Container, etc.</li>
+            <li>🟨 <strong>Custom blocks:</strong></li>
+            <ul>
+                <li>Enhanced Text (basic-text-enhanced)</li>
+                <li>Gradient Heading (basic-heading-gradient)</li>
+                <li>Modern Quote (basic-quote-modern)</li>
+                <li>🧪 Test Form (basic-test-form)</li>
+                <li>Image Card, Button Group, Container, Divider</li>
+            </ul>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🚀 Next Steps</h3>
+        <p>To complete testing:</p>
+        <ol>
+            <li>Start the Flask server: <code>python3 run_local.py</code></li>
+            <li>Navigate to: <code>http://localhost:5000/editor/test-page</code></li>
+            <li>Open browser console (F12)</li>
+            <li>Check for logs:
+                <ul>
+                    <li>"✅ Custom Basic Blocks loaded (including Test Form)"</li>
+                    <li>No error messages</li>
+                </ul>
+            </li>
+            <li>Verify Basic category has both types of blocks</li>
+            <li>Test drag & drop functionality</li>
+        </ol>
+    </div>
+
+    <div class="test-section success">
+        <h3>✅ Implementation Complete</h3>
+        <p>All configuration changes have been applied successfully!</p>
+        <p><strong>Status:</strong> Ready for manual testing</p>
+    </div>
+</body>
+</html>
