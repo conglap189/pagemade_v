@@ -887,9 +887,9 @@
                 Quay lại
             </button>
             
-            <button class="btn btn-preview" id="btn-preview" title="Xem trước trang">
-                <i class="fas fa-eye"></i>
-                <span>Preview</span>
+            <button class="btn btn-preview" id="btn-components-view" title="Xem Components">
+                <i class="fas fa-layer-group"></i>
+                <span>Components</span>
             </button>
             
             <button class="btn btn-save" id="btn-save">
@@ -1965,9 +1965,9 @@
             }, 3000);
         }
         
-        // Preview button state management
-        function setPreviewButtonState(state, text = null) {
-            const btn = document.getElementById('btn-preview');
+        // Components view button state management
+        function setComponentsButtonState(state, text = null) {
+            const btn = document.getElementById('btn-components-view');
             const icon = btn.querySelector('i');
             const span = btn.querySelector('span');
             
@@ -1985,7 +1985,7 @@
                     icon.className = 'fas fa-check';
                     if (text) span.textContent = text;
                     setTimeout(() => {
-                        setPreviewButtonState('default');
+                        setComponentsButtonState('default');
                     }, 2000);
                     break;
                 case 'error':
@@ -1993,12 +1993,12 @@
                     icon.className = 'fas fa-exclamation-triangle';
                     if (text) span.textContent = text;
                     setTimeout(() => {
-                        setPreviewButtonState('default');
+                        setComponentsButtonState('default');
                     }, 3000);
                     break;
                 default:
-                    icon.className = 'fas fa-eye';
-                    span.textContent = 'Preview';
+                    icon.className = 'fas fa-layer-group';
+                    span.textContent = 'Components';
                     break;
             }
         }
@@ -2057,44 +2057,109 @@
             }
         });
 
-        // Preview button handler
-        document.getElementById('btn-preview').addEventListener('click', async () => {
+        // Components view button handler - Show Component Structure
+        document.getElementById('btn-components-view').addEventListener('click', () => {
             try {
-                // Set loading state
-                setPreviewButtonState('loading', 'Đang tạo preview...');
+                // Get all components in the canvas
+                const components = editor.getComponents();
+                const componentInfo = [];
                 
-                // Auto-save current content first
-                await autoSaveContent();
+                // Build component tree
+                function buildComponentTree(comp, level = 0) {
+                    const indent = '  '.repeat(level);
+                    const name = comp.getName() || comp.getType() || 'Component';
+                    const id = comp.getId() || 'no-id';
+                    const classes = comp.getClasses().join('.') || '';
+                    
+                    componentInfo.push(`${indent}├─ ${name} (${id}) ${classes ? '.' + classes : ''}`);
+                    
+                    // Recursively add children
+                    comp.components().each(child => {
+                        buildComponentTree(child, level + 1);
+                    });
+                }
                 
-                // Generate preview token
-                const previewResponse = await fetch(PREVIEW_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
+                // Build tree from root components
+                components.each(comp => {
+                    buildComponentTree(comp);
+                });
+                
+                // Create modal to show component structure
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                `;
+                
+                const modalContent = document.createElement('div');
+                modalContent.style.cssText = `
+                    background: white;
+                    border-radius: 12px;
+                    padding: 24px;
+                    max-width: 600px;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                `;
+                
+                modalContent.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #1f2937; font-size: 18px; font-weight: 600;">
+                            <i class="fas fa-layer-group" style="color: #667eea; margin-right: 8px;"></i>
+                            Component Structure
+                        </h3>
+                        <button onclick="this.closest('div[style*=\"position: fixed\"]').remove()" 
+                                style="background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7280;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <pre style="
+                        background: #f8fafc;
+                        border: 1px solid #e5e7eb;
+                        border-radius: 8px;
+                        padding: 16px;
+                        margin: 0;
+                        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                        font-size: 12px;
+                        line-height: 1.5;
+                        color: #374151;
+                        overflow-x: auto;
+                    ">${componentInfo.join('\n')}</pre>
+                    <div style="margin-top: 16px; text-align: right;">
+                        <button onclick="this.closest('div[style*=\"position: fixed\"]').remove()" 
+                                style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                            Đóng
+                        </button>
+                    </div>
+                `;
+                
+                modal.appendChild(modalContent);
+                document.body.appendChild(modal);
+                
+                // Close modal when clicking outside
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
                     }
                 });
                 
-                if (!previewResponse.ok) {
-                    throw new Error(`HTTP error! status: ${previewResponse.status}`);
-                }
-                
-                const previewResult = await previewResponse.json();
-                
-                if (previewResult.success) {
-                    // Open preview in new tab
-                    const previewUrl = previewResult.preview_url;
-                    window.open(previewUrl, '_blank');
-                    
-                    // Show success state
-                    setPreviewButtonState('success', 'Preview đã mở!');
-                } else {
-                    throw new Error(previewResult.message || 'Không thể tạo preview');
-                }
+                setComponentsButtonState('success', 'Đã hiển thị');
+                setTimeout(() => {
+                    setComponentsButtonState('default');
+                }, 1500);
                 
             } catch (error) {
-                console.error('❌ Preview error:', error);
-                setPreviewButtonState('error', 'Lỗi preview');
-                showStatus('Lỗi khi tạo preview: ' + error.message, 'error');
+                console.error('❌ Components view error:', error);
+                setComponentsButtonState('error', 'Lỗi');
+                showStatus('Lỗi khi hiển thị components: ' + error.message, 'error');
             }
         });
         
