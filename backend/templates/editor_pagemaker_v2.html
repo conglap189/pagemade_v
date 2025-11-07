@@ -542,6 +542,58 @@
             border-bottom: 1px solid #374151;
         }
         
+        /* Left panel tabs - same style as right panel */
+        .left-panel-tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .dark .left-panel-tabs {
+            background: #111827;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .left-panel-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .left-panel-tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .left-panel-tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+        }
+        
+        .dark .left-panel-tab.active {
+            background: #1f2937;
+        }
+        
+        /* Left panel content containers */
+        .left-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+            padding: 12px;
+        }
+        
+        .left-panel-content.active {
+            display: block;
+        }
+        
         .right-panel-tab {
             flex: 1;
             padding: 12px 16px;
@@ -1108,15 +1160,21 @@
             </button>
         </div>
         
-        <!-- Left Panel (Blocks only) -->
+        <!-- Left Panel (Blocks with Tabs) -->
         <div id="left-panel" class="active">
-            <div class="panel-header">
-                <div class="panel-title">Blocks</div>
-                <div class="panel-subtitle">Kéo & thả để thêm vào trang</div>
+            <!-- Tabs Header -->
+            <div class="left-panel-tabs">
+                <button class="left-panel-tab active" data-tab="site-blocks">
+                    <i class="fas fa-th-large"></i> Site Blocks
+                </button>
+                <button class="left-panel-tab" data-tab="basic-blocks">
+                    <i class="fas fa-cube"></i> Basic Blocks
+                </button>
             </div>
             
-            <div class="panel-content" id="blocks-container">
-                <!-- PageMaker blocks will be injected here -->
+            <!-- Single container for ALL blocks -->
+            <div class="left-panel-content active" id="blocks-container">
+                <!-- All blocks render here, filtered by CSS -->
             </div>
         </div>
         
@@ -1291,6 +1349,44 @@
             });
         });
         
+        // ===== LEFT PANEL TABS (Site Blocks / Basic Blocks) =====
+        const leftPanelTabs = document.querySelectorAll('.left-panel-tab');
+        
+        // Categories for filtering
+        const SITE_CATEGORIES = ['Blog', 'Contact', 'Content', 'CTA', 'Commerce', 'Features', 'Footer', 'Gallery', 'Header', 'Hero', 'Testimonials'];
+        const BASIC_CATEGORIES = ['Basic', 'Form', 'Extra'];
+        
+        // Function to filter blocks by category
+        function filterBlocksByTab(tabName) {
+            const categories = tabName === 'site-blocks' ? SITE_CATEGORIES : BASIC_CATEGORIES;
+            const blockCategories = document.querySelectorAll('#blocks-container .gjs-block-category');
+            
+            blockCategories.forEach(categoryEl => {
+                const titleEl = categoryEl.querySelector('.gjs-title');
+                if (!titleEl) return;
+                
+                const categoryName = titleEl.textContent.trim();
+                const shouldShow = categories.includes(categoryName);
+                
+                categoryEl.style.display = shouldShow ? 'block' : 'none';
+            });
+        }
+        
+        leftPanelTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                
+                // Remove active from all tabs
+                leftPanelTabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active to clicked tab
+                tab.classList.add('active');
+                
+                // Filter blocks
+                filterBlocksByTab(tabName);
+            });
+        });
+        
         // ===== PAGE DATA =====
         const PAGE_ID = {{ page.id }};
         const SITE_ID = {{ page.site_id }};
@@ -1326,8 +1422,7 @@
             
             // Block Manager
             blockManager: {
-                appendTo: '#blocks-container',
-                // ✅ Sort blocks by category
+                appendTo: '#blocks-container', // Render all blocks to single container
                 custom: true,
             },
             
@@ -2102,16 +2197,35 @@
                 }
             }, 1000);
             
-            // ===== Load Custom Blocks System =====
-            // Import custom blocks from /static/pagemaker/custom-blocks/
-            // These blocks will MERGE into existing categories from PageMaker Tailwind plugin
+            // ===== Load Block Systems =====
+            
+            let allBlocksLoaded = false;
+            
+            // 1. Load Site Blocks (custom-blocks)
             import('/static/pagemaker/custom-blocks/index.js')
                 .then(module => {
                     module.default(editor);
-                    console.log('✅ Custom Blocks System loaded');
+                    console.log('✅ Site Blocks System loaded');
                 })
                 .catch(err => {
-                    // Silent fail - OK if no custom blocks defined yet
+                    console.warn('⚠️ Site Blocks not available:', err);
+                });
+            
+            // 2. Load Basic Blocks System
+            import('/static/pagemaker/basic-blocks/index.js')
+                .then(module => {
+                    module.default(editor);
+                    console.log('✅ Basic Blocks System loaded');
+                    
+                    // After all blocks loaded, apply initial filter
+                    setTimeout(() => {
+                        allBlocksLoaded = true;
+                        filterBlocksByTab('site-blocks'); // Show Site Blocks by default
+                        console.log('✅ Initial filter applied');
+                    }, 500);
+                })
+                .catch(err => {
+                    console.error('❌ Failed to load Basic Blocks:', err);
                 });
         });
         
