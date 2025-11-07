@@ -825,6 +825,178 @@
                 opacity: 1;
             }
         }
+        
+        /* ===== FLOATING PREVIEW TOOLBAR ===== */
+        #floating-preview-toolbar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            cursor: move;
+            user-select: none;
+        }
+        
+        .dark #floating-preview-toolbar {
+            background: rgba(31, 41, 55, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Position classes for floating toolbar */
+        #floating-preview-toolbar.position-top {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        #floating-preview-toolbar.position-left {
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+        }
+        
+        #floating-preview-toolbar.position-right {
+            top: 50%;
+            right: 20px;
+            left: auto;
+            transform: translateY(-50%);
+        }
+        
+        #floating-preview-toolbar.position-bottom {
+            bottom: 20px;
+            top: auto;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .floating-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .dark .floating-btn {
+            background: #374151;
+            color: #f9fafb;
+        }
+        
+        .floating-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .floating-btn-close {
+            background: #ef4444;
+            color: white;
+            padding: 8px 10px;
+        }
+        
+        .floating-btn-close:hover {
+            background: #dc2626;
+        }
+        
+        .floating-btn-save {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .floating-btn-save:hover {
+            background: #2563eb;
+        }
+        
+        .floating-btn-publish {
+            background: #10b981;
+            color: white;
+        }
+        
+        .floating-btn-publish:hover {
+            background: #059669;
+        }
+        
+        .floating-device-switcher {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .dark .floating-device-switcher {
+            background: #1f2937;
+            border: 1px solid #374151;
+        }
+        
+        .floating-device-btn {
+            padding: 8px 10px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .dark .floating-device-btn {
+            color: #9ca3af;
+        }
+        
+        .floating-device-btn:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .dark .floating-device-btn:hover {
+            background: #374151;
+            color: #f9fafb;
+        }
+        
+        .floating-device-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .floating-device-btn.active {
+            background: #1f2937;
+            color: #667eea;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Separator line */
+        #floating-preview-toolbar::before {
+            content: '';
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 24px;
+            background: #e5e7eb;
+        }
+        
+        .dark #floating-preview-toolbar::before {
+            background: #374151;
+        }
     </style>
 </head>
 <body>
@@ -865,6 +1037,16 @@
                 <button class="device-btn" data-device="Mobile" title="Mobile">
                     <i class="fas fa-mobile-alt"></i>
                 </button>
+                
+                <!-- View Toggle Buttons -->
+                <div style="display: flex; gap: 4px; margin-left: 12px; padding-left: 12px; border-left: 1px solid #e5e7eb;">
+                    <button class="device-btn" id="btn-preview" title="Preview Mode">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="device-btn active" id="btn-outline" title="Component Outline">
+                        <i class="fas fa-vector-square"></i>
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -969,6 +1151,36 @@
                 </div>
             </div>
         </div>
+    </div>
+    
+    <!-- Floating Preview Toolbar -->
+    <div id="floating-preview-toolbar" style="display: none;">
+        <!-- Close button -->
+        <button id="floating-close" class="floating-btn floating-btn-close" title="Thoát Preview">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <!-- Device switcher -->
+        <div class="floating-device-switcher">
+            <button class="floating-device-btn active" data-device="Desktop" title="Desktop">
+                <i class="fas fa-desktop"></i>
+            </button>
+            <button class="floating-device-btn" data-device="Tablet" title="Tablet">
+                <i class="fas fa-tablet-alt"></i>
+            </button>
+            <button class="floating-device-btn" data-device="Mobile" title="Mobile">
+                <i class="fas fa-mobile-alt"></i>
+            </button>
+        </div>
+        
+        <!-- Action buttons -->
+        <button id="floating-save" class="floating-btn floating-btn-save" title="Lưu">
+            <span>Lưu</span>
+        </button>
+        
+        <button id="floating-publish" class="floating-btn floating-btn-publish" title="Xuất bản">
+            <span>Xuất bản</span>
+        </button>
     </div>
     
     <!-- Tailwind CSS -->
@@ -1858,6 +2070,12 @@
             // Set default device to Desktop
             editor.setDevice('Desktop');
             
+            // Initialize view toggles
+            setTimeout(() => {
+                // Set initial state for outline (active by default)
+                editor.runCommand('core:component-outline');
+            }, 500);
+            
             // ===== AUTO RENDER BLOCKS on page load =====
             setTimeout(() => {
                 const blocksBtn = document.querySelector('.sidebar-btn[data-panel="blocks"]');
@@ -1943,13 +2161,240 @@
         // ===== UI Controls =====
         
         // Device Switcher
-        document.querySelectorAll('.device-btn').forEach(btn => {
+        document.querySelectorAll('.device-btn[data-device]').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.device-btn[data-device]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 
                 const device = btn.dataset.device;
                 editor.setDevice(device);
+            });
+        });
+        
+        // View Toggle Commands
+        editor.Commands.add('toggle-preview', {
+            run: (editor, sender) => {
+                const isActive = sender.classList.contains('active');
+                
+                if (isActive) {
+                    // Exit preview mode
+                    sender.classList.remove('active');
+                    document.body.classList.remove('preview-mode');
+                    
+                    // Show all elements
+                    const elementsToShow = [
+                        '#top-toolbar',
+                        '#left-sidebar', 
+                        '#left-panel',
+                        '#right-panel'
+                    ];
+                    
+                    elementsToShow.forEach(selector => {
+                        const el = document.querySelector(selector);
+                        if (el) el.style.display = '';
+                    });
+                    
+                    // Reset canvas area
+                    const canvasArea = document.getElementById('canvas-area');
+                    if (canvasArea) {
+                        canvasArea.style.cssText = '';
+                    }
+                    
+                } else {
+                    // Enter preview mode
+                    sender.classList.add('active');
+                    document.body.classList.add('preview-mode');
+                    
+                    // Hide all panels
+                    const elementsToHide = [
+                        '#top-toolbar',
+                        '#left-sidebar',
+                        '#left-panel', 
+                        '#right-panel'
+                    ];
+                    
+                    elementsToHide.forEach(selector => {
+                        const el = document.querySelector(selector);
+                        if (el) el.style.display = 'none';
+                    });
+                    
+                    // Make canvas full screen
+                    const canvasArea = document.getElementById('canvas-area');
+                    if (canvasArea) {
+                        canvasArea.style.cssText = `
+                            position: fixed !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            width: 100vw !important;
+                            height: 100vh !important;
+                            z-index: 9999 !important;
+                            background: white !important;
+                            padding: 0 !important;
+                            margin: 0 !important;
+                        `;
+                    }
+                }
+            }
+        });
+        
+        editor.Commands.add('toggle-outline', {
+            run: (editor, sender) => {
+                const isActive = editor.Commands.isActive('core:component-outline');
+                if (isActive) {
+                    editor.stopCommand('core:component-outline');
+                    sender.classList.remove('active');
+                } else {
+                    editor.runCommand('core:component-outline');
+                    sender.classList.add('active');
+                }
+            }
+        });
+        
+
+        
+        // View Toggle Button Handlers
+        document.getElementById('btn-preview').addEventListener('click', function() {
+            const btn = this;
+            const isActive = btn.classList.contains('active');
+            
+            if (isActive) {
+                // Exit preview mode
+                btn.classList.remove('active');
+                document.body.classList.remove('preview-mode');
+                
+                // Hide floating toolbar
+                const floatingToolbar = document.getElementById('floating-preview-toolbar');
+                if (floatingToolbar) {
+                    floatingToolbar.style.display = 'none';
+                }
+                
+                // Show all elements
+                const elementsToShow = [
+                    '#top-toolbar',
+                    '#left-sidebar', 
+                    '#left-panel',
+                    '#right-panel'
+                ];
+                
+                elementsToShow.forEach(selector => {
+                    const el = document.querySelector(selector);
+                    if (el) el.style.display = '';
+                });
+                
+                // Reset canvas area
+                const canvasArea = document.getElementById('canvas-area');
+                if (canvasArea) {
+                    canvasArea.style.cssText = '';
+                }
+                
+            } else {
+                // Enter preview mode
+                btn.classList.add('active');
+                document.body.classList.add('preview-mode');
+                
+                // Hide all panels
+                const elementsToHide = [
+                    '#top-toolbar',
+                    '#left-sidebar',
+                    '#left-panel', 
+                    '#right-panel'
+                ];
+                
+                elementsToHide.forEach(selector => {
+                    const el = document.querySelector(selector);
+                    if (el) el.style.display = 'none';
+                });
+                
+                // Make canvas full screen
+                const canvasArea = document.getElementById('canvas-area');
+                if (canvasArea) {
+                    canvasArea.style.cssText = `
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        z-index: 9999 !important;
+                        background: white !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                    `;
+                }
+                
+                // Show floating toolbar
+                const floatingToolbar = document.getElementById('floating-preview-toolbar');
+                if (floatingToolbar) {
+                    floatingToolbar.style.display = 'flex';
+                    
+                    // Sync device switcher state
+                    setTimeout(syncFloatingDeviceSwitcher, 100);
+                }
+            }
+        });
+        
+        document.getElementById('btn-outline').addEventListener('click', function() {
+            const btn = this;
+            const isActive = btn.classList.contains('active');
+            
+            if (isActive) {
+                editor.stopCommand('core:component-outline');
+                btn.classList.remove('active');
+            } else {
+                editor.runCommand('core:component-outline');
+                btn.classList.add('active');
+            }
+        });
+        
+
+        
+        // ===== FLOATING TOOLBAR FUNCTIONALITY =====
+        
+        // Close button functionality
+        document.getElementById('floating-close').addEventListener('click', () => {
+            // Trigger exit preview mode
+            const previewBtn = document.getElementById('btn-preview');
+            if (previewBtn && previewBtn.classList.contains('active')) {
+                previewBtn.click();
+            }
+        });
+        
+        // Floating device switcher functionality
+        document.querySelectorAll('.floating-device-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active from all floating device buttons
+                document.querySelectorAll('.floating-device-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Also update main device switcher
+                const device = btn.dataset.device;
+                const mainDeviceBtn = document.querySelector(`.device-btn[data-device="${device}"]`);
+                if (mainDeviceBtn) {
+                    document.querySelectorAll('.device-btn[data-device]').forEach(b => b.classList.remove('active'));
+                    mainDeviceBtn.classList.add('active');
+                }
+                
+                // Set device in editor
+                editor.setDevice(device);
+            });
+        });
+        
+        // Sync floating device switcher with main device switcher
+        function syncFloatingDeviceSwitcher() {
+            const activeMainBtn = document.querySelector('.device-btn[data-device].active');
+            if (activeMainBtn) {
+                const device = activeMainBtn.dataset.device;
+                const floatingBtn = document.querySelector(`.floating-device-btn[data-device="${device}"]`);
+                if (floatingBtn) {
+                    document.querySelectorAll('.floating-device-btn').forEach(b => b.classList.remove('active'));
+                    floatingBtn.classList.add('active');
+                }
+            }
+        }
+        
+        // Update floating device switcher when main device switcher changes
+        document.querySelectorAll('.device-btn[data-device]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setTimeout(syncFloatingDeviceSwitcher, 50);
             });
         });
         
@@ -2054,6 +2499,45 @@
             } catch (error) {
                 console.error('❌ Save error:', error);
                 showStatus('Lỗi khi lưu: ' + error.message, 'error');
+            }
+        });
+        
+        // Floating save button functionality
+        document.getElementById('floating-save').addEventListener('click', async () => {
+            const btn = document.getElementById('floating-save');
+            const originalContent = btn.innerHTML;
+            
+            try {
+                // Show loading state
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Đang lưu...</span>';
+                btn.disabled = true;
+                
+                console.log('💾 Floating save content...');
+                
+                const result = await autoSaveContent();
+                
+                // Show success state
+                btn.innerHTML = '<i class="fas fa-check"></i><span>Đã lưu!</span>';
+                btn.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.style.background = '';
+                    btn.disabled = false;
+                }, 2000);
+                
+            } catch (error) {
+                console.error('❌ Floating save error:', error);
+                
+                // Show error state
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Lỗi!</span>';
+                btn.style.background = '#ef4444';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.style.background = '';
+                    btn.disabled = false;
+                }, 3000);
             }
         });
 
@@ -2229,6 +2713,97 @@
             }
         });
         
+        // Floating publish button functionality
+        document.getElementById('floating-publish').addEventListener('click', async () => {
+            const btn = document.getElementById('floating-publish');
+            const originalContent = btn.innerHTML;
+            
+            if (!confirm('Xuất bản trang này lên subdomain? Trang sẽ truy cập được công khai.')) {
+                return;
+            }
+            
+            try {
+                // Show loading state
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Đang xuất bản...</span>';
+                btn.disabled = true;
+                
+                console.log('🚀 Floating publish content...');
+                
+                // Step 1: Save content first
+                const html = editor.getHtml();
+                const css = editor.getCss();
+                const projectData = editor.getProjectData();
+                
+                const saveData = {
+                    'gjs-html': html,
+                    'gjs-css': css,
+                    'gjs-components': projectData.pages?.[0]?.frames?.[0]?.component?.components || [],
+                    'gjs-styles': projectData.styles || [],
+                    'gjs-assets': projectData.assets || []
+                };
+                
+                const saveResponse = await fetch(SAVE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(saveData)
+                });
+                
+                if (!saveResponse.ok) {
+                    throw new Error('Không thể lưu nội dung');
+                }
+                
+                console.log('✅ Content saved, now publishing...');
+                
+                // Step 2: Publish to subdomain
+                const publishResponse = await fetch(PUBLISH_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                const result = await publishResponse.json();
+                
+                if (result.success) {
+                    // Show success state
+                    btn.innerHTML = '<i class="fas fa-check"></i><span>Thành công!</span>';
+                    btn.style.background = '#10b981';
+                    
+                    console.log('🚀 Published to:', result.url);
+                    
+                    // Open published site in new tab
+                    setTimeout(() => {
+                        window.open(result.url, '_blank');
+                        
+                        // Reset button after opening
+                        setTimeout(() => {
+                            btn.innerHTML = originalContent;
+                            btn.style.background = '';
+                            btn.disabled = false;
+                        }, 1000);
+                    }, 1500);
+                    
+                } else {
+                    throw new Error(result.message || 'Lỗi khi xuất bản');
+                }
+                
+            } catch (error) {
+                console.error('❌ Floating publish error:', error);
+                
+                // Show error state
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Lỗi!</span>';
+                btn.style.background = '#ef4444';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.style.background = '';
+                    btn.disabled = false;
+                }, 3000);
+            }
+        });
+        
         // Hide loading when ready
         editor.on('load', () => {
             console.log('✅ PageMaker Editor loaded!');
@@ -2255,6 +2830,188 @@
         }, 2 * 60 * 1000);
         
         console.log('✅ PageMaker Editor v2 initialized');
+        
+        // ===== FLOATING TOOLBAR DRAGGABLE FUNCTIONALITY =====
+        
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let toolbarStartX = 0;
+        let toolbarStartY = 0;
+        
+        const floatingToolbar = document.getElementById('floating-preview-toolbar');
+        
+        // Save/load position from localStorage
+        function saveToolbarPosition(position) {
+            try {
+                localStorage.setItem('floatingToolbarPosition', position);
+            } catch (e) {
+                console.warn('Could not save toolbar position to localStorage:', e);
+            }
+        }
+        
+        function getToolbarPosition() {
+            try {
+                return localStorage.getItem('floatingToolbarPosition') || 'top';
+            } catch (e) {
+                console.warn('Could not read toolbar position from localStorage:', e);
+                return 'top';
+            }
+        }
+        
+        // Apply position class
+        function setToolbarPosition(position) {
+            // Remove all position classes
+            floatingToolbar.classList.remove('position-top', 'position-left', 'position-right', 'position-bottom');
+            
+            // Add new position class
+            floatingToolbar.classList.add(`position-${position}`);
+            
+            // Save position
+            saveToolbarPosition(position);
+        }
+        
+        // Calculate snap position based on drag end
+        function calculateSnapPosition(x, y) {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const toolbarRect = floatingToolbar.getBoundingClientRect();
+            
+            const centerX = windowWidth / 2;
+            const centerY = windowHeight / 2;
+            
+            const toolbarCenterX = x + toolbarRect.width / 2;
+            const toolbarCenterY = y + toolbarRect.height / 2;
+            
+            // Determine which edge is closest
+            const distances = {
+                top: Math.abs(toolbarCenterY - 100), // 100px from top
+                bottom: Math.abs(toolbarCenterY - (windowHeight - 100)), // 100px from bottom
+                left: Math.abs(toolbarCenterX - 100), // 100px from left
+                right: Math.abs(toolbarCenterX - (windowWidth - 100)) // 100px from right
+            };
+            
+            const minDistance = Math.min(...Object.values(distances));
+            const closestEdge = Object.keys(distances).find(key => distances[key] === minDistance);
+            
+            return closestEdge;
+        }
+        
+        // Mouse down - start dragging
+        floatingToolbar.addEventListener('mousedown', (e) => {
+            // Only allow dragging on the toolbar itself, not on buttons or their children
+            if (e.target.closest('.floating-btn') || 
+                e.target.closest('.floating-device-btn') ||
+                e.target.closest('.floating-device-switcher')) {
+                return;
+            }
+            
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            
+            const rect = floatingToolbar.getBoundingClientRect();
+            toolbarStartX = rect.left;
+            toolbarStartY = rect.top;
+            
+            // Remove position classes while dragging
+            floatingToolbar.classList.remove('position-top', 'position-left', 'position-right', 'position-bottom');
+            
+            // Set inline styles for dragging
+            floatingToolbar.style.position = 'fixed';
+            floatingToolbar.style.left = toolbarStartX + 'px';
+            floatingToolbar.style.top = toolbarStartY + 'px';
+            floatingToolbar.style.transform = 'none';
+            floatingToolbar.style.right = 'auto';
+            floatingToolbar.style.bottom = 'auto';
+            
+            e.preventDefault();
+        });
+        
+        // Throttle function for performance
+        function throttle(func, limit) {
+            let inThrottle;
+            return function() {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            }
+        }
+        
+        // Mouse move - drag (with throttling)
+        const handleMouseMove = throttle((e) => {
+            if (!isDragging) return;
+            
+            const deltaX = e.clientX - dragStartX;
+            const deltaY = e.clientY - dragStartY;
+            
+            const newX = toolbarStartX + deltaX;
+            const newY = toolbarStartY + deltaY;
+            
+            floatingToolbar.style.left = newX + 'px';
+            floatingToolbar.style.top = newY + 'px';
+        }, 16); // ~60fps
+        
+        document.addEventListener('mousemove', handleMouseMove);
+        
+        // Mouse up - stop dragging and snap
+        document.addEventListener('mouseup', (e) => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            
+            const rect = floatingToolbar.getBoundingClientRect();
+            const snapPosition = calculateSnapPosition(rect.left, rect.top);
+            
+            // Clear inline styles
+            floatingToolbar.style.position = '';
+            floatingToolbar.style.left = '';
+            floatingToolbar.style.top = '';
+            floatingToolbar.style.transform = '';
+            floatingToolbar.style.right = '';
+            floatingToolbar.style.bottom = '';
+            
+            // Apply snap position
+            setToolbarPosition(snapPosition);
+        });
+        
+        // Restore position when toolbar is shown
+        function restoreToolbarPosition() {
+            const savedPosition = getToolbarPosition();
+            setToolbarPosition(savedPosition);
+        }
+        
+        // Override the show floating toolbar function to restore position
+        const originalShowFloatingToolbar = () => {
+            const floatingToolbar = document.getElementById('floating-preview-toolbar');
+            if (floatingToolbar) {
+                floatingToolbar.style.display = 'flex';
+                restoreToolbarPosition();
+            }
+        };
+        
+        // Update the existing preview button click handler to restore toolbar position
+        const existingPreviewBtn = document.getElementById('btn-preview');
+        if (existingPreviewBtn) {
+            // Override the existing click handler to include position restoration
+            const originalHandler = existingPreviewBtn.onclick;
+            existingPreviewBtn.addEventListener('click', function() {
+                // Call the original handler first
+                if (originalHandler) originalHandler.call(this);
+                
+                // If entering preview mode, restore toolbar position
+                if (this.classList.contains('active')) {
+                    setTimeout(() => {
+                        restoreToolbarPosition();
+                    }, 100);
+                }
+            });
+        }
+        
     </script>
 </body>
 </html>

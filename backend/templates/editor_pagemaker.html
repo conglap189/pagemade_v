@@ -107,6 +107,33 @@
             background: rgba(255,255,255,0.2);
         }
         
+        /* View Toggle Buttons */
+        .btn-view {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 8px 12px;
+            font-size: 12px;
+            min-width: 38px;
+        }
+        
+        .btn-view:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        
+        .btn-view.active {
+            background: rgba(255,255,255,0.35);
+            border-color: rgba(255,255,255,0.5);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .view-controls {
+            display: flex;
+            gap: 5px;
+            padding: 0 10px;
+            border-left: 1px solid rgba(255,255,255,0.2);
+        }
+        
         /* Editor Container */
         #editor-container {
             height: calc(100vh - 60px);
@@ -209,6 +236,20 @@
             <button class="btn btn-back" onclick="window.location.href='{{ url_for('main.site_detail', site_id=page.site_id) }}'">
                 ← Quay lại
             </button>
+            
+            <!-- View Controls -->
+            <div class="view-controls">
+                <button class="btn btn-view" id="btn-preview" title="Preview Mode">
+                    👁️
+                </button>
+                <button class="btn btn-view active" id="btn-outline" title="Component Outline">
+                    ⬜
+                </button>
+                <button class="btn btn-view" id="btn-offset" title="Show Margins/Padding">
+                    📏
+                </button>
+            </div>
+            
             <button class="btn btn-save" id="btn-save">
                 💾 Lưu nháp
             </button>
@@ -464,6 +505,46 @@
             run: editor => editor.setDevice('Mobile')
         });
         
+        // View Toggle Commands
+        editor.Commands.add('toggle-preview', {
+            run: (editor, sender) => {
+                const isActive = editor.Commands.isActive('core:preview');
+                if (isActive) {
+                    editor.stopCommand('core:preview');
+                    sender.set('active', false);
+                } else {
+                    editor.runCommand('core:preview');
+                    sender.set('active', true);
+                }
+            }
+        });
+        
+        editor.Commands.add('toggle-outline', {
+            run: (editor, sender) => {
+                const isActive = editor.Commands.isActive('core:component-outline');
+                if (isActive) {
+                    editor.stopCommand('core:component-outline');
+                    sender.set('active', false);
+                } else {
+                    editor.runCommand('core:component-outline');
+                    sender.set('active', true);
+                }
+            }
+        });
+        
+        editor.Commands.add('toggle-offset', {
+            run: (editor, sender) => {
+                const isActive = editor.Commands.isActive('core:component-offset');
+                if (isActive) {
+                    editor.stopCommand('core:component-offset');
+                    sender.set('active', false);
+                } else {
+                    editor.runCommand('core:component-offset');
+                    sender.set('active', true);
+                }
+            }
+        });
+        
         // Show loading status
         function showStatus(message, type = 'success') {
             const statusEl = document.createElement('div');
@@ -555,6 +636,29 @@
         // Hide loading overlay when editor is ready
         editor.on('load', () => {
             console.log('✅ PageMaker Editor loaded successfully!');
+            
+            // Initialize view toggle buttons
+            const btnPreview = document.getElementById('btn-preview');
+            const btnOutline = document.getElementById('btn-outline');
+            const btnOffset = document.getElementById('btn-offset');
+            
+            // Preview button
+            btnPreview.addEventListener('click', () => {
+                editor.runCommand('toggle-preview', { sender: btnPreview });
+            });
+            
+            // Outline button (default active)
+            btnOutline.addEventListener('click', () => {
+                editor.runCommand('toggle-outline', { sender: btnOutline });
+            });
+            
+            // Offset button
+            btnOffset.addEventListener('click', () => {
+                editor.runCommand('toggle-offset', { sender: btnOffset });
+            });
+            
+            // Set initial state for outline
+            editor.runCommand('core:component-outline');
             
             setTimeout(() => {
                 const loadingOverlay = document.getElementById('loading-overlay');
