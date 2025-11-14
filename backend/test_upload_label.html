@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Upload Label</title>
+    <style>
+        body {
+            padding: 20px;
+            font-family: sans-serif;
+        }
+        
+        .upload-btn {
+            display: inline-block;
+            background: #8b5cf6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .upload-btn:hover {
+            background: #7c3aed;
+        }
+        
+        #log {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Upload Label</h1>
+    
+    <p>Test 1: Standard HTML label + input</p>
+    <input type="file" id="test-file-1" accept="image/*" multiple style="display: none;">
+    <label for="test-file-1" class="upload-btn">Chọn file (Test 1)</label>
+    
+    <p>Test 2: With JavaScript event listeners</p>
+    <input type="file" id="test-file-2" accept="image/*" multiple style="display: none;">
+    <label for="test-file-2" class="upload-btn" id="test-label-2">Chọn file (Test 2)</label>
+    
+    <div id="log"></div>
+    
+    <script>
+        const log = document.getElementById('log');
+        
+        function addLog(msg) {
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `[${time}] ${msg}<br>`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Test 1: Simple change listener
+        document.getElementById('test-file-1').addEventListener('change', (e) => {
+            addLog(`✅ Test 1: File selected - ${e.target.files.length} file(s)`);
+            Array.from(e.target.files).forEach(f => addLog(`   - ${f.name}`));
+        });
+        
+        // Test 2: Label click + file change listeners
+        const testLabel2 = document.getElementById('test-label-2');
+        const testFile2 = document.getElementById('test-file-2');
+        
+        testLabel2.addEventListener('click', (e) => {
+            addLog(`🖱️ Test 2: Label clicked`);
+        });
+        
+        testFile2.addEventListener('change', (e) => {
+            addLog(`✅ Test 2: File selected - ${e.target.files.length} file(s)`);
+            Array.from(e.target.files).forEach(f => addLog(`   - ${f.name}`));
+        });
+        
+        addLog('🚀 Test page loaded');
+    </script>
+</body>
+</html>

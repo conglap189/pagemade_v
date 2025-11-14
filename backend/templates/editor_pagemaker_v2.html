@@ -2008,45 +2008,51 @@
                     }
                     
                     // Handle Assets panel
-                    if (panelName === 'assets' && window.editor && !assetsRendered) {
+                    if (panelName === 'assets' && window.editor) {
+                        // Always try to setup upload area when Assets panel opens
                         setTimeout(() => {
-                            const assetsContainer = document.getElementById('assets-container');
-                            const assetManager = window.editor.AssetManager;
-                            
-                            if (assetsContainer && assetManager) {
-                                // Clear container
-                                assetsContainer.innerHTML = '';
+                            console.log('🎨 Assets panel opened, setting up upload...');
+                            setupCustomUploadArea();
+                        }, 100);
+                        
+                        // Load assets if not loaded yet
+                        if (!window.assetsLoaded) {
+                            setTimeout(() => {
+                                loadUserAssets();
+                                window.assetsLoaded = true;
+                            }, 200);
+                        }
+                        
+                        // Original asset manager rendering (only once)
+                        if (!assetsRendered) {
+                            setTimeout(() => {
+                                const assetsContainer = document.getElementById('assets-container');
+                                const assetManager = window.editor.AssetManager;
                                 
-                                // Enable Asset Manager rendering for this specific call
-                                window.assetsRenderedInCorrectPlace = true;
-                                
-                                // Render with custom config
-                                const assetsEl = assetManager.render();
-                                
-                                if (assetsEl) {
-                                    assetsContainer.appendChild(assetsEl);
-                                    assetsRendered = true;
-                                    console.log('✅ Assets rendered in correct place', assetManager);
+                                if (assetsContainer && assetManager) {
+                                    // Clear container
+                                    assetsContainer.innerHTML = '';
                                     
-                                    // Setup enhanced drag & drop
-                                    setupAssetsDragDrop(assetsContainer, assetManager);
+                                    // Enable Asset Manager rendering for this specific call
+                                    window.assetsRenderedInCorrectPlace = true;
                                     
-                                    // Load existing assets if not loaded
-                                    if (!window.assetsLoaded) {
-                                        loadExistingAssets();
-                                        window.assetsLoaded = true;
+                                    // Render with custom config
+                                    const assetsEl = assetManager.render();
+                                    
+                                    if (assetsEl) {
+                                        assetsContainer.appendChild(assetsEl);
+                                        assetsRendered = true;
+                                        console.log('✅ Assets rendered in correct place', assetManager);
+                                        
+                                        // Setup enhanced drag & drop
+                                        setupAssetsDragDrop(assetsContainer, assetManager);
+                                    } else {
+                                        // If render failed, reset flag
+                                        window.assetsRenderedInCorrectPlace = false;
                                     }
-                                    
-                                    // Setup custom upload area with delay to ensure DOM is ready
-                                    setTimeout(() => {
-                                        setupCustomUploadArea();
-                                    }, 100);
-                                } else {
-                                    // If render failed, reset flag
-                                    window.assetsRenderedInCorrectPlace = false;
                                 }
-                            }
-                        }, 50);
+                            }, 50);
+                        }
                     }
                 }
                 
@@ -3164,25 +3170,53 @@
         
         function setupCustomUploadArea() {
             const fileInput = document.getElementById('asset-file-input');
+            const uploadLabel = document.querySelector('label[for="asset-file-input"]');
             
             if (!fileInput) {
-                console.error('⚠️ File input not found! Retrying...');
-                setTimeout(setupCustomUploadArea, 500);
+                console.error('⚠️ File input not found! DOM not ready yet.');
                 return;
             }
             
-            console.log('✅ Setting up upload handler...');
+            if (!uploadLabel) {
+                console.error('⚠️ Upload label not found!');
+                return;
+            }
+            
+            // Prevent duplicate event listeners
+            if (fileInput.dataset.listenerAttached === 'true') {
+                console.log('ℹ️ Upload handler already attached');
+                return;
+            }
+            
+            console.log('✅ Setting up upload handler...', {
+                fileInputId: fileInput.id,
+                labelFor: uploadLabel.getAttribute('for')
+            });
+            
+            // Debug: Test label click
+            uploadLabel.addEventListener('click', (e) => {
+                console.log('🖱️ Label clicked!', {
+                    target: e.target,
+                    fileInputId: fileInput.id,
+                    willTriggerFileInput: uploadLabel.getAttribute('for') === fileInput.id
+                });
+            });
             
             // Handle file input change
             fileInput.addEventListener('change', async (e) => {
+                console.log('🎯 File input change event triggered!');
                 const files = e.target.files;
                 if (files && files.length > 0) {
                     console.log(`📦 Processing ${files.length} file(s)...`);
                     await uploadFiles(files);
                     fileInput.value = ''; // Reset for re-upload
+                } else {
+                    console.log('⚠️ No files selected');
                 }
             });
             
+            // Mark as attached
+            fileInput.dataset.listenerAttached = 'true';
             console.log('✅ Upload handler ready!');
         }
         
