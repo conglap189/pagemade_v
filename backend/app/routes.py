@@ -1384,6 +1384,57 @@ def pagemaker_save(page_id):
             'message': f'Error saving content: {str(e)}'
         }), 500
 
+@api_bp.route('/pages/<int:page_id>/upload-asset', methods=['POST'])
+@login_required
+def upload_asset(page_id):
+    """Upload asset (image, video, etc.) for PageMaker"""
+    page = Page.query.get_or_404(page_id)
+    
+    if page.site.user_id != current_user.id:
+        abort(403)
+    
+    try:
+        # Check if files were uploaded
+        if 'files' not in request.files:
+            return jsonify({'success': False, 'message': 'No files uploaded'}), 400
+        
+        files = request.files.getlist('files')
+        uploaded_assets = []
+        
+        # Create upload directory if it doesn't exist
+        upload_dir = os.path.join(os.path.dirname(current_app.root_path), 'static', 'uploads', 'assets')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        for file in files:
+            if file and file.filename:
+                # Secure filename and add unique prefix
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                file_path = os.path.join(upload_dir, unique_filename)
+                
+                # Save file
+                file.save(file_path)
+                
+                # Generate URL
+                asset_url = url_for('static', filename=f'uploads/assets/{unique_filename}', _external=True)
+                
+                uploaded_assets.append({
+                    'src': asset_url,
+                    'name': filename,
+                    'type': 'image' if file.content_type and file.content_type.startswith('image/') else 'file'
+                })
+        
+        return jsonify({
+            'data': uploaded_assets
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Asset upload error: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Error uploading assets: {str(e)}'
+        }), 500
+
 @api_bp.route('/pages/<int:page_id>/preview', methods=['POST'])
 @login_required
 def generate_preview(page_id):
