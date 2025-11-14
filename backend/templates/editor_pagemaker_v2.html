@@ -387,7 +387,7 @@
         #left-panel.active {
             display: flex;
         }
-        
+
         /* Panel sections (Blocks, Layers, Assets) */
         .panel-section {
             display: none;
@@ -456,75 +456,351 @@
             overflow-x: hidden !important;
         }
         
+        /* ===== ASSET MANAGER ONLY IN ASSETS PANEL ===== */
+        /* Remove all previous hiding CSS and use clean approach */
+        /* Asset Manager should only be rendered in assets-container */
+        
+        /* FORCE HIDE Asset Manager UI elements from Block and Layer panels */
+        /* Target specific GrapesJS Asset Manager UI components only */
+        #blocks-container .gjs-am-assets,
+        #layers-container .gjs-am-assets,
+        #blocks-container .gjs-am-file-uploader,
+        #layers-container .gjs-am-file-uploader,
+        #blocks-container .gjs-am-assets-cont,
+        #layers-container .gjs-am-assets-cont,
+        #blocks-container .gjs-am-assets-header,
+        #layers-container .gjs-am-assets-header {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+        }
+        
+        /* Hide block category titled "Assets" - use adjacent sibling selector */
+        #blocks-container .gjs-block-category {
+            /* We'll use JavaScript to hide the specific category */
+        }
+        
+        /* Only allow Asset Manager in assets container */
+        #assets-container .gjs-am-assets,
+        #assets-container .gjs-am-container,
+        #assets-container [class*="gjs-am"] {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            height: auto !important;
+            width: auto !important;
+            position: relative !important;
+            left: auto !important;
+        }
+        
         /* ===== ASSETS PANEL STYLING ===== */
+        #assets-panel.active {
+            height: 100%;
+            display: flex !important;
+            flex-direction: column;
+        }
+        
+        /* Simple Upload Button */
+        .asset-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .asset-upload-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+        
+        .dark .asset-upload-btn {
+            background: #7c3aed;
+        }
+        
+        .dark .asset-upload-btn:hover {
+            background: #6d28d9;
+        }
+        
+        /* Upload Card in Grid */
+        .asset-upload-card {
+            aspect-ratio: 1;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9fafb;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .dark .asset-upload-card {
+            background: #1f2937;
+            border-color: #4b5563;
+        }
+        
+        .asset-upload-card:hover {
+            border-color: #8b5cf6;
+            background: #f5f3ff;
+        }
+        
+        .dark .asset-upload-card:hover {
+            border-color: #8b5cf6;
+            background: #2d1b69;
+        }
+        
+        .asset-upload-btn-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            color: #8b5cf6;
+        }
+        
+        .dark .asset-upload-btn-card {
+            color: #a78bfa;
+        }
+        
+        .asset-upload-btn-card:hover {
+            color: #7c3aed;
+        }
+        
+        .dark .asset-upload-btn-card:hover {
+            color: #c4b5fd;
+        }
+        
+        /* Old upload area - remove */
+        .asset-upload-area {
+            display: none;
+        }
+        
+        /* ===== CUSTOM ASSET GRID ===== */
+        .asset-grid-container {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            padding: 16px;
+        }
+        
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .asset-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f3f4f6;
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .asset-item {
+            background: #374151;
+        }
+        
+        .asset-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        
+        .asset-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .asset-item-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .asset-item:hover .asset-item-overlay {
+            opacity: 1;
+        }
+        
+        .asset-item-name {
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            margin-right: 8px;
+        }
+        
+        .asset-item-delete {
+            background: rgba(239, 68, 68, 0.9);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .asset-item-delete:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+        
+        /* Empty State */
+        .asset-empty-state {
+            text-align: center;
+            padding: 48px 24px;
+        }
+        
+        .asset-empty-state i {
+            display: block;
+        }
+        
+        /* Loading State */
+        .asset-loading-state {
+            text-align: center;
+            padding: 48px 24px;
+        }
+        
+        .asset-loading-state i {
+            display: block;
+        }
+        
+        /* Assets container should take remaining space */
+        #assets-container {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+        
         #assets-panel .gjs-am-assets-cont {
-            padding: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
         
         #assets-panel .gjs-am-assets-header {
-            padding: 12px;
+            padding: 16px;
             border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            background: #f8fafc;
+            flex-shrink: 0;
         }
         
         .dark #assets-panel .gjs-am-assets-header {
             border-bottom: 1px solid #374151;
+            background: #111827;
         }
         
+        /* Upload area styling */
+        #assets-panel .gjs-am-file-uploader {
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .dark #assets-panel .gjs-am-file-uploader {
+            border-color: #374151;
+            background: #1f2937;
+        }
+        
+        #assets-panel .gjs-am-file-uploader:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        #assets-panel .gjs-am-file-uploader div {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .dark #assets-panel .gjs-am-file-uploader div {
+            color: #9ca3af;
+        }
+        
+        /* Add Asset Button */
         #assets-panel .gjs-am-add-asset {
-            background: #8b5cf6;
+            background: #667eea;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 20px;
             border-radius: 6px;
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            margin-top: 12px;
         }
         
         #assets-panel .gjs-am-add-asset:hover {
-            background: #7c3aed;
+            background: #5a67d8;
             transform: translateY(-1px);
         }
         
-        /* Search/URL input in header */
-        #assets-panel .gjs-am-assets-header .gjs-am-file-uploader {
-            flex: 1;
-            min-width: 200px;
-        }
-        
-        #assets-panel .gjs-am-assets-header input[type="text"] {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-        
-        .dark #assets-panel .gjs-am-assets-header input[type="text"] {
-            background: #1f2937;
-            border-color: #374151;
-            color: #f9fafb;
-        }
-        
+        /* Assets grid container */
         #assets-panel .gjs-am-assets {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
             display: grid !important;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             gap: 12px;
-            padding: 12px;
+            align-content: start;
         }
         
+        /* Individual asset items */
         #assets-panel .gjs-am-asset {
             position: relative;
-            border: 2px solid #e5e7eb;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
             overflow: hidden;
             cursor: pointer;
             transition: all 0.2s;
             background: white;
+            aspect-ratio: 1;
         }
         
         .dark #assets-panel .gjs-am-asset {
@@ -533,26 +809,45 @@
         }
         
         #assets-panel .gjs-am-asset:hover {
-            border-color: #8b5cf6;
+            border-color: #667eea;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
         
+        /* Asset images */
         #assets-panel .gjs-am-asset-image {
             width: 100%;
-            height: 120px;
+            height: 100%;
             object-fit: cover;
             display: block;
         }
         
+        /* Asset metadata */
         #assets-panel .gjs-am-meta {
-            padding: 8px;
-            font-size: 11px;
-            color: #6b7280;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 6px;
+            font-size: 10px;
+            line-height: 1.2;
+        }
+        
+        /* Empty state */
+        #assets-panel .gjs-am-assets:empty::after {
+            content: 'Chưa có ảnh nào. Kéo thả hoặc click để upload.';
+            display: block;
             text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            color: #6b7280;
+            font-size: 14px;
+            padding: 40px 20px;
+            grid-column: 1 / -1;
+        }
+        
+        .dark #assets-panel .gjs-am-assets:empty::after {
+            color: #9ca3af;
         }
         
         .dark #assets-panel .gjs-am-meta {
@@ -1325,6 +1620,25 @@
         .gjs-block-category[data-category="Extra"] {
             display: none !important;
         }
+        
+        /* ===== ASSETS DRAG & DROP STYLING ===== */
+        .drag-over {
+            border: 2px dashed #667eea !important;
+            background: rgba(102, 126, 234, 0.1) !important;
+        }
+        
+        #assets-container .gjs-am-file-uploader {
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        #assets-container .gjs-am-file-uploader:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
     </style>
 </head>
 <body>
@@ -1472,9 +1786,39 @@
                 <div class="panel-header">
                     <div class="panel-title">Assets</div>
                     <div class="panel-subtitle">Quản lý media</div>
+                    <p style="font-size: 11px; color: #9ca3af; margin-top: 8px; margin-bottom: 12px;">
+                        Hỗ trợ: JPG, PNG, GIF, WebP (Max 5MB)
+                    </p>
+                    
+                    <!-- Upload Button -->
+                    <input type="file" id="asset-file-input" accept="image/*" multiple style="display: none;">
+                    <label for="asset-file-input" class="asset-upload-btn">
+                        <i class="fas fa-upload"></i> Chọn file
+                    </label>
                 </div>
-                <div class="panel-content" id="assets-container">
-                    <!-- GrapeJS Asset Manager will render here -->
+                
+                <!-- Custom Asset Grid -->
+                <div class="asset-grid-container" id="asset-grid-container">
+                    <div class="asset-grid" id="user-assets-grid">
+                        <!-- Asset items will be rendered here by JavaScript -->
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div class="asset-empty-state" id="asset-empty-state" style="display: none;">
+                        <i class="fas fa-images" style="font-size: 48px; color: #9ca3af; margin-bottom: 16px;"></i>
+                        <p style="font-size: 14px; color: #6b7280;">Chưa có asset nào</p>
+                        <p style="font-size: 12px; color: #9ca3af;">Nhấn "Chọn file" để upload</p>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div class="asset-loading-state" id="asset-loading-state" style="display: none;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #8b5cf6;"></i>
+                        <p style="font-size: 14px; color: #6b7280; margin-top: 12px;">Đang tải...</p>
+                    </div>
+                </div>
+                
+                <div class="panel-content" id="assets-container" style="display: none;">
+                    <!-- GrapeJS Asset Manager (hidden, keeping for potential future use) -->
                 </div>
             </div>
             
@@ -1669,9 +2013,12 @@
                             const assetsContainer = document.getElementById('assets-container');
                             const assetManager = window.editor.AssetManager;
                             
-                            if (assetsContainer) {
+                            if (assetsContainer && assetManager) {
                                 // Clear container
                                 assetsContainer.innerHTML = '';
+                                
+                                // Enable Asset Manager rendering for this specific call
+                                window.assetsRenderedInCorrectPlace = true;
                                 
                                 // Render with custom config
                                 const assetsEl = assetManager.render();
@@ -1679,26 +2026,24 @@
                                 if (assetsEl) {
                                     assetsContainer.appendChild(assetsEl);
                                     assetsRendered = true;
-                                    console.log('✅ Assets rendered', assetManager);
+                                    console.log('✅ Assets rendered in correct place', assetManager);
                                     
-                                    // Add drag & drop support
-                                    assetsContainer.addEventListener('dragover', (e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                    });
+                                    // Setup enhanced drag & drop
+                                    setupAssetsDragDrop(assetsContainer, assetManager);
                                     
-                                    assetsContainer.addEventListener('drop', (e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        
-                                        const files = e.dataTransfer.files;
-                                        if (files.length > 0) {
-                                            const uploadFn = assetManager.getConfig().uploadFile;
-                                            if (uploadFn) {
-                                                uploadFn.call(assetManager, e);
-                                            }
-                                        }
-                                    });
+                                    // Load existing assets if not loaded
+                                    if (!window.assetsLoaded) {
+                                        loadExistingAssets();
+                                        window.assetsLoaded = true;
+                                    }
+                                    
+                                    // Setup custom upload area with delay to ensure DOM is ready
+                                    setTimeout(() => {
+                                        setupCustomUploadArea();
+                                    }, 100);
+                                } else {
+                                    // If render failed, reset flag
+                                    window.assetsRenderedInCorrectPlace = false;
                                 }
                             }
                         }, 50);
@@ -2338,47 +2683,70 @@
                 appendTo: '#layers-container',
             },
             
-            // Asset Manager
+            // Asset Manager - DISABLED auto appendTo, we'll handle manually
             assetManager: {
-                appendTo: '#assets-container',
-                upload: `/api/pages/${PAGE_ID}/upload-asset`,
-                uploadName: 'files',
-                multiUpload: true,
+                // appendTo: '#assets-container', // REMOVED - we control rendering manually
+                upload: '/api/assets/upload',
+                uploadName: 'file',
+                multiUpload: false, // Single file upload for better control
                 autoAdd: true,
                 // Custom buttons text
-                uploadText: 'Upload',
-                addBtnText: 'Add Image',
+                uploadText: 'Kéo thả file vào đây hoặc click để upload',
+                addBtnText: '+ Thêm ảnh',
                 // Enable search/filter
                 showUrlInput: true,
+                modalTitle: 'Chọn ảnh',
+                // Custom text
+                noAssets: 'Chưa có ảnh nào',
+                // Additional config
+                credentials: 'same-origin',
+                // Restrict rendering to only Assets container
+                custom: true,
+                params: {
+                    site_id: SITE_ID
+                },
                 // Custom upload handler
-                uploadFile: function(e) {
-                    var files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
-                    var formData = new FormData();
-                    
-                    for (var i = 0; i < files.length; i++) {
-                        formData.append('files', files[i]);
-                    }
-                    
-                    fetch(`/api/pages/${PAGE_ID}/upload-asset`, {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'same-origin'
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.data) {
-                            data.data.forEach(asset => {
-                                editor.AssetManager.add(asset);
+                uploadFile: async function(e) {
+                    try {
+                        const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+                        
+                        // Process each file
+                        for (let file of files) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            formData.append('site_id', SITE_ID);
+                            
+                            // Show upload progress
+                            showStatus(`Đang tải lên ${file.name}...`, 'info');
+                            
+                            const response = await fetch('/api/assets/upload', {
+                                method: 'POST',
+                                body: formData,
+                                credentials: 'same-origin'
                             });
-                        } else {
-                            console.error('Upload failed:', data.message);
-                            alert('Upload failed: ' + (data.message || 'Unknown error'));
+                            
+                            const data = await response.json();
+                            
+                            if (data.success && data.asset) {
+                                // Add to asset manager
+                                editor.AssetManager.add({
+                                    id: data.asset.id,
+                                    src: data.asset.url,
+                                    name: data.asset.original_name,
+                                    type: 'image',
+                                    width: data.asset.width,
+                                    height: data.asset.height
+                                });
+                                
+                                showStatus(`Tải lên thành công: ${file.name}`, 'success');
+                            } else {
+                                throw new Error(data.error || 'Upload failed');
+                            }
                         }
-                    })
-                    .catch(error => {
+                    } catch (error) {
                         console.error('Upload error:', error);
-                        alert('Upload error: ' + error.message);
-                    });
+                        showStatus(`Lỗi tải lên: ${error.message}`, 'error');
+                    }
                 }
             },
             
@@ -2417,6 +2785,107 @@
         // Expose editor to window for debugging and panel toggle
         window.editor = editor;
         console.log('✅ Editor initialized');
+        
+        // ===== ENSURE ASSET MANAGER ONLY RENDERS IN ASSETS PANEL =====
+        // Override ALL Asset Manager rendering methods
+        const originalAssetManagerRender = editor.AssetManager.render;
+        const originalAssetManagerGetContainer = editor.AssetManager.getContainer;
+        
+        // Override main render method
+        editor.AssetManager.render = function() {
+            if (window.assetsRenderedInCorrectPlace !== true) {
+                console.log('🚫 Asset Manager render blocked - not in assets panel context');
+                return null;
+            }
+            
+            console.log('✅ Authorized Asset Manager render');
+            const result = originalAssetManagerRender.call(this);
+            
+            // Reset flag after successful render to prevent unauthorized future renders
+            setTimeout(() => {
+                window.assetsRenderedInCorrectPlace = false;
+            }, 100);
+            
+            return result;
+        };
+        
+        // Also override getContainer to prevent auto-appending
+        editor.AssetManager.getContainer = function() {
+            if (window.assetsRenderedInCorrectPlace !== true) {
+                console.log('🚫 Asset Manager getContainer blocked');
+                return null;
+            }
+            return originalAssetManagerGetContainer.call(this);
+        };
+        
+        // Add mutation observer to remove any unauthorized Asset Manager UI elements only
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Remove ONLY Asset Manager UI components from blocks and layers containers
+                        const blocksContainer = document.getElementById('blocks-container');
+                        const layersContainer = document.getElementById('layers-container');
+                        
+                        if (blocksContainer) {
+                            // Only remove specific GrapesJS Asset Manager UI elements
+                            const assetUIElements = blocksContainer.querySelectorAll('.gjs-am-assets, .gjs-am-file-uploader, .gjs-am-assets-cont');
+                            assetUIElements.forEach(el => {
+                                console.log('🚫 Removing Asset Manager UI from blocks:', el);
+                                el.remove();
+                            });
+                        }
+                        
+                        if (layersContainer) {
+                            // Only remove specific GrapesJS Asset Manager UI elements
+                            const assetUIElements = layersContainer.querySelectorAll('.gjs-am-assets, .gjs-am-file-uploader, .gjs-am-assets-cont');
+                            assetUIElements.forEach(el => {
+                                console.log('🚫 Removing Asset Manager UI from layers:', el);
+                                el.remove();
+                            });
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Start observing
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
+        // Also do initial cleanup after blocks are loaded
+        setTimeout(() => {
+            const blocksContainer = document.getElementById('blocks-container');
+            const layersContainer = document.getElementById('layers-container');
+            
+            [blocksContainer, layersContainer].forEach(container => {
+                if (container) {
+                    // Only hide specific Asset Manager UI elements
+                    const assetUIElements = container.querySelectorAll('.gjs-am-assets, .gjs-am-file-uploader, .gjs-am-assets-cont');
+                    assetUIElements.forEach(el => {
+                        console.log('🚫 Initial cleanup - hiding Asset Manager UI:', el);
+                        el.style.display = 'none';
+                    });
+                }
+            });
+            
+            // Hide block category titled "Assets"
+            if (blocksContainer) {
+                const blockCategories = blocksContainer.querySelectorAll('.gjs-block-category');
+                blockCategories.forEach(category => {
+                    const titleEl = category.querySelector('.gjs-title, .gjs-block-category-title');
+                    if (titleEl) {
+                        const titleText = titleEl.textContent || titleEl.innerText || '';
+                        if (titleText.toLowerCase().includes('asset')) {
+                            console.log('🚫 Hiding Assets block category:', titleText);
+                            category.style.display = 'none';
+                        }
+                    }
+                });
+            }
+        }, 2000);
         
         console.log('✅ Using PageMaker Tailwind plugin blocks');
         
@@ -2681,12 +3150,298 @@
                         allBlocksLoaded = true;
                         filterBlocksByTab('site-blocks'); // Show Site Blocks by default
                         console.log('✅ Initial filter applied');
+                        
+                        // Load existing assets
+                        loadExistingAssets();
                     }, 500);
                 })
                 .catch(err => {
                     console.error('❌ Failed to load Basic Blocks:', err);
                 });
         });
+        
+        // ===== ASSETS MANAGEMENT =====
+        
+        function setupCustomUploadArea() {
+            const fileInput = document.getElementById('asset-file-input');
+            
+            if (!fileInput) {
+                console.error('⚠️ File input not found! Retrying...');
+                setTimeout(setupCustomUploadArea, 500);
+                return;
+            }
+            
+            console.log('✅ Setting up upload handler...');
+            
+            // Handle file input change
+            fileInput.addEventListener('change', async (e) => {
+                const files = e.target.files;
+                if (files && files.length > 0) {
+                    console.log(`📦 Processing ${files.length} file(s)...`);
+                    await uploadFiles(files);
+                    fileInput.value = ''; // Reset for re-upload
+                }
+            });
+            
+            console.log('✅ Upload handler ready!');
+        }
+        
+        async function uploadFiles(files) {
+            for (let file of files) {
+                // Validate file
+                if (!file.type.startsWith('image/')) {
+                    showStatus(`❌ ${file.name} không phải là file ảnh`, 'error');
+                    continue;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showStatus(`❌ ${file.name} quá lớn (max 5MB)`, 'error');
+                    continue;
+                }
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('site_id', SITE_ID);
+                    
+                    showStatus(`📤 Đang tải lên...`, 'info');
+                    
+                    const response = await fetch('/api/assets/upload', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.asset) {
+                        // Show success notification
+                        showStatus(`✅ Ảnh được tải lên thành công`, 'success');
+                        
+                        // Reload asset grid to show new upload
+                        console.log('🔄 Reloading asset grid...');
+                        await loadUserAssets();
+                    } else {
+                        showStatus(`❌ ${data.error || 'Upload failed'}`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    showStatus(`❌ Lỗi khi upload`, 'error');
+                }
+            }
+        }
+        
+        function setupAssetsDragDrop(container, assetManager) {
+            // Enhanced drag & drop support
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                container.classList.add('drag-over');
+            });
+            
+            container.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                container.classList.remove('drag-over');
+            });
+            
+            container.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                container.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const uploadFn = assetManager.getConfig().uploadFile;
+                    if (uploadFn) {
+                        uploadFn.call(assetManager, e);
+                    }
+                }
+            });
+        }
+        
+        // ===== CUSTOM ASSET GRID FUNCTIONS =====
+        
+        async function loadUserAssets() {
+            try {
+                console.log('🖼️ Loading user assets...');
+                
+                // Show loading state
+                const loadingState = document.getElementById('asset-loading-state');
+                const emptyState = document.getElementById('asset-empty-state');
+                const assetGrid = document.getElementById('user-assets-grid');
+                
+                if (loadingState) loadingState.style.display = 'block';
+                if (emptyState) emptyState.style.display = 'none';
+                if (assetGrid) assetGrid.style.display = 'none';
+                
+                const response = await fetch(`/api/assets/${SITE_ID}`, {
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Hide loading state
+                if (loadingState) loadingState.style.display = 'none';
+                
+                if (data.success && data.assets && data.assets.length > 0) {
+                    console.log(`✅ Loaded ${data.assets.length} user assets`);
+                    renderAssetGrid(data.assets);
+                } else {
+                    // Show empty state
+                    console.log('📭 No assets found');
+                    if (assetGrid) assetGrid.style.display = 'none';
+                    if (emptyState) emptyState.style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to load user assets:', error);
+                const loadingState = document.getElementById('asset-loading-state');
+                if (loadingState) loadingState.style.display = 'none';
+                showStatus('❌ Không thể tải assets', 'error');
+            }
+        }
+        
+        function renderAssetGrid(assets) {
+            const grid = document.getElementById('user-assets-grid');
+            const emptyState = document.getElementById('asset-empty-state');
+            
+            if (!grid) return;
+            
+            // Clear grid
+            grid.innerHTML = '';
+            grid.style.display = 'grid';
+            if (emptyState) emptyState.style.display = 'none';
+            
+            // Render each asset
+            assets.forEach(asset => {
+                const item = document.createElement('div');
+                item.className = 'asset-item';
+                item.dataset.assetId = asset.id;
+                item.dataset.assetUrl = asset.url;
+                
+                // Truncate filename
+                const displayName = truncateFilename(asset.original_name, 15);
+                
+                item.innerHTML = `
+                    <img src="${asset.url}" alt="${asset.original_name}" loading="lazy">
+                    <div class="asset-item-overlay">
+                        <span class="asset-item-name" title="${asset.original_name}">${displayName}</span>
+                        <button class="asset-item-delete" data-asset-id="${asset.id}" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                // Click to select asset (insert into canvas)
+                item.addEventListener('click', (e) => {
+                    // Don't trigger if clicking delete button
+                    if (e.target.closest('.asset-item-delete')) return;
+                    
+                    selectAsset(asset.id, asset.url, asset.original_name);
+                });
+                
+                // Delete button handler
+                const deleteBtn = item.querySelector('.asset-item-delete');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteAsset(asset.id, asset.original_name);
+                });
+                
+                grid.appendChild(item);
+            });
+            
+            console.log(`✅ Rendered ${assets.length} assets in grid`);
+        }
+        
+        function selectAsset(assetId, assetUrl, assetName) {
+            console.log(`🎯 Asset selected: ${assetName}`);
+            
+            // Option C: Smart behavior
+            const selected = editor.getSelected();
+            
+            if (selected && selected.is('image')) {
+                // If an image component is selected, replace its source
+                selected.addAttributes({ src: assetUrl });
+                showStatus(`✅ Đã cập nhật ảnh: ${assetName}`, 'success');
+                console.log('✅ Updated selected image component');
+            } else {
+                // Otherwise, add new image to canvas center
+                const wrapper = editor.getWrapper();
+                const newImage = editor.addComponents({
+                    type: 'image',
+                    src: assetUrl,
+                    attributes: { alt: assetName },
+                    style: {
+                        'max-width': '100%',
+                        'height': 'auto',
+                        'display': 'block'
+                    }
+                })[0];
+                
+                // Select the newly added image
+                editor.select(newImage);
+                
+                showStatus(`✅ Đã thêm ảnh vào canvas: ${assetName}`, 'success');
+                console.log('✅ Added new image to canvas');
+            }
+        }
+        
+        async function deleteAsset(assetId, assetName) {
+            if (!confirm(`Xóa asset "${assetName}"?\n\nHành động này không thể hoàn tác.`)) {
+                return;
+            }
+            
+            try {
+                console.log(`🗑️ Deleting asset: ${assetName}`);
+                
+                const response = await fetch(`/api/assets/${assetId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus(`✅ Đã xóa: ${assetName}`, 'success');
+                    console.log('✅ Asset deleted successfully');
+                    
+                    // Reload asset grid
+                    await loadUserAssets();
+                } else {
+                    showStatus(`❌ ${data.error || 'Không thể xóa asset'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showStatus(`❌ Lỗi khi xóa asset`, 'error');
+            }
+        }
+        
+        function truncateFilename(filename, maxLength = 15) {
+            if (filename.length <= maxLength) return filename;
+            
+            const dotIndex = filename.lastIndexOf('.');
+            if (dotIndex === -1) {
+                // No extension
+                return filename.substring(0, maxLength - 3) + '...';
+            }
+            
+            const ext = filename.substring(dotIndex);
+            const nameWithoutExt = filename.substring(0, dotIndex);
+            const truncatedName = nameWithoutExt.substring(0, maxLength - ext.length - 3) + '...';
+            
+            return truncatedName + ext;
+        }
+        
+        // Legacy function - keep for compatibility
+        async function loadExistingAssets() {
+            // Now just calls the new function
+            await loadUserAssets();
+        }
         
         // ===== RIGHT PANEL TOGGLE LOGIC =====
         const rightPanel = document.getElementById('right-panel');

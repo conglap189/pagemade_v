@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from flask_login import login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from . import db, oauth
-from .models import User, Site, Page
+from .models import User, Site, Page, Asset
 import os
 import json
 import uuid
@@ -13,6 +13,8 @@ import html  # NEW: For HTML cleaning
 from urllib.parse import urljoin  # NEW: For URL handling
 from werkzeug.utils import secure_filename  # NEW: For secure file uploads
 import secrets  # NEW: For secure token generation
+from PIL import Image  # NEW: For image processing
+import mimetypes  # NEW: For MIME type detection
 
 # Create blueprints
 auth_bp = Blueprint('auth', __name__)
@@ -2551,3 +2553,187 @@ def serve_pagemade_loader():
     except Exception as e:
         print(f"Error serving pagemade-loader.js: {e}")
         abort(500)
+
+
+# ===== ASSETS MANAGEMENT ROUTES =====
+
+# Configuration for file uploads
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg', 'ico'}
+MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB max file size
+
+def allowed_file(filename):
+    """Check if file extension is allowed"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_file_size(file):
+    """Get file size from uploaded file"""
+    file.seek(0, 2)  # Move to end
+    size = file.tell()
+    file.seek(0)  # Reset to beginning
+    return size
+
+def get_image_dimensions(filepath):
+    """Get image dimensions if file is an image"""
+    try:
+        with Image.open(filepath) as img:
+            return img.width, img.height
+    except Exception:
+        return None, None
+
+@main_bp.route('/api/assets/upload', methods=['POST'])
+@login_required
+def upload_asset():
+    """Upload asset file for a site"""
+    try:
+        # Get site_id from form data
+        site_id = request.form.get('site_id')
+        if not site_id:
+            return jsonify({'error': 'Site ID is required'}), 400
+        
+        # Verify user owns the site
+        site = Site.query.filter_by(id=site_id, user_id=current_user.id).first()
+        if not site:
+            return jsonify({'error': 'Site not found or access denied'}), 403
+        
+        # Check if file was uploaded
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Validate file
+        if not allowed_file(file.filename):
+            return jsonify({'error': 'File type not allowed. Allowed: ' + ', '.join(ALLOWED_EXTENSIONS)}), 400
+        
+        # Check file size
+        file_size = get_file_size(file)
+        if file_size > MAX_FILE_SIZE:
+            return jsonify({'error': f'File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB'}), 400
+        
+        # Generate secure filename
+        original_name = secure_filename(file.filename)
+        file_extension = original_name.rsplit('.', 1)[1].lower()
+        unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
+        
+        # Create upload directory if not exists
+        upload_dir = os.path.join(current_app.static_folder, 'uploads', str(site_id))
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Save file
+        filepath = os.path.join(upload_dir, unique_filename)
+        file.save(filepath)
+        
+        # Get file info
+        file_type = mimetypes.guess_type(filepath)[0] or 'application/octet-stream'
+        width, height = get_image_dimensions(filepath) if file_type.startswith('image/') else (None, None)
+        
+        # Generate URL
+        file_url = url_for('static', filename=f'uploads/{site_id}/{unique_filename}', _external=True)
+        
+        # Save to database
+        asset = Asset(
+            filename=unique_filename,
+            original_name=original_name,
+            file_size=file_size,
+            file_type=file_type,
+            width=width,
+            height=height,
+            url=file_url,
+            site_id=site_id,
+            user_id=current_user.id
+        )
+        
+        db.session.add(asset)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'asset': asset.to_dict(),
+            'message': 'File uploaded successfully'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Asset upload error: {str(e)}")
+        return jsonify({'error': 'Upload failed'}), 500
+
+@main_bp.route('/api/assets/<int:site_id>', methods=['GET'])
+@login_required
+def get_assets(site_id):
+    """Get all assets for a site"""
+    try:
+        # Verify user owns the site
+        site = Site.query.filter_by(id=site_id, user_id=current_user.id).first()
+        if not site:
+            return jsonify({'error': 'Site not found or access denied'}), 403
+        
+        # Get assets with pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        
+        # Filter by site_id AND user_id (user only sees their own assets)
+        assets_query = Asset.query.filter_by(
+            site_id=site_id,
+            user_id=current_user.id
+        ).order_by(Asset.created_at.desc())
+        assets_pagination = assets_query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        assets_data = [asset.to_dict() for asset in assets_pagination.items]
+        
+        return jsonify({
+            'success': True,
+            'assets': assets_data,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': assets_pagination.total,
+                'pages': assets_pagination.pages
+            }
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Get assets error: {str(e)}")
+        return jsonify({'error': 'Failed to load assets'}), 500
+
+@main_bp.route('/api/assets/<int:asset_id>', methods=['DELETE'])
+@login_required
+def delete_asset(asset_id):
+    """Delete an asset"""
+    try:
+        # Find asset and verify ownership
+        asset = Asset.query.join(Site).filter(
+            Asset.id == asset_id,
+            Site.user_id == current_user.id
+        ).first()
+        
+        if not asset:
+            return jsonify({'error': 'Asset not found or access denied'}), 403
+        
+        # Delete file from filesystem
+        filepath = os.path.join(current_app.static_folder, 'uploads', str(asset.site_id), asset.filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        
+        # Delete from database
+        db.session.delete(asset)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Asset deleted successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Delete asset error: {str(e)}")
+        return jsonify({'error': 'Failed to delete asset'}), 500
+
+# Test route for Assets upload
+@main_bp.route('/test-assets')
+def test_assets():
+    """Serve test page for Assets upload functionality"""
+    with open(os.path.join(os.path.dirname(__file__), '..', 'test_assets_upload.html'), 'r') as f:
+        return f.read()
