@@ -143,6 +143,21 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         
+        .device-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .device-btn:disabled:hover {
+            background: transparent;
+            color: #6b7280;
+        }
+        
+        .dark .device-btn:disabled:hover {
+            background: transparent;
+            color: #9ca3af;
+        }
+        
         #top-toolbar .right {
             display: flex;
             gap: 12px;
@@ -661,6 +676,75 @@
             white-space: nowrap;
             flex: 1;
             margin-right: 8px;
+        }
+        
+        /* Drag & Drop States */
+        .asset-item[draggable="true"] {
+            cursor: move;
+        }
+        
+        .asset-item[draggable="true"]:hover {
+            cursor: grab;
+        }
+        
+        .asset-item[draggable="true"]:active {
+            cursor: grabbing;
+        }
+        
+        /* Canvas drag feedback */
+        .gjs-cv-canvas.drag-over {
+            outline: 2px dashed #667eea !important;
+            background: rgba(102, 126, 234, 0.05) !important;
+        }
+        
+        /* Drag preview (ghost image) */
+        .asset-item-drag-preview {
+            transform: scale(0.8);
+            opacity: 0.8;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+        }
+        
+        /* ===== RESPONSIVE COLUMNS CSS ===== */
+        
+        /* Column responsive behavior */
+        @media (max-width: 768px) {
+            /* Make columns stack on mobile */
+            div[style*="display: flex"] {
+                flex-direction: column !important;
+            }
+            
+            div[style*="display: flex"] > div {
+                flex: 1 !important;
+                width: 100% !important;
+            }
+        }
+        
+        /* Column drop zone styling */
+        .column-dropzone {
+            min-height: 120px;
+            border: 2px dashed #e5e7eb;
+            padding: 15px;
+            background: #f8fafc;
+            text-align: center;
+            color: #6b7280;
+            transition: all 0.2s ease;
+        }
+        
+        .column-dropzone:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .dark .column-dropzone {
+            border-color: #374151;
+            background: #111827;
+            color: #9ca3af;
+        }
+        
+        .dark .column-dropzone:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
         }
         
         .asset-item-delete {
@@ -1680,8 +1764,18 @@
                     <i class="fas fa-mobile-alt"></i>
                 </button>
                 
+                <!-- Undo/Redo Buttons -->
+                <div style="display: flex; gap: 4px; margin-left: 12px; padding-left: 12px; border-left: 1px solid #e5e7eb;" class="dark:border-gray-600">
+                    <button class="device-btn" id="btn-undo" title="Hoàn tác (Ctrl+Z)" disabled>
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button class="device-btn" id="btn-redo" title="Làm lại (Ctrl+Y)" disabled>
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                
                 <!-- View Toggle Buttons -->
-                <div style="display: flex; gap: 4px; margin-left: 12px; padding-left: 12px; border-left: 1px solid #e5e7eb;">
+                <div style="display: flex; gap: 4px; margin-left: 12px; padding-left: 12px; border-left: 1px solid #e5e7eb;" class="dark:border-gray-600">
                     <button class="device-btn" id="btn-preview" title="Preview Mode">
                         <i class="fas fa-eye"></i>
                     </button>
@@ -2792,6 +2886,240 @@
         window.editor = editor;
         console.log('✅ Editor initialized');
         
+        // ===== CANVAS DRAG & DROP FUNCTIONALITY =====
+        
+        // Setup canvas drop zone after editor loads
+        editor.on('load', () => {
+            setTimeout(() => {
+                setupCanvasDropZone();
+                disableDefaultAssetDrop();
+            }, 1000);
+        });
+        
+        // Disable GrapesJS default asset drag & drop behavior
+        function disableDefaultAssetDrop() {
+            console.log('🚫 Disabling GrapesJS default asset drop...');
+            
+            // Override Canvas drag methods
+            const canvas = editor.Canvas;
+            
+            // Block canvas dragover and drop events from GrapesJS
+            const originalOnDragOver = canvas.onDragOver;
+            const originalOnDrop = canvas.onDrop;
+            
+            canvas.onDragOver = function(e) {
+                // Check if this is our custom drag
+                const assetUrl = e.dataTransfer.getData('text/asset-url');
+                if (assetUrl) {
+                    // This is our custom drag - do nothing, let our handler deal with it
+                    e.preventDefault();
+                    return;
+                }
+                // Otherwise, call original GrapesJS handler
+                if (originalOnDragOver) {
+                    originalOnDragOver.call(this, e);
+                }
+            };
+            
+            canvas.onDrop = function(e) {
+                // Check if this is our custom drag
+                const assetUrl = e.dataTransfer.getData('text/asset-url');
+                if (assetUrl) {
+                    // This is our custom drag - prevent GrapesJS from handling
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🚫 Blocked GrapesJS drop handler for custom asset');
+                    return;
+                }
+                // Otherwise, call original GrapesJS handler
+                if (originalOnDrop) {
+                    originalOnDrop.call(this, e);
+                }
+            };
+            
+            console.log('✅ GrapesJS drag handlers overridden');
+        }
+        
+        function setupCanvasDropZone() {
+            const canvasBody = editor.Canvas.getBody();
+            const canvasFrame = editor.Canvas.getFrameEl();
+            
+            if (!canvasBody || !canvasFrame) {
+                console.warn('⚠️ Canvas not ready for drop zone setup, retrying...');
+                setTimeout(setupCanvasDropZone, 500);
+                return;
+            }
+            
+            console.log('🎯 Setting up canvas drop zone...');
+            
+            // Get canvas container element
+            const canvasContainer = editor.Canvas.getElement();
+            
+            // Prevent default drag behaviors on canvas
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                canvasBody.addEventListener(eventName, preventDefaults, false);
+                if (canvasContainer) {
+                    canvasContainer.addEventListener(eventName, preventDefaults, false);
+                }
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Add visual feedback during drag
+            ['dragenter', 'dragover'].forEach(eventName => {
+                canvasBody.addEventListener(eventName, () => {
+                    if (canvasContainer) {
+                        canvasContainer.style.backgroundColor = 'rgba(102, 126, 234, 0.1)';
+                        canvasContainer.style.outline = '2px dashed #667eea';
+                    }
+                });
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                canvasBody.addEventListener(eventName, () => {
+                    if (canvasContainer) {
+                        canvasContainer.style.backgroundColor = '';
+                        canvasContainer.style.outline = '';
+                    }
+                });
+            });
+            
+            // Handle drop event
+            canvasBody.addEventListener('drop', (e) => {
+                console.log('🎯 Asset dropped on canvas');
+                
+                // CRITICAL: Stop ALL event propagation immediately
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Get asset data from drag transfer
+                const assetUrl = e.dataTransfer.getData('text/asset-url');
+                const assetName = e.dataTransfer.getData('text/asset-name');
+                const assetId = e.dataTransfer.getData('text/asset-id');
+                
+                if (!assetUrl) {
+                    console.log('❌ No asset data in drop event - this might be a GrapesJS default drop');
+                    return false; // Explicitly return false
+                }
+                
+                // Clear dataTransfer to prevent any further processing
+                e.dataTransfer.clearData();
+                
+                console.log('✅ Processing custom asset drop:', assetName);
+                
+                // Get drop position relative to canvas
+                const canvasRect = canvasBody.getBoundingClientRect();
+                const dropX = e.clientX - canvasRect.left;
+                const dropY = e.clientY - canvasRect.top;
+                
+                console.log(`📍 Drop position: (${dropX}, ${dropY})`);
+                
+                // Find target component at drop position
+                let targetComponent = null;
+                const targetElement = e.target;
+                
+                if (targetElement && targetElement !== canvasBody) {
+                    // Walk up the DOM to find a GrapesJS component
+                    let current = targetElement;
+                    while (current && current !== canvasBody) {
+                        // Check if this element corresponds to a GrapesJS component
+                        const wrapper = editor.getWrapper();
+                        const allComponents = [];
+                        
+                        // Recursively collect all components
+                        function collectComponents(comp) {
+                            allComponents.push(comp);
+                            comp.components().each(child => collectComponents(child));
+                        }
+                        
+                        collectComponents(wrapper);
+                        
+                        // Find matching component
+                        targetComponent = allComponents.find(comp => comp.getEl() === current);
+                        
+                        if (targetComponent) break;
+                        current = current.parentElement;
+                    }
+                }
+                
+                if (targetComponent && (targetComponent.get('tagName') === 'div' || 
+                                       targetComponent.get('tagName') === 'section' || 
+                                       targetComponent.get('tagName') === 'main' ||
+                                       targetComponent.get('type') === 'wrapper')) {
+                    // Drop into container
+                    const newImage = targetComponent.append({
+                        type: 'image',
+                        src: assetUrl,
+                        attributes: { alt: assetName },
+                        style: {
+                            'max-width': '100%',
+                            'height': 'auto',
+                            'display': 'block'
+                        }
+                    })[0];
+                    
+                    editor.select(newImage);
+                    showStatus(`✅ Đã thêm ảnh vào container: ${assetName}`, 'success');
+                    console.log('✅ Image added to target container via drag & drop');
+                    return false;
+                }
+                
+                // Add to canvas with absolute positioning
+                addImageAtPosition(assetUrl, assetName, dropX, dropY);
+                return false; // Prevent any further event processing
+            }, true); // Use capture phase to intercept before GrapesJS
+            
+            console.log('✅ Canvas drop zone ready');
+        }
+        
+        // Helper function to add image at specific position
+        function addImageAtPosition(assetUrl, assetName, x, y) {
+            try {
+                // Remove any placeholder images that might have been created
+                setTimeout(() => {
+                    const placeholderImages = editor.getWrapper().find('image').filter(img => {
+                        const src = img.get('src') || img.getEl()?.src;
+                        return !src || src.includes('placeholder') || src.includes('data:image');
+                    });
+                    
+                    placeholderImages.forEach(placeholder => {
+                        console.log('🗑️ Removing placeholder image:', placeholder.get('src'));
+                        placeholder.remove();
+                    });
+                }, 100);
+                
+                const newImage = editor.addComponents({
+                    type: 'image',
+                    src: assetUrl,
+                    attributes: { alt: assetName },
+                    style: {
+                        'position': 'absolute',
+                        'left': Math.max(0, x - 100) + 'px', // Center image on cursor
+                        'top': Math.max(0, y - 50) + 'px',
+                        'max-width': '200px',
+                        'height': 'auto',
+                        'z-index': '1'
+                    }
+                })[0];
+                
+                if (newImage) {
+                    editor.select(newImage);
+                    showStatus(`✅ Đã thêm ảnh tại vị trí: ${assetName}`, 'success');
+                    console.log(`✅ Image positioned at (${x}, ${y}) via drag & drop`);
+                } else {
+                    console.error('❌ Failed to create image component');
+                    showStatus(`❌ Lỗi khi thêm ảnh: ${assetName}`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error adding image at position:', error);
+                showStatus(`❌ Lỗi khi thêm ảnh: ${error.message}`, 'error');
+            }
+        }
+        
         // ===== ENSURE ASSET MANAGER ONLY RENDERS IN ASSETS PANEL =====
         // Override ALL Asset Manager rendering methods
         const originalAssetManagerRender = editor.AssetManager.render;
@@ -3357,6 +3685,7 @@
                 item.className = 'asset-item';
                 item.dataset.assetId = asset.id;
                 item.dataset.assetUrl = asset.url;
+                item.dataset.assetName = asset.original_name;
                 
                 // Truncate filename
                 const displayName = truncateFilename(asset.original_name, 15);
@@ -3371,9 +3700,79 @@
                     </div>
                 `;
                 
-                // Click to select asset (insert into canvas)
+                // Add tooltip for drag & drop
+                item.title = `${asset.original_name}\n\nClick để thêm vào canvas\nKéo thả để đặt tại vị trí cụ thể`;
+                
+                // Make item draggable
+                item.draggable = true;
+                
+                // Drag event handlers
+                item.addEventListener('dragstart', (e) => {
+                    console.log(`🎯 Started dragging: ${asset.original_name}`);
+                    
+                    // IMPORTANT: Prevent GrapesJS from handling this drag
+                    e.stopPropagation();
+                    
+                    // Store ONLY our asset data, clear any other data
+                    e.dataTransfer.clearData();
+                    e.dataTransfer.setData('text/asset-url', asset.url);
+                    e.dataTransfer.setData('text/asset-name', asset.original_name);
+                    e.dataTransfer.setData('text/asset-id', asset.id);
+                    e.dataTransfer.effectAllowed = 'copy';
+                    
+                    // Create small drag preview image
+                    const dragPreview = document.createElement('div');
+                    dragPreview.style.cssText = `
+                        width: 80px;
+                        height: 80px;
+                        background: white;
+                        border: 2px solid #667eea;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        position: fixed;
+                        top: -1000px;
+                        left: -1000px;
+                        z-index: 9999;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        overflow: hidden;
+                    `;
+                    
+                    const previewImg = document.createElement('img');
+                    previewImg.src = asset.url;
+                    previewImg.style.cssText = `
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        border-radius: 6px;
+                    `;
+                    
+                    dragPreview.appendChild(previewImg);
+                    document.body.appendChild(dragPreview);
+                    
+                    // Set the custom drag image
+                    e.dataTransfer.setDragImage(dragPreview, 40, 40);
+                    
+                    // Remove the preview element after drag starts
+                    setTimeout(() => {
+                        if (dragPreview.parentNode) {
+                            dragPreview.parentNode.removeChild(dragPreview);
+                        }
+                    }, 0);
+                    
+                    // Add drag visual feedback to original item
+                    item.style.opacity = '0.5';
+                });
+                
+                item.addEventListener('dragend', (e) => {
+                    // Reset visual feedback
+                    item.style.opacity = '1';
+                });
+                
+                // Click to select asset (insert into canvas) - kept for backward compatibility
                 item.addEventListener('click', (e) => {
-                    // Don't trigger if clicking delete button
+                    // Don't trigger if clicking delete button or if dragging
                     if (e.target.closest('.asset-item-delete')) return;
                     
                     selectAsset(asset.id, asset.url, asset.original_name);
@@ -3389,24 +3788,24 @@
                 grid.appendChild(item);
             });
             
-            console.log(`✅ Rendered ${assets.length} assets in grid`);
+            console.log(`✅ Rendered ${assets.length} assets in grid with drag & drop`);
         }
         
         function selectAsset(assetId, assetUrl, assetName) {
             console.log(`🎯 Asset selected: ${assetName}`);
             
-            // Option C: Smart behavior
+            // Smart behavior based on selection
             const selected = editor.getSelected();
             
             if (selected && selected.is('image')) {
-                // If an image component is selected, replace its source
-                selected.addAttributes({ src: assetUrl });
+                // Case 1: Image component selected → Replace src
+                selected.addAttributes({ src: assetUrl, alt: assetName });
                 showStatus(`✅ Đã cập nhật ảnh: ${assetName}`, 'success');
                 console.log('✅ Updated selected image component');
-            } else {
-                // Otherwise, add new image to canvas center
-                const wrapper = editor.getWrapper();
-                const newImage = editor.addComponents({
+                
+            } else if (selected && selected.get('tagName') === 'div') {
+                // Case 2: Container selected → Add image inside
+                const newImage = selected.append({
                     type: 'image',
                     src: assetUrl,
                     attributes: { alt: assetName },
@@ -3419,10 +3818,58 @@
                 
                 // Select the newly added image
                 editor.select(newImage);
+                showStatus(`✅ Đã thêm ảnh vào container: ${assetName}`, 'success');
+                console.log('✅ Added image to selected container');
                 
-                showStatus(`✅ Đã thêm ảnh vào canvas: ${assetName}`, 'success');
-                console.log('✅ Added new image to canvas');
+            } else if (selected) {
+                // Case 3: Other component selected → Add to parent
+                const parent = selected.parent();
+                if (parent && parent !== editor.getWrapper()) {
+                    const newImage = parent.append({
+                        type: 'image',
+                        src: assetUrl,
+                        attributes: { alt: assetName },
+                        style: {
+                            'max-width': '100%',
+                            'height': 'auto',
+                            'display': 'block'
+                        }
+                    })[0];
+                    
+                    editor.select(newImage);
+                    showStatus(`✅ Đã thêm ảnh vào parent container: ${assetName}`, 'success');
+                    console.log('✅ Added image to parent of selected component');
+                } else {
+                    // Fallback to canvas root
+                    addImageToCanvas(assetUrl, assetName);
+                }
+                
+            } else {
+                // Case 4: Nothing selected → Add to canvas center
+                addImageToCanvas(assetUrl, assetName);
             }
+        }
+        
+        // Helper function to add image to canvas
+        function addImageToCanvas(assetUrl, assetName) {
+            const wrapper = editor.getWrapper();
+            const newImage = editor.addComponents({
+                type: 'image',
+                src: assetUrl,
+                attributes: { alt: assetName },
+                style: {
+                    'max-width': '100%',
+                    'height': 'auto',
+                    'display': 'block',
+                    'margin': '10px auto'
+                }
+            })[0];
+            
+            // Select the newly added image
+            editor.select(newImage);
+            
+            showStatus(`✅ Đã thêm ảnh vào canvas: ${assetName}`, 'success');
+            console.log('✅ Added new image to canvas');
         }
         
         async function deleteAsset(assetId, assetName) {
@@ -3864,6 +4311,90 @@
                 }, 3000);
             }
         });
+
+        // ===== UNDO/REDO FUNCTIONALITY =====
+        
+        const btnUndo = document.getElementById('btn-undo');
+        const btnRedo = document.getElementById('btn-redo');
+        
+        // Function to update button states
+        function updateUndoRedoButtons() {
+            const um = editor.UndoManager;
+            
+            // Update Undo button
+            if (um.hasUndo()) {
+                btnUndo.disabled = false;
+            } else {
+                btnUndo.disabled = true;
+            }
+            
+            // Update Redo button
+            if (um.hasRedo()) {
+                btnRedo.disabled = false;
+            } else {
+                btnRedo.disabled = true;
+            }
+        }
+        
+        // Undo button click handler
+        btnUndo.addEventListener('click', () => {
+            if (editor.UndoManager.hasUndo()) {
+                editor.UndoManager.undo();
+                console.log('↶ Undo executed');
+            }
+        });
+        
+        // Redo button click handler
+        btnRedo.addEventListener('click', () => {
+            if (editor.UndoManager.hasRedo()) {
+                editor.UndoManager.redo();
+                console.log('↷ Redo executed');
+            }
+        });
+        
+        // Keyboard shortcuts for Undo/Redo
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Z or Cmd+Z for Undo
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                if (editor.UndoManager.hasUndo()) {
+                    editor.UndoManager.undo();
+                    console.log('⌨️ Undo via keyboard (Ctrl+Z)');
+                }
+            }
+            
+            // Ctrl+Y or Cmd+Shift+Z for Redo
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                e.preventDefault();
+                if (editor.UndoManager.hasRedo()) {
+                    editor.UndoManager.redo();
+                    console.log('⌨️ Redo via keyboard (Ctrl+Y / Ctrl+Shift+Z)');
+                }
+            }
+        });
+        
+        // Listen to editor changes to update button states
+        editor.on('load', () => {
+            updateUndoRedoButtons();
+        });
+        
+        editor.on('update', () => {
+            updateUndoRedoButtons();
+        });
+        
+        // Also listen to undo/redo events
+        editor.on('undo', () => {
+            updateUndoRedoButtons();
+        });
+        
+        editor.on('redo', () => {
+            updateUndoRedoButtons();
+        });
+        
+        // Initial state
+        updateUndoRedoButtons();
+        
+        console.log('✅ Undo/Redo initialized');
 
         
         // Publish button

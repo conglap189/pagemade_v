@@ -49,6 +49,93 @@ export default (editor) => {
         media: '<i class="fas fa-square-full"></i>',
         content: '<div class="container"></div>',
     });
+
+    // ===== LAYOUT COLUMNS =====
+    
+    // 1 Column
+    bm.add('layout-1-column', {
+        label: '1 Column',
+        category: 'Basic',
+        media: '<div style="display: flex; gap: 2px;"><div style="flex: 1; height: 10px; background: #667eea;"></div></div>',
+        content: `
+            <div style="display: flex; flex-direction: column; gap: 20px; padding: 20px; min-height: 200px; border: 1px dashed #e5e7eb;">
+                <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280;">
+                    Drop content here
+                </div>
+            </div>
+        `,
+    });
+    
+    // 2 Columns
+    bm.add('layout-2-columns', {
+        label: '2 Columns',
+        category: 'Basic',
+        media: '<div style="display: flex; gap: 2px;"><div style="flex: 1; height: 10px; background: #667eea;"></div><div style="flex: 1; height: 10px; background: #667eea;"></div></div>',
+        content: `
+            <div style="display: flex; gap: 20px; padding: 20px; min-height: 200px; border: 1px dashed #e5e7eb;">
+                <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280;">
+                    Column 1
+                </div>
+                <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280;">
+                    Column 2
+                </div>
+            </div>
+        `,
+    });
+    
+    // 3 Columns
+    bm.add('layout-3-columns', {
+        label: '3 Columns',
+        category: 'Basic',
+        media: '<div style="display: flex; gap: 2px;"><div style="flex: 1; height: 10px; background: #667eea;"></div><div style="flex: 1; height: 10px; background: #667eea;"></div><div style="flex: 1; height: 10px; background: #667eea;"></div></div>',
+        content: `
+            <div style="display: flex; gap: 15px; padding: 20px; min-height: 200px; border: 1px dashed #e5e7eb;">
+                <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280; font-size: 14px;">
+                    Column 1
+                </div>
+                <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280; font-size: 14px;">
+                    Column 2
+                </div>
+                <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280; font-size: 14px;">
+                    Column 3
+                </div>
+            </div>
+        `,
+    });
+    
+    // 2 Columns (1:2 ratio)
+    bm.add('layout-2-columns-1-2', {
+        label: '1:2 Columns',
+        category: 'Basic',
+        media: '<div style="display: flex; gap: 2px;"><div style="flex: 1; height: 10px; background: #667eea;"></div><div style="flex: 2; height: 10px; background: #667eea;"></div></div>',
+        content: `
+            <div style="display: flex; gap: 20px; padding: 20px; min-height: 200px; border: 1px dashed #e5e7eb;">
+                <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280;">
+                    Sidebar
+                </div>
+                <div style="flex: 2; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280;">
+                    Main Content
+                </div>
+            </div>
+        `,
+    });
+    
+    // 2 Columns (2:1 ratio)
+    bm.add('layout-2-columns-2-1', {
+        label: '2:1 Columns',
+        category: 'Basic',
+        media: '<div style="display: flex; gap: 2px;"><div style="flex: 2; height: 10px; background: #667eea;"></div><div style="flex: 1; height: 10px; background: #667eea;"></div></div>',
+        content: `
+            <div style="display: flex; gap: 20px; padding: 20px; min-height: 200px; border: 1px dashed #e5e7eb;">
+                <div style="flex: 2; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280;">
+                    Main Content
+                </div>
+                <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px dashed #d1d5db; text-align: center; color: #6b7280;">
+                    Sidebar
+                </div>
+            </div>
+        `,
+    });
     
     // ===== FORM CATEGORY =====
     
