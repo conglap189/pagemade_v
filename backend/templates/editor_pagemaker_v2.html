@@ -3906,32 +3906,43 @@
         }
         
         async function deleteAsset(assetId, assetName) {
+            console.log(`🗑️ Delete requested for asset: ${assetId} - ${assetName}`);
+            
             if (!confirm(`Xóa asset "${assetName}"?\n\nHành động này không thể hoàn tác.`)) {
+                console.log('❌ User cancelled delete');
                 return;
             }
             
             try {
-                console.log(`🗑️ Deleting asset: ${assetName}`);
+                console.log(`🗑️ Sending DELETE request to: /api/assets/${assetId}`);
                 
                 const response = await fetch(`/api/assets/${assetId}`, {
                     method: 'DELETE',
-                    credentials: 'same-origin'
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
+                console.log(`📡 DELETE response status: ${response.status}`);
+                
                 const data = await response.json();
+                console.log(`📡 DELETE response data:`, data);
                 
                 if (data.success) {
                     showStatus(`✅ Đã xóa: ${assetName}`, 'success');
-                    console.log('✅ Asset deleted successfully');
+                    console.log('✅ Asset deleted successfully from database and filesystem');
                     
                     // Reload asset grid
+                    console.log('🔄 Reloading assets...');
                     await loadUserAssets();
                 } else {
                     showStatus(`❌ ${data.error || 'Không thể xóa asset'}`, 'error');
+                    console.error('❌ Delete failed:', data.error);
                 }
             } catch (error) {
-                console.error('Delete error:', error);
-                showStatus(`❌ Lỗi khi xóa asset`, 'error');
+                console.error('❌ Delete error:', error);
+                showStatus(`❌ Lỗi khi xóa asset: ${error.message}`, 'error');
             }
         }
         

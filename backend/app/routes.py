@@ -2716,6 +2716,8 @@ def get_assets(site_id):
 def delete_asset(asset_id):
     """Delete an asset"""
     try:
+        print(f"🗑️ DELETE request for asset_id: {asset_id}, user_id: {current_user.id}")
+        
         # Find asset and verify ownership
         asset = Asset.query.join(Site).filter(
             Asset.id == asset_id,
@@ -2723,16 +2725,25 @@ def delete_asset(asset_id):
         ).first()
         
         if not asset:
+            print(f"❌ Asset not found or access denied: asset_id={asset_id}")
             return jsonify({'error': 'Asset not found or access denied'}), 403
+        
+        print(f"✅ Asset found: {asset.original_name} (site_id: {asset.site_id})")
         
         # Delete file from filesystem
         filepath = os.path.join(current_app.static_folder, 'uploads', str(asset.site_id), asset.filename)
+        print(f"🗂️ File path: {filepath}")
+        
         if os.path.exists(filepath):
             os.remove(filepath)
+            print(f"✅ File deleted from filesystem: {filepath}")
+        else:
+            print(f"⚠️ File not found on filesystem: {filepath}")
         
         # Delete from database
         db.session.delete(asset)
         db.session.commit()
+        print(f"✅ Asset deleted from database: {asset.original_name}")
         
         return jsonify({
             'success': True,
@@ -2741,6 +2752,7 @@ def delete_asset(asset_id):
         
     except Exception as e:
         db.session.rollback()
+        print(f"❌ Delete asset error: {str(e)}")
         current_app.logger.error(f"Delete asset error: {str(e)}")
         return jsonify({'error': 'Failed to delete asset'}), 500
 
