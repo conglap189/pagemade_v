@@ -2591,10 +2591,15 @@ def upload_asset():
         if not site_id:
             return jsonify({'error': 'Site ID is required'}), 400
         
+        print(f"🔍 Upload - site_id: {site_id}, user_id: {current_user.id}")
+        
         # Verify user owns the site
         site = Site.query.filter_by(id=site_id, user_id=current_user.id).first()
         if not site:
+            print(f"❌ Site access denied: site_id={site_id}, user_id={current_user.id}")
             return jsonify({'error': 'Site not found or access denied'}), 403
+            
+        print(f"✅ Site verified: {site.title}")
         
         # Check if file was uploaded
         if 'file' not in request.files:
@@ -2665,10 +2670,15 @@ def upload_asset():
 def get_assets(site_id):
     """Get all assets for a site"""
     try:
+        print(f"🔍 Load assets - site_id: {site_id}, user_id: {current_user.id}")
+        
         # Verify user owns the site
         site = Site.query.filter_by(id=site_id, user_id=current_user.id).first()
         if not site:
+            print(f"❌ Site access denied: site_id={site_id}, user_id={current_user.id}")
             return jsonify({'error': 'Site not found or access denied'}), 403
+            
+        print(f"✅ Site access granted: {site.title}")
         
         # Get assets with pagination
         page = request.args.get('page', 1, type=int)
@@ -2679,9 +2689,12 @@ def get_assets(site_id):
             site_id=site_id,
             user_id=current_user.id
         ).order_by(Asset.created_at.desc())
+        
         assets_pagination = assets_query.paginate(page=page, per_page=per_page, error_out=False)
         
         assets_data = [asset.to_dict() for asset in assets_pagination.items]
+        
+        print(f"✅ Found {len(assets_data)} assets for site {site_id}")
         
         return jsonify({
             'success': True,
