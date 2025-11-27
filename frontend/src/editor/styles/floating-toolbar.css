@@ -1,0 +1,291 @@
+/* ===== FLOATING TOOLBAR ===== */
+
+.floating-toolbar {
+    position: fixed;
+    top: 100px;
+    left: 20px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 48px;
+    max-width: 48px;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.dark .floating-toolbar {
+    background: #374151;
+    border-color: #4b5563;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.floating-toolbar.visible {
+    max-width: 200px;
+}
+
+.floating-toolbar.collapsed {
+    max-width: 48px;
+}
+
+.floating-toolbar.dragging {
+    opacity: 0.8;
+    cursor: grabbing;
+}
+
+/* ===== TOOLBAR HEADER ===== */
+.toolbar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 12px 12px 0 0;
+    cursor: grab;
+}
+
+.dark .toolbar-header {
+    background: #1f2937;
+    border-bottom-color: #4b5563;
+}
+
+.drag-handle {
+    color: #6b7280;
+    cursor: grab;
+    font-size: 12px;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.toolbar-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.floating-toolbar.visible .toolbar-title {
+    opacity: 1;
+}
+
+.dark .toolbar-title {
+    color: #f3f4f6;
+}
+
+.toolbar-toggle {
+    background: none;
+    border: none;
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-toggle:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.dark .toolbar-toggle {
+    color: #9ca3af;
+}
+
+.dark .toolbar-toggle:hover {
+    background: #4b5563;
+    color: #f3f4f6;
+}
+
+/* ===== TOOLBAR CONTENT ===== */
+.toolbar-content {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.floating-toolbar.collapsed .toolbar-content {
+    padding: 4px;
+}
+
+/* ===== TOOL BUTTONS ===== */
+.tool-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.tool-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.tool-btn.active {
+    background: #667eea;
+    color: white;
+}
+
+.dark .tool-btn {
+    color: #9ca3af;
+}
+
+.dark .tool-btn:hover {
+    background: #4b5563;
+    color: #f3f4f6;
+}
+
+.dark .tool-btn.active {
+    background: #667eea;
+    color: white;
+}
+
+.tool-btn i {
+    font-size: 14px;
+}
+
+.floating-toolbar.visible .tool-btn {
+    width: auto;
+    padding: 6px 12px;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+.floating-toolbar.visible .tool-btn::after {
+    content: attr(title);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.floating-toolbar.collapsed .tool-btn::after {
+    display: none;
+}
+
+/* ===== TOOLBAR DIVIDER ===== */
+.toolbar-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 4px 0;
+}
+
+.dark .toolbar-divider {
+    background: #4b5563;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .floating-toolbar {
+        top: 80px;
+        left: 10px;
+    }
+    
+    .toolbar-header {
+        padding: 6px;
+    }
+    
+    .toolbar-content {
+        padding: 6px;
+    }
+    
+    .tool-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .floating-toolbar.visible .tool-btn {
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .floating-toolbar {
+        top: 70px;
+        left: 5px;
+    }
+    
+    .tool-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .tool-btn i {
+        font-size: 16px;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes toolbarSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.floating-toolbar {
+    animation: toolbarSlideIn 0.3s ease-out;
+}
+
+/* ===== ACCESSIBILITY ===== */
+.tool-btn:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.toolbar-toggle:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+    .floating-toolbar {
+        border-width: 2px;
+    }
+    
+    .tool-btn.active {
+        background: #000;
+        color: #fff;
+    }
+    
+    .dark .tool-btn.active {
+        background: #fff;
+        color: #000;
+    }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    .floating-toolbar,
+    .tool-btn,
+    .toolbar-toggle,
+    .toolbar-title {
+        transition: none;
+    }
+    
+    .floating-toolbar {
+        animation: none;
+    }
+}

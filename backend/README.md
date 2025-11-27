@@ -1,61 +1,271 @@
-# AutoLandingPage Setup Instructions
+# PageMade Backend# PageMade Backend
 
-## Google OAuth Setup
 
-To enable Google OAuth login, follow these steps:
 
-### 1. Google Cloud Console Setup
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+Flask backend for PageMade website builder platform with 7-layer architecture.Flask backend for PageMade website builder platform.
+
+
+
+## 📁 Project Structure## 📁 Project Structure
+
+
+
+``````
+
+backend/backend/
+
+├── AGENTS.md              # ⚠️ AI agents guidelines (READ FIRST for AI)├── AGENTS.md              # AI agents guidelines (READ FIRST for AI)
+
+├── README.md              # This file├── README.md              # This file
+
+├── run.py                 # Application runner (supports --local flag)├── run.py                 # Application runner (use --local for dev)
+
+├── wsgi.py                # WSGI entry point for production├── wsgi.py                # WSGI entry point for production
+
+├── config.py              # Application configuration├── config.py              # Application configuration
+
+├── cache.py               # Cache configuration├── cache.py               # Cache configuration
+
+├── pytest.ini             # Pytest configuration├── pytest.ini             # Pytest configuration
+
+├── requirements.txt       # Python dependencies├── requirements.txt       # Python dependencies
+
+││
+
+├── config/                # 📂 Configuration files├── config/                # Configuration files
+
+│   ├── README.md│   ├── .env.example       # Environment template
+
+│   ├── .env.example       # Template (safe to commit)│   ├── .env.local         # Local dev config (not committed)
+
+│   ├── .env.local         # Local dev (DO NOT COMMIT)│   ├── .env.production    # Production config (not committed)
+
+│   ├── .env.production    # Production (DO NOT COMMIT)│   └── nginx_subdomain.conf
+
+│   └── nginx_subdomain.conf│
+
+│├── docs/                  # Backend documentation
+
+├── docs/                  # 📂 Backend documentation│   ├── README.md
+
+│   ├── README.md│   ├── ADMIN_MANAGEMENT.md
+
+│   ├── ADMIN_MANAGEMENT.md│   ├── ADMIN_QUICKSTART.md
+
+│   ├── ADMIN_QUICKSTART.md│   ├── HUONG_DAN_ADMIN.md
+
+│   ├── HUONG_DAN_ADMIN.md│   └── CUSTOM_BLOCKS_SUMMARY.md
+
+│   └── CUSTOM_BLOCKS_SUMMARY.md│
+
+│├── scripts/               # Operational scripts
+
+├── scripts/               # 📂 Operational scripts│   ├── deployment/        # Deploy scripts
+
+│   ├── README.md│   ├── setup/            # Setup scripts
+
+│   ├── deployment/        # Deploy scripts│   ├── maintenance/      # Maintenance scripts
+
+│   ├── setup/            # Setup scripts│   └── utils/            # Utility scripts
+
+│   ├── maintenance/      # Maintenance scripts│
+
+│   └── utils/            # Utility scripts├── app/                   # Main application (7-layer architecture)
+
+││   ├── routes/           # HTTP endpoints
+
+├── app/                   # 📂 Main application (7-layer architecture)│   ├── services/         # Business logic
+
+│   ├── routes/           # Layer 1: HTTP endpoints│   ├── repositories/     # Database operations
+
+│   ├── services/         # Layer 2: Business logic│   ├── models/           # SQLAlchemy models
+
+│   ├── repositories/     # Layer 3: Database operations│   ├── schemas/          # Data validation
+
+│   ├── models/           # Layer 4: SQLAlchemy models│   ├── utils/            # Helper functions
+
+│   ├── schemas/          # Layer 5: Data validation│   └── middleware/       # Request/response processing
+
+│   ├── utils/            # Layer 6: Helper functions│
+
+│   └── middleware/       # Layer 7: Request/response processing├── tests/                 # Test suite
+
+││   ├── unit/             # Unit tests
+
+├── tests/                 # 📂 Test suite│   ├── integration/      # Integration tests
+
+│   ├── unit/             # Unit tests│   └── e2e/              # End-to-end tests
+
+│   ├── integration/      # Integration tests│
+
+│   └── e2e/              # End-to-end tests├── migrations/            # Database migrations
+
+│├── instance/              # Instance-specific data
+
+├── migrations/            # Database migrations├── static/                # Static files
+
+├── instance/              # Instance data (gitignored)├── storage/               # User uploads
+
+├── static/                # Static assets├── templates/             # HTML templates
+
+├── storage/               # User uploads (gitignored)└── logs/                  # Application logs
+
+├── templates/             # HTML templates```
+
+├── logs/                  # Logs (gitignored)
+
+└── venv/                  # Virtual environment (gitignored)## 🚀 Quick Start
+
+```
+
+### 1. Setup Environment
+
+## 🚀 Quick Start1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+
 2. Create a new project or select an existing one
-3. Enable the Google+ API:
+
+### 1. Setup Environment3. Enable the Google+ API:
+
    - Go to "APIs & Services" > "Library"
-   - Search for "Google+ API" and enable it
-4. Create OAuth 2.0 credentials:
-   - Go to "APIs & Services" > "Credentials"
-   - Click "Create Credentials" > "OAuth 2.0 Client IDs"
+
+```bash   - Search for "Google+ API" and enable it
+
+# Create and activate virtual environment4. Create OAuth 2.0 credentials:
+
+python3 -m venv venv   - Go to "APIs & Services" > "Credentials"
+
+source venv/bin/activate  # Linux/Mac   - Click "Create Credentials" > "OAuth 2.0 Client IDs"
+
    - Choose "Web application"
-   - Add authorized redirect URIs:
-     - `http://localhost:8080/callback`
+
+# Install dependencies   - Add authorized redirect URIs:
+
+pip install -r requirements.txt     - `http://localhost:8080/callback`
+
      - `http://127.0.0.1:8080/callback`
-   - Copy the Client ID and Client Secret
 
-### 2. Environment Variables
-Update your `.env` file with the Google OAuth credentials:
+# Configure environment   - Copy the Client ID and Client Secret
+
+cp config/.env.example config/.env.local
+
+nano config/.env.local  # Edit with your values## 🚀 Quick Start
 
 ```
-SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///app.db
 
-# Google OAuth credentials (replace with your actual values)
-GOOGLE_CLIENT_ID=your-google-client-id.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+### 1. Setup Environment
+
+### 2. Initialize Database
+
+```bash
+
+```bash# Create virtual environment
+
+flask db initpython -m venv venv
+
+flask db migrate -m "Initial migration"source venv/bin/activate  # Linux/Mac
+
+flask db upgrade# or: venv\Scripts\activate  # Windows
+
 ```
 
-### 3. Running the Application
+# Install dependencies
 
-1. Activate the virtual environment:
+### 3. Run Applicationpip install -r requirements.txt
+
+
+
+```bash# Setup configuration
+
+# Development modecp config/.env.example config/.env.local
+
+python run.py --localnano config/.env.local  # Edit with your values
+
+```
+
+# Production mode
+
+python run.py### 2. Initialize Database
+
+```
+
+```bash
+
+## 🔧 Configurationflask db init
+
+flask db migrate -m "Initial migration"
+
+All config files in `/config/` directory. Required variables:flask db upgrade
+
+```
+
+```bash
+
+SECRET_KEY=your-secret-key### 3. Run Application
+
+DATABASE_URL=sqlite:///instance/app.db
+
+GOOGLE_CLIENT_ID=your-client-id**Development mode:**
+
+GOOGLE_CLIENT_SECRET=your-client-secret```bash
+
+```python run.py --local
+
+# or
+
+## 🏗️ Architecturepython run.py --dev
+
+```
+
+**7-layer architecture:**
+
+Routes → Services → Repositories → Models**Production mode:**
+
+```bash
+
+See `/docs/ARCHITECTURE.md` for details.python run.py
+
+```
+
+## 📜 Scripts
+
+## 🔧 Configuration
+
+- **Setup:** `./scripts/setup/setup.sh`
+
+- **Deploy:** `./scripts/deployment/deploy_production.sh`### Environment Files
+
+- **Admin:** `python scripts/utils/manage_admin.py`
+
+All config files are in `/config/` directory:
+
+See `scripts/README.md` for all scripts.
+
+- **`.env.example`** - Template with all available options
+
+## 📚 Documentation- **`.env.local`** - Your local development config
+
+- **`.env.production`** - Production configuration
+
+- `/backend/AGENTS.md` - AI guidelines
+
+- `/backend/docs/` - Backend docs### Google OAuth Setup
+
+- `/docs/` - Project docs   ```
+
+
+
+## 🚨 For AI Agents4. Run the application:
+
    ```bash
-   source .venv/bin/activate  # Linux/Mac
-   # or
-   .venv\Scripts\activate     # Windows
-   ```
 
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+READ FIRST:   python run.py
 
-3. Initialize the database:
-   ```bash
-   python -c "from app import app, db; app.app_context().push(); db.create_all()"
-   ```
+1. `/PROJECT_RULES.md` - File management   ```
 
-4. Run the application:
-   ```bash
-   python run.py
-   ```
+2. `/backend/AGENTS.md` - Backend guidelines
 
-5. Open your browser and go to `http://localhost:8080`
+3. `/docs/ARCHITECTURE.md` - Architecture5. Open your browser and go to `http://localhost:8080`
+
 
 ## Features Implemented
 

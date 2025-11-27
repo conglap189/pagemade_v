@@ -1,0 +1,29 @@
+{
+  "name": "pagemade-editor",
+  "version": "3.0.0",
+  "description": "PageMade Editor v3 - Modular Page Builder (rebranded from GrapesJS)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000"
+  },
+  "dependencies": {
+    "grapesjs": "^0.21.2",
+    "grapesjs-tailwind": "^1.0.8",
+    "tailwindcss": "^3.4.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "pagemade",
+    "page-builder",
+    "editor",
+    "drag-drop",
+    "tailwind"
+  ],
+  "author": "PageMade Team",
+  "license": "MIT"
+}

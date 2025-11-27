@@ -35,7 +35,7 @@
 <!-- Floating Edit Button for Owner -->
 {% if current_user.is_authenticated and current_user.id == site.user_id %}
 <div class="position-fixed bottom-0 end-0 p-3">
-    <a href="{{ url_for('main.editor', page_id=page.id) }}" class="btn btn-primary btn-lg rounded-pill shadow">
+    <a href="{{ url_for('pages.editor', page_id=page.id) }}" class="btn btn-primary btn-lg rounded-pill shadow">
         <i class="fas fa-edit"></i> Edit Page
     </a>
 </div>

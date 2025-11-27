@@ -1,0 +1,1268 @@
+/* ===== GLOBAL STYLES ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ===== MAIN EDITOR LAYOUT ===== */
+#editor-container {
+    display: flex;
+    height: calc(100vh - 60px); /* Subtract toolbar height */
+    position: relative;
+}
+
+/* ===== CANVAS CONTAINER ===== */
+#canvas-container {
+    flex: 1;
+    position: relative;
+    background: #f9fafb;
+    overflow: hidden;
+}
+
+.dark #canvas-container {
+    background: #111827;
+}
+
+#pm-canvas {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* ===== PANELS CONTAINER ===== */
+#left-panels, #right-panels {
+    width: 300px;
+    background: white;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+}
+
+#right-panels {
+    border-right: none;
+    border-left: 1px solid #e5e7eb;
+}
+
+.dark #left-panels, 
+.dark #right-panels {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+/* ===== PANEL TABS ===== */
+.panel-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.dark .panel-tabs {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+.panel-tab {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.panel-tab:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.dark .panel-tab {
+    color: #9ca3af;
+}
+
+.dark .panel-tab:hover {
+    background: #4b5563;
+    color: #f3f4f6;
+}
+
+.panel-tab.active {
+    background: white;
+    color: #667eea;
+    border-bottom: 2px solid #667eea;
+}
+
+.dark .panel-tab.active {
+    background: #1f2937;
+    color: #667eea;
+}
+
+.panel-tab i {
+    font-size: 16px;
+}
+
+/* ===== PANEL CONTENT ===== */
+.panel-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 16px;
+    overflow-y: auto;
+    display: none;
+}
+
+.panel.active {
+    display: block;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    #left-panels, #right-panels {
+        width: 250px;
+    }
+    
+    .panel-tab {
+        font-size: 11px;
+        padding: 10px 6px;
+    }
+    
+    .panel-tab i {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 640px) {
+    #editor-container {
+        flex-direction: column;
+    }
+    
+    #left-panels, #right-panels {
+        width: 100%;
+        height: 200px;
+    }
+    
+    #canvas-container {
+        height: calc(100vh - 460px); /* toolbar + panels */
+    }
+}
+
+/* ===== LOADING STATES ===== */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f4f6;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: #374151;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #6b7280;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* ===== BLOCK MANAGER CUSTOM STYLES ===== */
+/* Override default GrapesJS block styles for better layout */
+
+/* Block category container */
+.gjs-block-category {
+    margin-bottom: 16px !important;
+}
+
+/* Category header/title */
+.gjs-block-category .gjs-title {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    background: #f9fafb !important;
+    border-radius: 6px !important;
+    margin-bottom: 12px !important;
+    border: 1px solid #e5e7eb !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.dark .gjs-block-category .gjs-title {
+    color: #f9fafb !important;
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+/* Blocks container (grid layout) */
+.gjs-blocks-c {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    padding: 0 !important;
+}
+
+/* Individual Block Styling */
+.gjs-block {
+    width: 100% !important;
+    min-height: 80px !important;
+    height: auto !important;
+    padding: 12px !important;
+    margin: 0 !important;
+    
+    /* Layout */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    
+    /* Visual Design (matching Style Manager) */
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    
+    /* Text alignment */
+    text-align: center !important;
+    
+    /* Interaction */
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.dark .gjs-block {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Block hover effect - CHỈ đổi màu viền, KHÔNG transform/nổi lên */
+.gjs-block:hover {
+    border-color: #667eea !important;
+    /* Removed: box-shadow và transform để không có hiệu ứng nổi */
+}
+
+.dark .gjs-block:hover {
+    border-color: #818cf8 !important;
+    /* Removed: box-shadow để không có hiệu ứng nổi */
+}
+
+/* Block Label/Title */
+.gjs-block__media + div,
+.gjs-block .gjs-block-label {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    margin-top: 6px !important;
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+}
+
+.dark .gjs-block__media + div,
+.dark .gjs-block .gjs-block-label {
+    color: #f3f4f6 !important;
+}
+
+/* Block Icon/Media Container */
+.gjs-block__media {
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 24px !important;
+    color: #667eea !important;
+}
+
+.dark .gjs-block__media {
+    color: #818cf8 !important;
+}
+
+/* Block SVG/Image styling */
+.gjs-block__media svg,
+.gjs-block__media img {
+    max-width: 40px !important;
+    max-height: 40px !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+/* Prevent broken image icons */
+.gjs-block__media img[src=""] {
+    display: none !important;
+}
+
+/* ===== CUSTOM CATEGORY STYLES (for dual-tab architecture) ===== */
+
+/* Container for Basic/Site Blocks tabs content */
+#basic-blocks-container,
+#site-blocks-container {
+    padding: 0 !important; /* Remove padding, sector handles its own */
+}
+
+/* ===== BLOCK CATEGORY USING NATIVE SECTOR STRUCTURE ===== */
+/* 
+ * Blocks panel now uses the EXACT same sector structure as Style Manager:
+ * .gjs-sm-sector > .gjs-sm-sector-title > (.gjs-sm-sector-caret + .gjs-sm-sector-label) + .gjs-sm-properties
+ * This ensures 100% visual consistency across all panels.
+ * 
+ * CSS from pagemaker.min.css already provides base styling, we only override for light theme.
+ */
+
+/* ===== SECTOR TITLE STYLING (match Style Manager exactly) ===== */
+/* The native .gjs-sm-sector-title CSS from pagemaker.min.css applies automatically */
+/* We add light theme overrides here */
+
+#basic-blocks-container .gjs-sm-sector,
+#site-blocks-container .gjs-sm-sector {
+    clear: both;
+    font-weight: lighter;
+    text-align: left;
+}
+
+/* Sector title - THÔNG SỐ CHUẨN: bg:#f7fafc, font:600, color:#374151, border:#e5e7eb */
+/* ULTRA COMPACT MODE: padding 8px 12px */
+#basic-blocks-container .gjs-sm-sector-title,
+#site-blocks-container .gjs-sm-sector-title {
+    display: flex !important;
+    align-items: center !important;
+    letter-spacing: 0.3px !important;
+    /* ULTRA COMPACT: Padding gọn nhất */
+    padding: 8px 12px !important;
+    cursor: pointer !important;
+    /* THÔNG SỐ CHUẨN */
+    background: #f7fafc !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+    /* ULTRA COMPACT: Reset min-height */
+    min-height: unset !important;
+    line-height: 1.2 !important;
+}
+
+#basic-blocks-container .gjs-sm-sector-title:hover,
+#site-blocks-container .gjs-sm-sector-title:hover {
+    background: #edf2f7 !important;
+}
+
+/* Dark mode sector title */
+.dark #basic-blocks-container .gjs-sm-sector-title,
+.dark #site-blocks-container .gjs-sm-sector-title {
+    background: #2d3748 !important;
+    border-bottom-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+}
+
+.dark #basic-blocks-container .gjs-sm-sector-title:hover,
+.dark #site-blocks-container .gjs-sm-sector-title:hover {
+    background: #3d4a5c !important;
+}
+
+/* Caret icon - rotate when closed */
+#basic-blocks-container .gjs-sm-sector-caret,
+#site-blocks-container .gjs-sm-sector-caret {
+    width: 17px !important;
+    height: 17px !important;
+    min-width: 17px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transform: rotate(-90deg) !important;
+    transition: transform 0.2s ease !important;
+    color: #6b7280 !important;
+}
+
+/* Caret rotates to 0deg when sector is open */
+#basic-blocks-container .gjs-sm-sector.gjs-sm-open .gjs-sm-sector-caret,
+#site-blocks-container .gjs-sm-sector.gjs-sm-open .gjs-sm-sector-caret {
+    transform: rotate(0deg) !important;
+}
+
+.dark #basic-blocks-container .gjs-sm-sector-caret,
+.dark #site-blocks-container .gjs-sm-sector-caret {
+    color: #9ca3af !important;
+}
+
+/* Caret SVG sizing */
+#basic-blocks-container .gjs-sm-sector-caret svg,
+#site-blocks-container .gjs-sm-sector-caret svg {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* Sector label - THÔNG SỐ CHUẨN: font-weight:600, color:#374151 */
+#basic-blocks-container .gjs-sm-sector-label,
+#site-blocks-container .gjs-sm-sector-label {
+    margin-left: 8px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
+    color: #374151 !important;
+}
+
+.dark #basic-blocks-container .gjs-sm-sector-label,
+.dark #site-blocks-container .gjs-sm-sector-label {
+    color: #e2e8f0 !important;
+}
+
+/* ===== SECTOR CONTENT (Properties container) ===== */
+#basic-blocks-container .gjs-sm-properties,
+#site-blocks-container .gjs-sm-properties {
+    padding: 12px !important;
+    display: block !important;
+    background: #ffffff !important;
+}
+
+.dark #basic-blocks-container .gjs-sm-properties,
+.dark #site-blocks-container .gjs-sm-properties {
+    background: #1f2937 !important;
+}
+
+/* Hide content when sector is closed */
+#basic-blocks-container .gjs-sm-sector:not(.gjs-sm-open) .gjs-sm-properties,
+#site-blocks-container .gjs-sm-sector:not(.gjs-sm-open) .gjs-sm-properties {
+    display: none !important;
+}
+
+/* Open sector border */
+#basic-blocks-container .gjs-sm-sector.gjs-sm-open,
+#site-blocks-container .gjs-sm-sector.gjs-sm-open {
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.dark #basic-blocks-container .gjs-sm-sector.gjs-sm-open,
+.dark #site-blocks-container .gjs-sm-sector.gjs-sm-open {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ===== BLOCKS GRID INSIDE SECTOR ===== */
+#basic-blocks-container .gjs-sm-properties .gjs-blocks-c,
+#site-blocks-container .gjs-sm-properties .gjs-blocks-c {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    padding: 0 !important;
+}
+
+/* ===== RESPONSIVE: Stack to single column on small panels ===== */
+@media (max-width: 768px) {
+    #basic-blocks-container .gjs-sm-properties .gjs-blocks-c,
+    #site-blocks-container .gjs-sm-properties .gjs-blocks-c {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ===== EMPTY STATE STYLING ===== */
+.gjs-blocks-c:empty::after {
+    content: 'Không có blocks trong danh mục này';
+    display: block;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+    padding: 40px 20px;
+    grid-column: 1 / -1;
+}
+
+/* ============================================================== */
+/* ===== GLOBAL STYLE MANAGER OVERRIDE (Light Theme Design) ===== */
+/* ============================================================== */
+/*
+ * Override GrapesJS default dark theme with modern light theme
+ * to match the clean design of Block Manager (left panel).
+ * 
+ * Target: Style Manager, Trait Manager, Selector Manager
+ * Design: Light background, thin borders, spacious padding
+ */
+
+/* ===== SECTOR CONTAINER (Global) ===== */
+/* FIX: Reset margin/padding/border-radius để sector sát viền 100% */
+.gjs-sm-sector {
+    clear: both !important;
+    font-weight: normal !important;
+    text-align: left !important;
+    background: #ffffff !important;
+    /* RESET: Loại bỏ margin, padding, border-radius, box-shadow */
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    /* Full width */
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dark .gjs-sm-sector {
+    background: #1f2937 !important;
+}
+
+/* Open sector has subtle bottom border */
+.gjs-sm-sector.gjs-sm-open {
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.dark .gjs-sm-sector.gjs-sm-open {
+    border-bottom-color: #374151 !important;
+}
+
+/* ===== SECTOR TITLE (Global - Both Left & Right Panels) ===== */
+/* THÔNG SỐ CHUẨN: bg:#f7fafc, font:600, color:#374151, border:#e5e7eb */
+/* ULTRA COMPACT MODE: padding 8px 12px, line-height 1.2 */
+.gjs-sm-sector-title {
+    display: flex !important;
+    align-items: center !important;
+    /* ULTRA COMPACT: Padding gọn hơn nữa */
+    padding: 8px 12px !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease !important;
+    /* THÔNG SỐ CHUẨN - Xám rất nhạt hiện đại */
+    background: #f7fafc !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    /* THÔNG SỐ CHUẨN - Xám đậm + Semi-bold */
+    color: #374151 !important;
+    font-weight: 600 !important;
+    /* ULTRA COMPACT: Reset min-height và line-height */
+    min-height: unset !important;
+    line-height: 1.2 !important;
+}
+
+.gjs-sm-sector-title:hover {
+    background: #edf2f7 !important;
+}
+
+.dark .gjs-sm-sector-title {
+    background: #2d3748 !important;
+    border-bottom-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+}
+
+.dark .gjs-sm-sector-title:hover {
+    background: #3d4a5c !important;
+}
+
+/* ===== SECTOR CARET (Global) ===== */
+.gjs-sm-sector-caret {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transform: rotate(-90deg) !important;
+    transition: transform 0.2s ease !important;
+    color: #6b7280 !important;
+}
+
+.gjs-sm-sector.gjs-sm-open .gjs-sm-sector-caret {
+    transform: rotate(0deg) !important;
+}
+
+.dark .gjs-sm-sector-caret {
+    color: #9ca3af !important;
+}
+
+.gjs-sm-sector-caret svg {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* ===== SECTOR LABEL - BOLD TYPOGRAPHY ===== */
+/* THÔNG SỐ CHUẨN: font-weight:600, color:#374151 */
+.gjs-sm-sector-label {
+    margin-left: 8px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important; /* Semi-bold cho chữ nảy và rõ */
+    text-transform: capitalize !important;
+    letter-spacing: 0.3px !important;
+    color: #374151 !important; /* Xám đậm */
+}
+
+.dark .gjs-sm-sector-label {
+    color: #e2e8f0 !important;
+}
+
+/* ===== SECTOR PROPERTIES/CONTENT (Global) ===== */
+.gjs-sm-properties {
+    padding: 14px !important;
+    background: #ffffff !important;
+    font-size: 13px !important;
+}
+
+.dark .gjs-sm-properties {
+    background: #1f2937 !important;
+}
+
+/* Hide content when sector is closed */
+.gjs-sm-sector:not(.gjs-sm-open) .gjs-sm-properties {
+    display: none !important;
+}
+
+/* ===== STYLE MANAGER SPECIFIC OVERRIDES ===== */
+
+/* Style Manager container - RESET padding/margin để sectors sát viền */
+/* FIX GAP: Loại bỏ hoàn toàn khoảng cách giữa Tab và sector đầu tiên */
+#styles-container,
+#style-manager-container,
+.gjs-sm-sectors {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    /* FIX: Đảm bảo không có gap */
+    gap: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+/* FIX GAP: Right panel content PHẢI reset padding để sector sát Tab */
+/* Selector chính xác theo index.html: .right-panel-content, #styles-tab, #styles-container */
+#right-panel .right-panel-content,
+#right-panel .right-panel-content.active,
+#styles-tab,
+#properties-tab,
+#styles-tab #styles-container,
+#properties-tab #traits-container {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* FIX GAP cho left panel content */
+#left-panel .left-panel-content,
+#left-panel .left-panel-content.active,
+#basic-blocks-container,
+#site-blocks-container {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.dark #styles-container,
+.dark #style-manager-container,
+.dark .gjs-sm-sectors {
+    background: #1f2937 !important;
+}
+
+/* ===== FIX: .gjs-sm-title HOVER (Right Panel) ===== */
+/* Đồng bộ hover với cột trái */
+/* ULTRA COMPACT: padding 8px 12px để chiều cao bằng cột trái */
+.gjs-sm-title,
+.gjs-sm-sector > .gjs-sm-title {
+    display: flex !important;
+    align-items: center !important;
+    /* ULTRA COMPACT: Giảm padding xuống 8px để khớp chiều cao cột trái */
+    padding: 8px 12px !important;
+    cursor: pointer !important;
+    background: #f7fafc !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    /* RESET cho full-width */
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    /* ULTRA COMPACT: Giới hạn min-height và line-height */
+    min-height: unset !important;
+    line-height: 1.2 !important;
+    transition: background-color 0.15s ease !important;
+}
+
+/* HOVER cho .gjs-sm-title */
+.gjs-sm-title:hover,
+.gjs-sm-sector > .gjs-sm-title:hover {
+    background: #edf2f7 !important;
+}
+
+.dark .gjs-sm-title,
+.dark .gjs-sm-sector > .gjs-sm-title {
+    background: #2d3748 !important;
+    border-bottom-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+}
+
+.dark .gjs-sm-title:hover,
+.dark .gjs-sm-sector > .gjs-sm-title:hover {
+    background: #3d4a5c !important;
+}
+
+/* Style Manager Labels */
+.gjs-sm-label {
+    color: #4b5563 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    margin-bottom: 6px !important;
+}
+
+.dark .gjs-sm-label {
+    color: #9ca3af !important;
+}
+
+/* Style Manager Fields/Inputs */
+.gjs-sm-field,
+.gjs-field {
+    background: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+}
+
+.gjs-sm-field:focus-within,
+.gjs-field:focus-within {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1) !important;
+}
+
+.dark .gjs-sm-field,
+.dark .gjs-field {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+.gjs-sm-field input,
+.gjs-field input,
+.gjs-sm-field select,
+.gjs-field select {
+    color: #1f2937 !important;
+    background: transparent !important;
+    padding: 8px 10px !important;
+}
+
+.dark .gjs-sm-field input,
+.dark .gjs-field input,
+.dark .gjs-sm-field select,
+.dark .gjs-field select {
+    color: #f3f4f6 !important;
+}
+
+/* Style Manager Buttons (radio buttons, etc) */
+.gjs-sm-btn,
+.gjs-btn-prim {
+    background: #f3f4f6 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 4px !important;
+    color: #374151 !important;
+    padding: 6px 10px !important;
+    transition: all 0.15s ease !important;
+}
+
+.gjs-sm-btn:hover,
+.gjs-btn-prim:hover {
+    background: #e5e7eb !important;
+    border-color: #d1d5db !important;
+}
+
+.gjs-sm-btn.gjs-sm-active,
+.gjs-btn-prim.gjs-prim-active {
+    background: #667eea !important;
+    border-color: #667eea !important;
+    color: #ffffff !important;
+}
+
+.dark .gjs-sm-btn,
+.dark .gjs-btn-prim {
+    background: #4b5563 !important;
+    border-color: #6b7280 !important;
+    color: #e5e7eb !important;
+}
+
+.dark .gjs-sm-btn:hover,
+.dark .gjs-btn-prim:hover {
+    background: #6b7280 !important;
+}
+
+/* ===== TRAIT MANAGER OVERRIDES (Same light theme) ===== */
+.gjs-trt-traits {
+    background: #ffffff !important;
+    padding: 12px !important;
+}
+
+.dark .gjs-trt-traits {
+    background: #1f2937 !important;
+}
+
+.gjs-trt-trait {
+    margin-bottom: 12px !important;
+}
+
+.gjs-trt-trait .gjs-label {
+    color: #4b5563 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    margin-bottom: 6px !important;
+}
+
+.dark .gjs-trt-trait .gjs-label {
+    color: #9ca3af !important;
+}
+
+/* ===== SELECTOR MANAGER OVERRIDES ===== */
+.gjs-clm-tags {
+    background: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    padding: 8px !important;
+}
+
+.dark .gjs-clm-tags {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+.gjs-clm-tag {
+    background: #e5e7eb !important;
+    color: #374151 !important;
+    border-radius: 4px !important;
+    padding: 4px 8px !important;
+    margin: 2px !important;
+}
+
+.dark .gjs-clm-tag {
+    background: #4b5563 !important;
+    color: #e5e7eb !important;
+}
+
+/* ===== LAYER MANAGER OVERRIDES ===== */
+.gjs-layer {
+    background: #ffffff !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.gjs-layer:hover {
+    background: #f9fafb !important;
+}
+
+.dark .gjs-layer {
+    background: #1f2937 !important;
+    border-bottom-color: #374151 !important;
+}
+
+.dark .gjs-layer:hover {
+    background: #374151 !important;
+}
+
+.gjs-layer-title {
+    color: #374151 !important;
+    font-size: 13px !important;
+}
+
+.dark .gjs-layer-title {
+    color: #e5e7eb !important;
+}
+
+/* ===== CATEGORY TITLE - LEGACY SUPPORT ===== */
+/* For any remaining category titles using old class names */
+/* ULTRA COMPACT MODE: padding 8px 12px */
+.gjs-category-title,
+.gjs-block-category .gjs-title,
+.gjs-trait-category .gjs-title {
+    font-weight: 600 !important; /* Bold typography */
+    background-color: #f9fafb !important;
+    color: #1f2937 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    /* ULTRA COMPACT: Padding gọn nhất */
+    padding: 8px 12px !important;
+    letter-spacing: 0.3px !important;
+    min-height: unset !important;
+    line-height: 1.2 !important;
+}
+
+.dark .gjs-category-title,
+.dark .gjs-block-category .gjs-title,
+.dark .gjs-trait-category .gjs-title {
+    background-color: #374151 !important;
+    color: #f3f4f6 !important;
+    border-bottom-color: #4b5563 !important;
+}
+
+/* ============================================================== */
+/* ===== GLOBAL CATEGORY SYNC - CẢ HAI CỘT GIỐNG HỆT NHAU ===== */
+/* ============================================================== */
+/*
+ * THÔNG SỐ CHUẨN (theo yêu cầu):
+ * - Background: #f7fafc (xám rất nhạt, hiện đại)
+ * - Font Weight: 600 (Semi-bold)
+ * - Color: #374151 (Xám đậm)
+ * - Border: 1px solid #e5e7eb
+ * - Margin/Padding: 0 (Sát viền)
+ * - Border-radius: 0 (Vuông vức)
+ * - ULTRA COMPACT MODE: padding 8px 12px, line-height 1.2
+ *
+ * Áp dụng cho TẤT CẢ sector/category ở cả Cột Trái và Cột Phải
+ */
+
+/* ===== GLOBAL SECTOR TITLE - ÁP DỤNG CHO CẢ HAI CỘT ===== */
+.gjs-sm-sector .gjs-sm-sector-title,
+.gjs-sm-sector > .gjs-sm-title,
+#left-panels .gjs-sm-sector-title,
+#right-panels .gjs-sm-sector-title,
+#basic-blocks-container .gjs-sm-sector-title,
+#site-blocks-container .gjs-sm-sector-title,
+#styles-container .gjs-sm-sector-title,
+#style-manager-container .gjs-sm-sector-title {
+    /* Layout */
+    display: flex !important;
+    align-items: center !important;
+    /* ULTRA COMPACT: Padding gọn gàng nhất */
+    padding: 8px 12px !important;
+    cursor: pointer !important;
+    
+    /* RESET: Sát viền, vuông vức, không shadow */
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    
+    /* ULTRA COMPACT: Reset min-height và line-height */
+    min-height: unset !important;
+    line-height: 1.2 !important;
+    
+    /* THÔNG SỐ CHUẨN - Background xám nhạt hiện đại */
+    background: #f7fafc !important;
+    
+    /* THÔNG SỐ CHUẨN - Font Semi-bold */
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.3px !important;
+    
+    /* THÔNG SỐ CHUẨN - Màu chữ xám đậm */
+    color: #374151 !important;
+    
+    /* THÔNG SỐ CHUẨN - Border bottom only */
+    border: none !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    
+    /* Transition mượt cho hover */
+    transition: background-color 0.15s ease !important;
+}
+
+/* ===== HOVER EFFECT - Cả hai cột ===== */
+.gjs-sm-sector .gjs-sm-sector-title:hover,
+.gjs-sm-sector > .gjs-sm-title:hover,
+#left-panels .gjs-sm-sector-title:hover,
+#right-panels .gjs-sm-sector-title:hover,
+#basic-blocks-container .gjs-sm-sector-title:hover,
+#site-blocks-container .gjs-sm-sector-title:hover,
+#styles-container .gjs-sm-sector-title:hover,
+#style-manager-container .gjs-sm-sector-title:hover {
+    background: #edf2f7 !important;
+}
+
+/* ===== SECTOR LABEL (Text bên trong title) ===== */
+.gjs-sm-sector .gjs-sm-sector-label,
+#left-panels .gjs-sm-sector-label,
+#right-panels .gjs-sm-sector-label {
+    font-weight: 600 !important;
+    color: #374151 !important;
+    font-size: 13px !important;
+    text-transform: capitalize !important;
+    margin-left: 8px !important;
+}
+
+/* ===== DARK MODE - Cả hai cột ===== */
+.dark .gjs-sm-sector .gjs-sm-sector-title,
+.dark .gjs-sm-sector > .gjs-sm-title,
+.dark #left-panels .gjs-sm-sector-title,
+.dark #right-panels .gjs-sm-sector-title {
+    background: #2d3748 !important;
+    color: #e2e8f0 !important;
+    border-color: #4a5568 !important;
+}
+
+.dark .gjs-sm-sector .gjs-sm-sector-title:hover,
+.dark .gjs-sm-sector > .gjs-sm-title:hover,
+.dark #left-panels .gjs-sm-sector-title:hover,
+.dark #right-panels .gjs-sm-sector-title:hover {
+    background: #3d4a5c !important;
+}
+
+.dark .gjs-sm-sector .gjs-sm-sector-label,
+.dark #left-panels .gjs-sm-sector-label,
+.dark #right-panels .gjs-sm-sector-label {
+    color: #e2e8f0 !important;
+}
+
+/* ===== FIX: Right Panel Dark Mode - Match Left Panel Exactly ===== */
+/* Right panel uses #right-panel (no 's') and .gjs-sm-title class */
+.dark #right-panel .gjs-sm-title,
+.dark #right-panel .gjs-sm-sector > .gjs-sm-title,
+.dark #styles-container .gjs-sm-title,
+.dark #styles-tab .gjs-sm-title {
+    background: #2d3748 !important;
+    color: #e2e8f0 !important;
+    border-bottom: 1px solid #4a5568 !important;
+}
+
+.dark #right-panel .gjs-sm-title:hover,
+.dark #right-panel .gjs-sm-sector > .gjs-sm-title:hover,
+.dark #styles-container .gjs-sm-title:hover,
+.dark #styles-tab .gjs-sm-title:hover {
+    background: #3d4a5c !important;
+}
+
+/* Right panel sector content background */
+.dark #right-panel .gjs-sm-properties,
+.dark #styles-container .gjs-sm-properties,
+.dark #styles-tab .gjs-sm-properties {
+    background: #1f2937 !important;
+}
+
+/* Right panel caret icon */
+.dark #right-panel .gjs-caret-icon,
+.dark #styles-container .gjs-caret-icon {
+    color: #9ca3af !important;
+}
+
+/* Left panel uses #left-panel (no 's') */
+.dark #left-panel .gjs-sm-sector-title,
+.dark #left-panel .left-panel-content .gjs-sm-sector-title {
+    background: #2d3748 !important;
+    color: #e2e8f0 !important;
+    border-bottom: 1px solid #4a5568 !important;
+}
+
+.dark #left-panel .gjs-sm-sector-title:hover {
+    background: #3d4a5c !important;
+}
+
+.dark #left-panel .gjs-sm-properties {
+    background: #1f2937 !important;
+}
+
+.dark #left-panel .gjs-sm-sector-caret {
+    color: #9ca3af !important;
+}
+
+/* ============================================================== */
+/* ===== COMPLETE DARK MODE SYNC - RIGHT PANEL ===== */
+/* ============================================================== */
+/*
+ * Đồng bộ TOÀN BỘ right panel với left panel trong Dark Mode
+ * Selectors: #right-panel (không có 's')
+ */
+
+/* Right Panel Container - Nền tối */
+.dark #right-panel {
+    background: #1f2937 !important;
+    border-left-color: #374151 !important;
+}
+
+/* Right Panel Tabs - Nền tối cho tabs */
+.dark #right-panel .right-panel-tabs {
+    background: #374151 !important;
+    border-bottom-color: #4b5563 !important;
+}
+
+.dark #right-panel .right-panel-tab {
+    color: #9ca3af !important;
+    background: transparent !important;
+}
+
+.dark #right-panel .right-panel-tab:hover {
+    background: #4b5563 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark #right-panel .right-panel-tab.active {
+    background: #1f2937 !important;
+    color: #667eea !important;
+    border-bottom-color: #667eea !important;
+}
+
+/* Right Panel Content Area - Nền tối cho toàn bộ content */
+.dark #right-panel .right-panel-content {
+    background: #1f2937 !important;
+}
+
+/* Styles Container */
+.dark #right-panel #styles-container,
+.dark #right-panel #styles-tab,
+.dark #right-panel .gjs-sm-sectors {
+    background: #1f2937 !important;
+}
+
+/* Properties/Traits Container */
+.dark #right-panel #traits-container,
+.dark #right-panel #properties-tab,
+.dark #right-panel .gjs-trt-traits {
+    background: #1f2937 !important;
+}
+
+/* ALL Sector Titles in Right Panel */
+.dark #right-panel .gjs-sm-sector-title,
+.dark #right-panel .gjs-sm-title,
+.dark #right-panel .gjs-title {
+    background: #2d3748 !important;
+    color: #e2e8f0 !important;
+    border-bottom-color: #4a5568 !important;
+}
+
+.dark #right-panel .gjs-sm-sector-title:hover,
+.dark #right-panel .gjs-sm-title:hover,
+.dark #right-panel .gjs-title:hover {
+    background: #3d4a5c !important;
+}
+
+/* ALL Sector Content/Properties in Right Panel */
+.dark #right-panel .gjs-sm-properties {
+    background: #1f2937 !important;
+}
+
+/* Sector Labels */
+.dark #right-panel .gjs-sm-sector-label,
+.dark #right-panel .gjs-sm-label {
+    color: #e2e8f0 !important;
+}
+
+/* Caret Icons */
+.dark #right-panel .gjs-sm-sector-caret,
+.dark #right-panel .gjs-caret-icon {
+    color: #9ca3af !important;
+}
+
+/* Input Fields */
+.dark #right-panel .gjs-sm-field,
+.dark #right-panel .gjs-field {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+.dark #right-panel .gjs-sm-field input,
+.dark #right-panel .gjs-field input,
+.dark #right-panel .gjs-sm-field select,
+.dark #right-panel .gjs-field select {
+    color: #f3f4f6 !important;
+    background: transparent !important;
+}
+
+/* Property Labels in inputs */
+.dark #right-panel .gjs-sm-label,
+.dark #right-panel .gjs-label {
+    color: #9ca3af !important;
+}
+
+/* Buttons */
+.dark #right-panel .gjs-sm-btn,
+.dark #right-panel .gjs-btn-prim {
+    background: #4b5563 !important;
+    border-color: #6b7280 !important;
+    color: #e5e7eb !important;
+}
+
+.dark #right-panel .gjs-sm-btn:hover,
+.dark #right-panel .gjs-btn-prim:hover {
+    background: #6b7280 !important;
+}
+
+.dark #right-panel .gjs-sm-btn.gjs-sm-active {
+    background: #667eea !important;
+    border-color: #667eea !important;
+    color: #ffffff !important;
+}
+
+/* Selector Manager Tags */
+.dark #right-panel .gjs-clm-tags {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+.dark #right-panel .gjs-clm-tag {
+    background: #4b5563 !important;
+    color: #e5e7eb !important;
+}
+
+/* Trait Manager */
+.dark #right-panel .gjs-trt-trait .gjs-label {
+    color: #9ca3af !important;
+}
+
+/* Close Button */
+.dark #right-panel .right-panel-close {
+    color: #9ca3af !important;
+}
+
+.dark #right-panel .right-panel-close:hover {
+    color: #f3f4f6 !important;
+    background: #374151 !important;
+}
+
+/* Color Picker */
+.dark #right-panel .gjs-sm-colorp-c,
+.dark #right-panel .sp-replacer {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+/* Radio buttons / Icon buttons */
+.dark #right-panel .gjs-radio-item {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #e5e7eb !important;
+}
+
+.dark #right-panel .gjs-radio-item:hover {
+    background: #4b5563 !important;
+}
+
+.dark #right-panel .gjs-radio-item.gjs-radio-item-active {
+    background: #667eea !important;
+    border-color: #667eea !important;
+}

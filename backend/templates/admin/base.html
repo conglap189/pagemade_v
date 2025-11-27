@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>{% block title %}Admin Dashboard - PageMade{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.min.css') }}">
+                900: '#051ebb',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <style>
+      [x-cloak] { display: none !important; }
+      
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      
+      .sidebar {
+        transition: all 0.3s ease;
+      }
+      
+      .logo {
+        transition: all 0.3s ease;
+      }
+      
+      .menu-group-title {
+        transition: all 0.3s ease;
+      }
+      
+      .menu-group-icon {
+        transition: all 0.3s ease;
+      }
+      
+      .shadow-theme-xs {
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      }
+      
+      .shadow-theme-sm {
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      }
+      
+      .shadow-theme-md {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      
+      .shadow-theme-lg {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      
+      .text-theme-sm {
+        font-size: 14px;
+        line-height: 20px;
+      }
+      
+      .text-theme-xs {
+        font-size: 12px;
+        line-height: 18px;
+      }
+      
+      .text-title-md {
+        font-size: 36px;
+        line-height: 44px;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      .animate-spin {
+        animation: spin 1s linear infinite;
+      }
+    </style>
+  </head>
+  <body
+    x-data="{ 
+      page: 'admin', 
+      'loaded': true, 
+      'darkMode': false, 
+      'stickyMenu': false, 
+      'sidebarToggle': false, 
+      'scrollTop': false 
+    }"
+    x-init="
+         darkMode = JSON.parse(localStorage.getItem('darkMode') || 'false');
+         $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
+    :class="{'dark bg-gray-900': darkMode === true}"
+    class="h-full"
+    x-cloak
+  >
+    <!-- ===== Page Wrapper Start ===== -->
+    <div class="flex h-screen overflow-hidden">
+      <!-- ===== Sidebar Start ===== -->
+      <aside
+        :class="sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'"
+        class="sidebar fixed left-0 top-0 z-9999 flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-black lg:static lg:translate-x-0"
+      >
+        <!-- SIDEBAR HEADER -->
+        <div
+          :class="sidebarToggle ? 'justify-center' : 'justify-between'"
+          class="flex items-center gap-2 pt-8 sidebar-header pb-7"
+        >
+          <a href="/admin">
+            <span class="logo flex items-center gap-2" :class="sidebarToggle ? 'hidden' : ''">
+              <img class="dark:hidden w-8 h-8" src="/static/images/branding/logo.png" alt="PageMade Logo" />
+              <img
+                class="hidden dark:block w-8 h-8"
+                src="/static/images/branding/logo.png"
+                alt="PageMade Logo"
+              />
+              <span class="text-xl font-bold text-gray-800 dark:text-white">PageMade</span>
+            </span>
+
+            <img
+              class="logo-icon w-8 h-8"
+              :class="sidebarToggle ? 'lg:block' : 'hidden'"
+              src="/static/images/branding/logo.png"
+              alt="PageMade Logo"
+            />
+          </a>
+        </div>
+        <!-- SIDEBAR HEADER -->
+
+        <div
+          class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar"
+        >
+          <!-- Sidebar Menu -->
+          <nav x-data="{selected: $persist('Dashboard')}">
+            <!-- Menu Group -->
+            <div>
+              <h3 class="mb-4 text-xs uppercase leading-[20px] text-gray-400">
+                <span
+                  class="menu-group-title"
+                  :class="sidebarToggle ? 'lg:hidden' : ''"
+                >
+                  MENU
+                </span>
+
+                <svg
+                  :class="sidebarToggle ? 'lg:block hidden' : 'hidden'"
+                  class="mx-auto fill-current menu-group-icon"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 5H21"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M13 12H21"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M13 19H21"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </h3>
+
+              <ul class="space-y-2">
+                <!-- Dashboard -->
+                <li>
+                  <a
+                    href="/admin"
+                    @click="selected = 'Dashboard'"
+                    :class="selected === 'Dashboard' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10 dark:text-brand-400' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
+                    class="group relative flex items-center gap-2.5 rounded-sm px-3 py-2 font-medium text-theme-sm transition-colors duration-300"
+                  >
+                    <svg
+                      class="fill-current"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M1.5 10.5C1.5 10.5 3 9 6.75 9C10.5 9 12 10.5 12 10.5C12 10.5 13.5 9 17.25 9C21 9 22.5 10.5 22.5 10.5"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span
+                      class="menu-text"
+                      :class="sidebarToggle ? 'lg:hidden' : ''"
+                    >
+                      Dashboard
+                    </span>
+                  </a>
+                </li>
+
+                <!-- Users -->
+                <li>
+                  <a
+                    href="/admin/users"
+                    @click="selected = 'Users'"
+                    :class="selected === 'Users' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10 dark:text-brand-400' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
+                    class="group relative flex items-center gap-2.5 rounded-sm px-3 py-2 font-medium text-theme-sm transition-colors duration-300"
+                  >
+                    <svg
+                      class="fill-current"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M9 10.125C7.27414 10.125 5.875 8.72586 5.875 7C5.875 5.27414 7.27414 3.875 9 3.875C10.7259 3.875 12.125 5.27414 12.125 7C12.125 8.72586 10.7259 10.125 9 10.125Z"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M14.625 16.5C14.625 13.875 12 11.875 9 11.875C6 11.875 3.375 13.875 3.375 16.5"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span
+                      class="menu-text"
+                      :class="sidebarToggle ? 'lg:hidden' : ''"
+                    >
+                      Users
+                    </span>
+                  </a>
+                </li>
+
+                <!-- Cache -->
+                <li>
+                  <a
+                    href="/admin/cache"
+                    @click="selected = 'Cache'"
+                    :class="selected === 'Cache' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10 dark:text-brand-400' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
+                    class="group relative flex items-center gap-2.5 rounded-sm px-3 py-2 font-medium text-theme-sm transition-colors duration-300"
+                  >
+                    <svg
+                      class="fill-current"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16.5 9C16.5 13.125 13.125 16.5 9 16.5C4.875 16.5 1.5 13.125 1.5 9C1.5 4.875 4.875 1.5 9 1.5C13.125 1.5 16.5 4.875 16.5 9Z"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span
+                      class="menu-text"
+                      :class="sidebarToggle ? 'lg:hidden' : ''"
+                    >
+                      Cache
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </aside>
+      <!-- ===== Sidebar End ===== -->
+
+      <!-- ===== Content Area Start ===== -->
+      <div
+        class="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto"
+      >
+        <!-- Small Device Overlay Start -->
+        <div
+          x-show="sidebarToggle"
+          x-transition
+          class="fixed inset-0 z-50 bg-black/50 lg:hidden"
+          @click="sidebarToggle = false"
+        ></div>
+        <!-- Small Device Overlay End -->
+
+        <!-- ===== Header Start ===== -->
+        <header
+          x-data="{menuToggle: false}"
+          class="sticky top-0 z-99999 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900"
+        >
+          <div
+            class="flex grow flex-col items-center justify-between lg:flex-row lg:px-6"
+          >
+            <div
+              class="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4 dark:border-gray-800"
+            >
+              <!-- Hamburger Toggle BTN -->
+              <button
+                :class="sidebarToggle ? 'lg:bg-transparent dark:lg:bg-transparent bg-gray-100 dark:bg-gray-800' : ''"
+                class="z-99999 flex h-10 w-10 items-center justify-center rounded-lg border-gray-200 text-gray-500 lg:h-11 lg:w-11 lg:border dark:border-gray-800 dark:text-gray-400"
+                @click.stop="sidebarToggle = !sidebarToggle"
+              >
+                <svg
+                  class="hidden fill-current lg:block"
+                  width="16"
+                  height="12"
+                  viewBox="0 0 16 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M0.583252 1C0.583252 0.585788 0.919038 0.25 1.33325 0.25H14.6666C15.0808 0.25 15.4166 0.585786 15.4166 1C15.4166 1.41421 15.0808 1.75 14.6666 1.75L1.33325 1.75C0.919038 1.75 0.583252 1.41422 0.583252 1ZM0.583252 11C0.583252 10.5858 0.919038 10.25 1.33325 10.25H14.6666C15.0808 10.25 15.4166 10.5858 15.4166 11C15.4166 11.4142 15.0808 11.75 14.6666 11.75L1.33325 11.75C0.919038 11.75 0.583252 11.4142 0.583252 11ZM1.33325 5.25C0.919038 5.25 0.583252 5.58579 0.583252 6C0.583252 6.41421 0.919038 6.75 1.33325 6.75L7.99992 6.75C8.41413 6.75 8.74992 6.41421 8.74992 6C8.74992 5.58579 8.41413 5.25 7.99992 5.25L1.33325 5.25Z"
+                    fill=""
+                  />
+                </svg>
+
+                <svg
+                  :class="sidebarToggle ? 'hidden' : 'block lg:hidden'"
+                  class="fill-current lg:hidden"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M3.25 6C3.25 5.58579 3.58579 5.25 4 5.25L20 5.25C20.4142 5.25 20.75 5.58579 20.75 6C20.75 6.41421 20.4142 6.75 20 6.75L4 6.75C3.58579 6.75 3.25 6.41422 3.25 6ZM3.25 18C3.25 17.5858 3.58579 17.25 4 17.25L20 17.25C20.4142 17.25 20.75 17.5858 20.75 18C20.75 18.4142 20.4142 18.75 20 18.75L4 18.75C3.58579 18.75 3.25 18.4142 3.25 18ZM4 11.25C3.58579 11.25 3.25 11.5858 3.25 12C3.25 12.4142 3.58579 12.75 4 12.75L12 12.75C12.4142 12.75 12.75 12.4142 12.75 12C12.75 11.5858 12.4142 11.25 12 11.25L4 11.25Z"
+                    fill=""
+                  />
+                </svg>
+              </button>
+
+              <!-- Breadcrumb -->
+              <nav class="flex items-center gap-2 text-sm">
+                <a href="/admin" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                  Admin
+                </a>
+                <span class="text-gray-400">/</span>
+                <span class="text-gray-700 dark:text-gray-300">{% block breadcrumb %}Dashboard{% endblock %}</span>
+              </nav>
+            </div>
+
+            <div
+              class="flex w-full items-center justify-end gap-3 px-3 py-3 lg:w-auto lg:px-0 lg:py-4"
+            >
+              <!-- Dark Mode Toggle -->
+              <button
+                @click="darkMode = !darkMode"
+                class="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 shadow-theme-xs hover:bg-gray-50 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+              >
+                <svg
+                  x-show="!darkMode"
+                  class="fill-current"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
+                  />
+                </svg>
+                <svg
+                  x-show="darkMode"
+                  class="fill-current"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707a1 1 0 011.414 0zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </button>
+
+              <!-- User Dropdown -->
+              <div class="relative" x-data="{userDropdownOpen: false}">
+                <button
+                  @click="userDropdownOpen = !userDropdownOpen"
+                  class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-theme-xs hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-800 dark:hover:bg-white/[0.03]"
+                >
+                  <span class="text-theme-sm font-medium text-gray-700 dark:text-gray-300">
+                    {{ current_user.name if current_user else 'Admin' }}
+                  </span>
+                  {% if current_user and current_user.avatar_url %}
+                  <img
+                    class="h-8 w-8 rounded-full"
+                    src="{{ current_user.avatar_url }}"
+                    alt="{{ current_user.name }}"
+                  />
+                  {% else %}
+                  <div class="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-user text-gray-500 dark:text-gray-400 text-sm"></i>
+                  </div>
+                  {% endif %}
+                  <svg
+                    class="fill-current text-gray-400"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div
+                  x-show="userDropdownOpen"
+                  x-transition
+                  @click.away="userDropdownOpen = false"
+                  class="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white p-2 shadow-theme-lg dark:border-gray-800 dark:bg-gray-900"
+                >
+                  <ul class="space-y-1">
+                    <li>
+                      <a
+                        href="/profile"
+                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                      >
+                        <svg
+                          class="fill-current"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 18 18"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M9 10.125C7.27414 10.125 5.875 8.72586 5.875 7C5.875 5.27414 7.27414 3.875 9 3.875C10.7259 3.875 12.125 5.27414 12.125 7C12.125 8.72586 10.7259 10.125 9 10.125Z"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M14.625 16.5C14.625 13.875 12 11.875 9 11.875C6 11.875 3.375 13.875 3.375 16.5"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                        Profile
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/dashboard"
+                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                      >
+                        <svg
+                          class="fill-current"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 18 18"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M1.5 10.5C1.5 10.5 3 9 6.75 9C10.5 9 12 10.5 12 10.5C12 10.5 13.5 9 17.25 9C21 9 22.5 10.5 22.5 10.5"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                        Main Dashboard
+                      </a>
+                    </li>
+                    <li>
+                      <hr class="my-1 border-gray-200 dark:border-gray-700" />
+                    </li>
+                    <li>
+                      <a
+                        href="/logout"
+                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm font-medium text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                      >
+                        <svg
+                          class="fill-current"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 18 18"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8.175 7.5H3.75C3.05881 7.5 2.5 8.05881 2.5 8.75V15.25C2.5 15.9412 3.05881 16.5 3.75 16.5H8.175"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M11.825 10.5H16.25C16.9412 10.5 17.5 9.94119 17.5 9.25V2.75C17.5 2.05881 16.9412 1.5 16.25 1.5H11.825"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M10.5 1.5V16.5"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                        Logout
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+        <!-- ===== Header End ===== -->
+
+        <!-- ===== Main Content Start ===== -->
+        <main>
+          <div class="p-4 mx-auto max-w-7xl md:p-6">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="mb-4 rounded-lg border p-4 {% if category == 'error' %}border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400{% elif category == 'success' %}border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400{% elif category == 'warning' %}border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400{% else %}border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400{% endif %}">
+                    <div class="flex items-center gap-3">
+                      {% if category == 'error' %}
+                        <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                      {% elif category == 'success' %}
+                        <svg class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                      {% elif category == 'warning' %}
+                        <svg class="h-5 w-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                      {% else %}
+                        <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                      {% endif %}
+                      <p class="text-sm font-medium">{{ message }}</p>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+          </div>
+        </main>
+        <!-- ===== Main Content End ===== -->
+      </div>
+      <!-- ===== Content Area End ===== -->
+    </div>
+    <!-- ===== Page Wrapper End ===== -->
+  </body>
+</html>

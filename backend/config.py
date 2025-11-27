@@ -3,11 +3,33 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def get_backend_dir():
+    """Get the backend directory path regardless of where script is run from"""
+    # Start from this file's location and go up one level to backend root
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    return current_dir
+
+def resolve_database_uri():
+    """Resolve database URI with proper path handling"""
+    database_url = os.environ.get('DATABASE_URL')
+    
+    if database_url:
+        # Handle SQLite relative paths
+        if database_url.startswith('sqlite:///') and not database_url.startswith('sqlite:////'):
+            relative_path = database_url.replace('sqlite:///', '')
+            backend_dir = get_backend_dir()
+            absolute_path = os.path.join(backend_dir, relative_path)
+            return f'sqlite:///{absolute_path}'
+        else:
+            return database_url
+    
+    # Default fallback
+    backend_dir = get_backend_dir()
+    return f'sqlite:///{os.path.join(backend_dir, "instance", "app.db")}'
+
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'PageMadeSecret2025!'
-    # Use path relative to the backend directory
-    _basedir = os.path.abspath(os.path.dirname(__file__))
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{os.path.join(_basedir, "instance", "app.db")}'
+    SQLALCHEMY_DATABASE_URI = resolve_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Google OAuth

@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagemade Editor - <span id="page-title">Loading...</span></title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/images/branding/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/branding/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/branding/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/branding/favicon/apple-touch-icon.png">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- PageMaker Core CSS (CRITICAL: Contains .gjs-block and other GrapesJS styles) -->
+    <link rel="stylesheet" href="http://localhost:5000/static/pagemaker/pagemaker.min.css">
+    
+    <!-- Custom Editor CSS (MUST load AFTER pagemaker.min.css to override default styles) -->
+    <link rel="stylesheet" href="./styles/editor.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        /* ===== TOP TOOLBAR ===== */
+        #top-toolbar {
+            height: 60px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            position: relative;
+        }
+        
+        /* Dark mode styles */
+        .dark #top-toolbar {
+            background: #1f2937;
+            border-bottom: 1px solid #374151;
+        }
+        
+        #top-toolbar .left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-right: 20px;
+            border-right: 1px solid #e5e7eb;
+        }
+        
+        .logo-section img {
+            height: 32px;
+            width: auto;
+        }
+        
+        .page-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .page-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+        
+        .dark .page-title {
+            color: #f9fafb;
+        }
+        
+        .page-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .dark .page-subtitle {
+            color: #9ca3af;
+        }
+        
+        .device-switcher {
+            display: flex;
+            gap: 8px;
+            padding: 4px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        
+        .dark .device-switcher {
+            background: #374151;
+        }
+        
+        .device-btn {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+        
+        .device-btn:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+        
+        .dark .device-btn {
+            color: #9ca3af;
+        }
+        
+        .dark .device-btn:hover {
+            background: #4b5563;
+            color: #f9fafb;
+        }
+        
+        .device-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .dark .device-btn.active {
+            background: #1f2937;
+            color: #667eea;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        .device-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .device-btn:disabled:hover {
+            background: transparent;
+            color: #6b7280;
+        }
+        
+        .dark .device-btn:disabled:hover {
+            background: transparent;
+            color: #9ca3af;
+        }
+        
+        #top-toolbar .right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .lang-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        
+        .dark .lang-selector {
+            background: #374151;
+            color: #9ca3af;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-save {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        .btn-save:hover {
+            background: #e5e7eb;
+        }
+        
+        .dark .btn-save {
+            background: #374151;
+            color: #f9fafb;
+        }
+        
+        .dark .btn-save:hover {
+            background: #4b5563;
+        }
+        
+        .btn-publish {
+            background: #10b981;
+            color: white;
+            border-radius: 8px;
+            font-weight: 500;
+            justify-content: center;
+        }
+        
+        .btn-publish:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+        
+        .btn-back {
+            background: transparent;
+            color: #6b7280;
+            padding: 8px 12px;
+        }
+        
+        .btn-back:hover {
+            background: #f3f4f6;
+        }
+        
+        .dark .btn-back {
+            color: #9ca3af;
+        }
+        
+        .dark .btn-back:hover {
+            background: #374151;
+        }
+        
+        .btn-preview {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            font-weight: 500;
+        }
+        
+        .btn-preview:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .btn-preview.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-preview.success {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .btn-preview.error {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+        
+        .dark .btn-preview {
+            color: #818cf8;
+            border-color: #818cf8;
+        }
+        
+        .dark .btn-preview:hover {
+            background: #818cf8;
+            color: white;
+        }
+        
+        /* ===== MAIN EDITOR LAYOUT ===== */
+        #editor-wrapper {
+            display: flex;
+            height: calc(100vh - 60px); /* Full height minus top toolbar */
+            background: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dark #editor-wrapper {
+            background: #111827;
+        }
+        
+        /* ===== LEFT SIDEBAR ===== */
+        #left-sidebar {
+            width: 60px;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+            gap: 4px;
+        }
+        
+        .dark #left-sidebar {
+            background: #1f2937;
+            border-right: 1px solid #374151;
+        }
+        
+        .sidebar-btn {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 18px;
+            position: relative;
+        }
+        
+        .sidebar-btn:hover {
+            background: #f3f4f6;
+            color: #667eea;
+        }
+        
+        .dark .sidebar-btn {
+            color: #9ca3af;
+        }
+        
+        .dark .sidebar-btn:hover {
+            background: #374151;
+            color: #667eea;
+        }
+        
+        .sidebar-btn.active {
+            background: #ede9fe;
+            color: #667eea;
+        }
+        
+        .dark .sidebar-btn.active {
+            background: #312e81;
+        }
+        
+        .sidebar-btn.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 3px;
+            background: #667eea;
+            border-radius: 0 3px 3px 0;
+        }
+        
+        .sidebar-btn-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        .sidebar-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #ef4444;
+            color: white;
+            font-size: 9px;
+            padding: 2px 4px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        /* ===== LEFT PANEL (Blocks, Layers, etc) ===== */
+        #left-panel {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            display: none;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        
+        .dark #left-panel {
+            background: #1f2937;
+            border-right: 1px solid #374151;
+        }
+        
+        #left-panel.active {
+            display: flex;
+        }
+
+        /* Panel sections (Blocks, Layers, Assets) */
+        .panel-section {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .panel-section.active {
+            display: flex;
+        }
+        
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+        
+        .dark .panel-header {
+            border-bottom: 1px solid #374151;
+        }
+        
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .dark .panel-title {
+            color: #f9fafb;
+        }
+        
+        .panel-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .dark .panel-subtitle {
+            color: #9ca3af;
+        }
+        
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            min-height: 0;
+            height: 100%;
+        }
+        
+        /* Assets content - fill full height */
+        #assets-content {
+            min-height: 100%;
+        }
+        
+        /* Blocks container - minimal styling, let plugin handle the rest */
+        #blocks-container {
+            display: block !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+        
+        /* Block Tab Content Containers (NEW ARCHITECTURE) */
+        .blocks-tab-content {
+            display: none;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+        
+        .blocks-tab-content.active {
+            display: block !important;
+        }
+        
+        /* Layers container */
+        #layers-container {
+            display: block !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+        
+        /* Assets container */
+        #assets-container {
+            display: block !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+        
+        /* ===== CANVAS AREA ===== */
+        #canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            margin: 0;
+            padding: 10px;
+            background: #f3f4f6;
+            transition: all 0.3s ease;
+        }
+        
+        .dark #canvas-area {
+            background: #111827;
+        }
+        
+        #gjs {
+            flex: 1;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .dark #gjs {
+            background: #1f2937;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Canvas states for different sidebar combinations */
+        #canvas-area.both-sidebars {
+            padding: 10px;
+        }
+        
+        #canvas-area.left-only {
+            padding: 10px 10px 10px 10px;
+        }
+        
+        #canvas-area.right-only {
+            padding: 10px 10px 10px 10px;
+        }
+        
+        #canvas-area.no-sidebars {
+            padding: 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* ===== RIGHT PANEL (Styles + Properties) ===== */
+        #right-panel {
+            width: 320px;
+            background: white;
+            border-left: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .dark #right-panel {
+            background: #1f2937;
+            border-left: 1px solid #374151;
+        }
+        
+        /* Tabs for Styles & Properties */
+        .right-panel-tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .dark .right-panel-tabs {
+            background: #111827;
+            border-bottom: 1px solid #374151;
+        }
+        
+        /* Left panel tabs - same style as right panel */
+        .left-panel-tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .dark .left-panel-tabs {
+            background: #111827;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .left-panel-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .left-panel-tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .left-panel-tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+        }
+        
+        .dark .left-panel-tab.active {
+            background: #1f2937;
+        }
+        
+        /* Left panel content containers */
+        .left-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+            padding: 12px;
+        }
+        
+        .left-panel-content.active {
+            display: block;
+        }
+        
+        .right-panel-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .right-panel-tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .right-panel-tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+        }
+        
+        .dark .right-panel-tab.active {
+            background: #1f2937;
+        }
+        
+        /* Close button for right panel */
+        .right-panel-close {
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 1px solid #e5e7eb;
+            margin-left: auto;
+        }
+        
+        .dark .right-panel-close {
+            color: #9ca3af;
+            border-left-color: #374151;
+        }
+        
+        .right-panel-close:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .dark .right-panel-close:hover {
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        /* Hide right panel state */
+        #right-panel.hidden {
+            display: none;
+        }
+        
+        .right-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+            padding: 12px;
+        }
+        
+        .right-panel-content.active {
+            display: block;
+        }
+        
+        /* Style container inside right panel */
+        #styles-tab #styles-container,
+        #properties-tab #traits-container {
+            padding: 0;
+        }
+        
+        /* ===== PageMaker Custom Styles ===== */
+        .gjs-one-bg {
+            background-color: #f9fafb;
+        }
+        
+        .dark .gjs-one-bg {
+            background-color: #111827;
+        }
+        
+        .gjs-two-color {
+            color: #667eea;
+        }
+        
+        .gjs-three-bg {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .gjs-four-color,
+        .gjs-four-color-h:hover {
+            color: #667eea;
+        }
+        
+        /* ✅ Hide PageMaker default panels/toolbars */
+        .gjs-pn-panels {
+            display: none !important;
+        }
+        
+        .gjs-pn-devices-c {
+            display: none !important;
+        }
+        
+        .gjs-pn-views {
+            display: none !important;
+        }
+        
+        .gjs-pn-commands {
+            display: none !important;
+        }
+        
+        .gjs-pn-options {
+            display: none !important;
+        }
+        
+        /* Canvas full width/height - remove all gaps */
+        .gjs-cv-canvas {
+            width: 100% !important;
+            height: 100% !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+        }
+        
+        .gjs-cv-canvas__frames {
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        .gjs-frame {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* Toolbar styling - changed to blue background */
+        .gjs-toolbar {
+            background: #667eea !important;
+            border: 1px solid #5568d3 !important;
+            border-radius: 4px !important;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+        }
+        
+        /* Toolbar buttons - ensure white icons on blue background */
+        .gjs-toolbar .gjs-toolbar-item {
+            color: white !important;
+        }
+        
+        .gjs-toolbar .gjs-toolbar-item:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #10b981;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+        
+        .loading-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+        
+        .loading-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            background: white;
+            padding: 8px;
+        }
+        
+        .spinner-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 32px;
+        }
+        
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1.2s linear infinite;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .spinner-inner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-bottom-color: #fff;
+            animation: spin 0.8s linear infinite reverse;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        #loading-text {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        
+        .loading-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        /* Status Messages */
+        .status-message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .status-message.success {
+            background: #10b981;
+        }
+        
+        .status-message.error {
+            background: #ef4444;
+        }
+        
+        .status-message.info {
+            background: #3b82f6;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Hide Basic, Form, Extra categories by default */
+        .gjs-block-category[data-category="Basic"],
+        .gjs-block-category[data-category="Form"], 
+        .gjs-block-category[data-category="Extra"] {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="loading-logo">
+            <img src="/images/branding/logo.svg" alt="PageMade">
+        </div>
+        
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        
+        <div id="loading-text">Đang khởi tạo PageMade Editor</div>
+        <div class="loading-subtitle">Đang tải các công cụ thiết kế...</div>
+    </div>
+    
+    <!-- Top Toolbar -->
+    <div id="top-toolbar">
+        <div class="left">
+            <div class="logo-section">
+                <img src="/images/branding/logo.svg" alt="PageMade" height="32">
+            </div>
+            
+            <div class="page-info">
+                <div class="page-title" id="page-title-display">Loading...</div>
+                <div class="page-subtitle">PageMade Editor v3</div>
+            </div>
+            
+            <div class="device-switcher">
+                <button class="device-btn active" data-device="Desktop" title="Desktop">
+                    <i class="fas fa-desktop"></i>
+                </button>
+                <button class="device-btn" data-device="Tablet" title="Tablet">
+                    <i class="fas fa-tablet-alt"></i>
+                </button>
+                <button class="device-btn" data-device="Mobile" title="Mobile">
+                    <i class="fas fa-mobile-alt"></i>
+                </button>
+                
+                <!-- Undo/Redo Buttons -->
+                <div style="display: flex; gap: 4px; margin-left: 12px; padding-left: 12px; border-left: 1px solid #e5e7eb;" class="dark:border-gray-600">
+                    <button class="device-btn" id="btn-undo" title="Hoàn tác (Ctrl+Z)" disabled>
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button class="device-btn" id="btn-redo" title="Làm lại (Ctrl+Y)" disabled>
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                
+                <!-- View Toggle Buttons -->
+                <div style="display: flex; gap: 4px; margin-left: 12px; padding-left: 12px; border-left: 1px solid #e5e7eb;" class="dark:border-gray-600">
+                    <button class="device-btn" id="btn-preview" title="Preview Mode">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="device-btn active" id="btn-outline" title="Component Outline">
+                        <i class="fas fa-vector-square"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right">
+            <!-- Dark Mode Toggle -->
+            <button id="darkModeToggle" 
+                class="flex items-center justify-center text-black rounded-full cursor-pointer bg-gray-200 dark:bg-gray-800 h-9 w-9 dark:text-white transition-all duration-300 hover:bg-gray-300 dark:hover:bg-gray-700">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block"></i>
+            </button>
+            
+            <div class="lang-selector">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='15'%3E%3Crect fill='%23da251d' width='20' height='15'/%3E%3Cpolygon fill='%23ff0' points='10,4 11,7 14,7 11.5,9 12.5,12 10,10 7.5,12 8.5,9 6,7 9,7'/%3E%3C/svg%3E" width="20" height="15" alt="VN">
+                <span>Tiếng Việt</span>
+                <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+            </div>
+            
+            <button class="btn btn-save" id="btn-save">
+                <i class="fas fa-save"></i>
+                Lưu
+            </button>
+            
+            <button class="btn btn-publish" id="btn-publish">
+                Xuất bản
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Editor -->
+    <div id="editor-wrapper">
+        <!-- Left Sidebar -->
+        <div id="left-sidebar">
+            <button class="sidebar-btn" data-panel="blocks" title="Blocks">
+                <i class="fas fa-th-large"></i>
+            </button>
+            
+            <button class="sidebar-btn" data-panel="layers" title="Layers">
+                <i class="fas fa-layer-group"></i>
+            </button>
+            
+            <button class="sidebar-btn" data-panel="assets" title="Assets">
+                <i class="fas fa-images"></i>
+            </button>
+            
+            <div style="flex: 1;"></div>
+            
+            <button class="sidebar-btn" data-panel="settings" title="Settings" style="display: none;">
+                <i class="fas fa-cog"></i>
+            </button>
+            
+            <button class="sidebar-btn" data-panel="help" title="Help" style="display: none;">
+                <i class="fas fa-question-circle"></i>
+            </button>
+            
+            <!-- Back Button -->
+            <button class="sidebar-btn" onclick="window.location.href='/dashboard'" title="Quay lại">
+                <i class="fas fa-home"></i>
+            </button>
+        </div>
+        
+        <!-- Left Panel - Multiple Panels Support -->
+        <div id="left-panel" class="active">
+            
+            <!-- Blocks Panel -->
+            <div class="panel-section active" id="blocks-panel">
+                <!-- Tabs Header -->
+                <div class="left-panel-tabs">
+                    <button class="left-panel-tab active" data-tab="site-blocks">
+                        <i class="fas fa-th-large"></i> Site Blocks
+                    </button>
+                    <button class="left-panel-tab" data-tab="basic-blocks">
+                        <i class="fas fa-cube"></i> Basic Blocks
+                    </button>
+                </div>
+                
+                <!-- REFACTORED: Separate containers for Basic Blocks and Site Blocks -->
+                <!-- Basic Blocks Container -->
+                <div class="left-panel-content blocks-tab-content" id="basic-blocks-container">
+                    <!-- Basic blocks will render here (Basic, Layout, Forms, Components, Media, Extra) -->
+                </div>
+                
+                <!-- Site Blocks Container -->
+                <div class="left-panel-content blocks-tab-content active" id="site-blocks-container">
+                    <!-- Site blocks will render here (Hero, Header, Footer, Features, etc.) -->
+                </div>
+            </div>
+            
+            <!-- Layers Panel -->
+            <div class="panel-section" id="layers-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Layers</div>
+                    <div class="panel-subtitle">Cấu trúc trang</div>
+                </div>
+                <div class="panel-content" id="layers-container">
+                    <!-- GrapeJS Layer Manager will render here -->
+                </div>
+            </div>
+            
+            <!-- Assets Panel -->
+            <div class="panel-section" id="assets-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Assets</div>
+                    <div class="panel-subtitle">Quản lý media</div>
+                    <p style="font-size: 11px; color: #9ca3af; margin-top: 8px; margin-bottom: 12px;">
+                        Hỗ trợ: JPG, PNG, GIF, WebP (Max 5MB)
+                    </p>
+                    
+                    <!-- Upload Button -->
+                    <input type="file" id="asset-file-input" accept="image/*" multiple style="display: none;">
+                    <label for="asset-file-input" class="asset-upload-btn" style="display: inline-flex; align-items: center; gap: 8px; background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; width: 100%; justify-content: center;">
+                        <i class="fas fa-upload"></i> Chọn file
+                    </label>
+                </div>
+                
+                <!-- Scrollable Content Area (like layers-container) -->
+                <div class="panel-content" id="assets-content">
+                    <div class="asset-grid" id="user-assets-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <!-- Asset items will be rendered here by JavaScript -->
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div class="asset-empty-state" id="asset-empty-state" style="display: none; text-align: center; padding: 48px 24px;">
+                        <i class="fas fa-images" style="font-size: 48px; color: #9ca3af; margin-bottom: 16px;"></i>
+                        <p style="font-size: 14px; color: #6b7280;">Chưa có asset nào</p>
+                        <p style="font-size: 12px; color: #9ca3af;">Nhấn "Chọn file" để upload</p>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div class="asset-loading-state" id="asset-loading-state" style="display: none; text-align: center; padding: 48px 24px;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #8b5cf6;"></i>
+                        <p style="font-size: 14px; color: #6b7280; margin-top: 12px;">Đang tải...</p>
+                    </div>
+                </div>
+
+                <div class="panel-content" id="assets-container" style="display: none;">
+                    <!-- GrapeJS Asset Manager (hidden, keeping for potential future use) -->
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Canvas Area -->
+        <div id="canvas-area">
+            <div id="gjs"></div>
+        </div>
+        
+        <!-- Right Panel (Styles + Properties with Tabs) -->
+        <div id="right-panel">
+            <div class="right-panel-tabs">
+                <button class="right-panel-tab active" data-tab="styles">
+                    <i class="fas fa-palette"></i> Styles
+                </button>
+                <button class="right-panel-tab" data-tab="properties">
+                    <i class="fas fa-cog"></i> Properties
+                </button>
+                <button class="right-panel-close" id="right-panel-close" title="Đóng">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="right-panel-content active" id="styles-tab">
+                <div id="styles-container">
+                    <!-- PageMaker style manager will be injected here -->
+                </div>
+            </div>
+            
+            <div class="right-panel-content" id="properties-tab">
+                <div id="traits-container">
+                    <!-- PageMaker properties panel will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- PageMade Core Engine (MUST load before main.js initialization) -->
+    <script src="/pagemade.min.js" defer></script>
+    
+    <!-- PageMade Tailwind Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/grapesjs-tailwind@1/dist/grapesjs-tailwind.min.js" defer></script>
+    
+    <!-- API Client (MUST load BEFORE main.js) -->
+    <script type="module">
+        import ApiClient from './scripts/api-client.js';
+        window.apiClient = new ApiClient();
+        console.log('✅ API Client initialized and attached to window.apiClient');
+    </script>
+    
+    <!-- Authentication Guard -->
+    <script type="module">
+        // Enhanced authentication flow with URL token support
+        import AuthGuard from './scripts/auth-check.js';
+        
+        window.authGuard = new AuthGuard();
+        
+        // Enhanced authentication check
+        async function initializeEditor() {
+            console.log('🚀 Starting editor initialization...');
+            
+            // 🚨 CRITICAL: Check for URL token FIRST before checking localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = urlParams.get('token');
+            
+            if (urlToken) {
+                console.log('🔑 URL token found! Saving to localStorage before authentication check...');
+                localStorage.setItem('access_token', urlToken);
+                window.authGuard.accessToken = urlToken;
+                console.log('✅ URL token saved, proceeding with editor load');
+                
+                // Load main editor script immediately (it will handle full auth verification)
+                const script = document.createElement('script');
+                script.type = 'module';
+                script.src = './scripts/main.js';
+                document.head.appendChild(script);
+                return;
+            }
+            
+            // No URL token - check stored authentication
+            console.log('🔍 No URL token, checking stored authentication...');
+            if (!window.authGuard.isAuthenticated()) {
+                console.log('🔐 No stored authentication found, redirecting to login...');
+                window.authGuard.redirectToLogin();
+                return;
+            }
+            
+            console.log('✅ Stored authentication found, verifying with backend...');
+            
+            // Verify with backend
+            const isValid = await window.authGuard.checkAuth();
+            if (!isValid) {
+                console.log('❌ Backend authentication verification failed');
+                // checkAuth() already handles redirect, so just return
+                return;
+            }
+            
+            console.log('✅ Authentication verified, loading editor...');
+            // Load main editor script
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = './scripts/main.js';
+            document.head.appendChild(script);
+        }
+        
+        // Start the initialization
+        initializeEditor();
+    </script>
+</body>
+</html>

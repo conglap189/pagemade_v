@@ -6,7 +6,7 @@
         <h1 class="display-4 mb-4">Làm trang của bạn thật dễ dàng</h1>
         <p class="lead mb-5">Xây dựng, tùy chỉnh và xuất bản các trang đích chuyên nghiệp với trình chỉnh sửa kéo và thả của chúng tôi.</p>
         {% if current_user.is_authenticated %}
-            <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg btn-custom">
+            <a href="{{ url_for('sites.dashboard') }}" class="btn btn-light btn-lg btn-custom">
                 <i class="fas fa-tachometer-alt"></i> Vào Dashboard
             </a>
         {% else %}

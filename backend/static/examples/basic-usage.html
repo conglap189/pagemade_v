@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PageMade Editor - Basic Usage Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+        
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .controls {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .controls button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .controls button:hover {
+            background: #1d4ed8;
+        }
+        
+        .controls button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        #editor-container {
+            height: 600px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 300px;
+            z-index: 1000;
+        }
+        
+        .status.success { background: #10b981; color: white; }
+        .status.error { background: #ef4444; color: white; }
+        .status.info { background: #3b82f6; color: white; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📝 PageMade Editor - Basic Usage Example</h1>
+        <p>Complete example showing how to integrate and use PageMade Editor v2.0</p>
+    </div>
+    
+    <div class="container">
+        <div class="controls">
+            <button id="init-btn" onclick="initializeEditor()">Initialize Editor</button>
+            <button id="save-btn" onclick="savePage()" disabled>Save Page</button>
+            <button id="publish-btn" onclick="publishPage()" disabled>Publish Page</button>
+            <button id="preview-btn" onclick="previewPage()" disabled>Preview Page</button>
+            <button id="theme-btn" onclick="toggleTheme()" disabled>Toggle Theme</button>
+            <button id="destroy-btn" onclick="destroyEditor()" disabled>Destroy Editor</button>
+        </div>
+        
+        <div id="editor-container"></div>
+    </div>
+    
+    <div id="status" class="status hidden"></div>
+    
+    <!-- Load GrapesJS (Required Dependency) -->
+    <script src="https://unpkg.com/grapesjs"></script>
+    
+    <!-- Load PageMade Editor Bundle -->
+    <script src="../dist/pagemaker-editor.bundle.js"></script>
+    
+    <script>
+        let editor = null;
+        let currentTheme = 'light';
+        
+        // Page data for this example
+        const pageData = {
+            id: 'example-page-123',
+            siteId: 'example-site-456',
+            title: 'Example Page'
+        };
+        
+        // Mock API endpoints (replace with real endpoints)
+        const endpoints = {
+            load: '/api/pages/example-page-123/load',
+            save: '/api/pages/example-page-123/save',
+            publish: '/api/pages/example-page-123/publish',
+            preview: '/pages/example-page-123/preview',
+            assets: '/api/assets'
+        };
+        
+        // Configuration
+        const config = {
+            theme: 'light',
+            autoSave: true,
+            autoSaveInterval: 30000,
+            debug: true
+        };
+        
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusEl.classList.add('hidden');
+            }, 3000);
+        }
+        
+        function updateButtons(editorReady) {
+            document.getElementById('init-btn').disabled = editorReady;
+            document.getElementById('save-btn').disabled = !editorReady;
+            document.getElementById('publish-btn').disabled = !editorReady;
+            document.getElementById('preview-btn').disabled = !editorReady;
+            document.getElementById('theme-btn').disabled = !editorReady;
+            document.getElementById('destroy-btn').disabled = !editorReady;
+        }
+        
+        async function initializeEditor() {
+            try {
+                showStatus('Initializing PageMade Editor...', 'info');
+                
+                // Create editor instance
+                editor = new PageMadeEditor();
+                
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Initialize editor
+                await editor.initialize(pageData, endpoints, config);
+                
+                showStatus('Editor initialized successfully!', 'success');
+                updateButtons(true);
+                
+            } catch (error) {
+                console.error('Failed to initialize editor:', error);
+                showStatus(`Initialization failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function setupEventListeners() {
+            const eventBus = editor.getEventBus();
+            
+            // Listen to editor events
+            eventBus.on('editor:ready', (data) => {
+                console.log('Editor ready:', data);
+                showStatus('Editor is ready for use', 'success');
+            });
+            
+            eventBus.on('editor:saved', (data) => {
+                console.log('Page saved:', data);
+                showStatus('Page saved successfully', 'success');
+            });
+            
+            eventBus.on('editor:published', (data) => {
+                console.log('Page published:', data);
+                showStatus('Page published successfully', 'success');
+            });
+            
+            eventBus.on('editor:status', (data) => {
+                console.log('Editor status:', data);
+                showStatus(data.message, data.type);
+            });
+            
+            eventBus.on('editor:error', (data) => {
+                console.error('Editor error:', data);
+                showStatus(`Error: ${data.error.message}`, 'error');
+            });
+            
+            eventBus.on('editor:theme-changed', (data) => {
+                console.log('Theme changed:', data);
+                currentTheme = data.theme;
+                showStatus(`Theme changed to ${data.theme}`, 'info');
+            });
+        }
+        
+        async function savePage() {
+            if (!editor || !editor.isReady()) {
+                showStatus('Editor is not ready', 'error');
+                return;
+            }
+            
+            try {
+                await editor.save();
+            } catch (error) {
+                console.error('Save failed:', error);
+                showStatus(`Save failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function publishPage() {
+            if (!editor || !editor.isReady()) {
+                showStatus('Editor is not ready', 'error');
+                return;
+            }
+            
+            try {
+                await editor.publish();
+            } catch (error) {
+                console.error('Publish failed:', error);
+                showStatus(`Publish failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function previewPage() {
+            if (!editor || !editor.isReady()) {
+                showStatus('Editor is not ready', 'error');
+                return;
+            }
+            
+            try {
+                editor.preview();
+            } catch (error) {
+                console.error('Preview failed:', error);
+                showStatus(`Preview failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function toggleTheme() {
+            if (!editor || !editor.isReady()) {
+                showStatus('Editor is not ready', 'error');
+                return;
+            }
+            
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            editor.setTheme(newTheme);
+        }
+        
+        function destroyEditor() {
+            if (!editor) {
+                showStatus('No editor to destroy', 'error');
+                return;
+            }
+            
+            try {
+                editor.destroy();
+                editor = null;
+                showStatus('Editor destroyed successfully', 'success');
+                updateButtons(false);
+                
+                // Clear editor container
+                document.getElementById('editor-container').innerHTML = '';
+                
+            } catch (error) {
+                console.error('Destroy failed:', error);
+                showStatus(`Destroy failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Mock API responses for demonstration
+        if (typeof window !== 'undefined') {
+            // Mock fetch for demonstration purposes
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options) {
+                console.log('Mock API call:', url, options);
+                
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        if (url.includes('/save')) {
+                            resolve({
+                                json: () => Promise.resolve({
+                                    success: true,
+                                    message: 'Page saved successfully',
+                                    data: { updated_at: new Date().toISOString() }
+                                })
+                            });
+                        } else if (url.includes('/publish')) {
+                            resolve({
+                                json: () => Promise.resolve({
+                                    success: true,
+                                    message: 'Page published successfully',
+                                    data: { published_url: '/pages/example-page-123' }
+                                })
+                            });
+                        } else {
+                            // Default response
+                            resolve({
+                                json: () => Promise.resolve({
+                                    success: true,
+                                    data: { content: '<h1>Example Page</h1>' }
+                                })
+                            });
+                        }
+                    }, 500); // Simulate network delay
+                });
+            };
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('Page loaded. Click "Initialize Editor" to begin.', 'info');
+        });
+    </script>
+</body>
+</html>

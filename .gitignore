@@ -1,3 +1,29 @@
+# ============================================
+# 1. PROJECT RULES COMPLIANCE (AI & Testing)
+# ============================================
+# Chặn các file test "ngoại lệ" (Allowed Exceptions)
+live_test.py
+backend/basic_test.py
+scratch.py
+debug.py
+
+# Chặn tất cả file tạm (bất kể đuôi file)
+TEMP_*
+REPORT_*
+
+# ============================================
+# 2. SECURITY & ENVIRONMENT (Rất quan trọng)
+# ============================================
+.env
+.env.local
+.env.production
+.env.test
+# Giữ lại file mẫu để dev khác biết đường config
+! .env.example
+
+# ============================================
+# 3. EXISTING RULES (Giữ nguyên của bạn)
+# ============================================
 # Python
 __pycache__/
 *.py[cod]
@@ -49,12 +75,15 @@ build/
 *.backup
 *.backup_*
 *.bak
+*.old
 
 # Storage (user uploaded content)
 backend/storage/sites/*/
 
-# Temp files
+# Temp files general
 *.tar.gz
 *.zip
 /tmp/
 ui-updates.tar.gz
+temp/
+*.tmp

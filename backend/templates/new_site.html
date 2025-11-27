@@ -187,7 +187,7 @@
 
         <!-- Submit Buttons -->
         <div class="flex items-center justify-between pt-4">
-          <a href="{{ url_for('main.dashboard') }}" 
+          <a href="{{ url_for('sites.dashboard') }}" 
              class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
             <i class="fas fa-arrow-left"></i>
             Quay lại
@@ -253,7 +253,7 @@ document.getElementById('newSiteForm').addEventListener('submit', async function
   btnText.textContent = 'Đang tạo...';
   btn.classList.add('opacity-75');
   try {
-    const response = await fetch('{{ url_for("main.new_site") }}', {
+    const response = await fetch('{{ url_for("sites.new_site") }}', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
