@@ -109,6 +109,15 @@ export class DeviceSwitcher {
         if (this.editor) {
             try {
                 this.editor.setDevice(this.devices[device].name)
+                
+                // Refresh canvas to fix highlighter misalignment after device switch
+                // Wait for frame resize animation to complete (350ms matches GrapesJS FrameWrapView animation)
+                setTimeout(() => {
+                    if (this.editor && this.editor.Canvas) {
+                        this.editor.Canvas.refresh({ all: true })
+                        console.log('📱 Canvas refreshed after device switch')
+                    }
+                }, 350)
             } catch (error) {
                 console.warn('Failed to set editor device:', error)
             }
@@ -144,67 +153,33 @@ export class DeviceSwitcher {
 
     updateCanvasSize(device) {
         const canvas = document.getElementById('pm-canvas')
+        const gjsEditor = document.getElementById('gjs')
         if (!canvas) return 
 
         const deviceInfo = this.devices[device]
         
-        // Remove existing device classes
+        // Remove existing device classes from pm-canvas
         canvas.classList.remove('device-desktop', 'device-tablet', 'device-mobile')
         
-        // Add current device class
+        // Add current device class to pm-canvas
         canvas.classList.add(`device-${device}`)
+        
+        // Also add device class to #gjs for any CSS targeting
+        if (gjsEditor) {
+            gjsEditor.classList.remove('device-desktop', 'device-tablet', 'device-mobile')
+            gjsEditor.classList.add(`device-${device}`)
+        }
 
-        // Update canvas wrapper for responsive preview
+        // Update canvas wrapper classes (for any container-level styling)
         const canvasWrapper = document.getElementById('canvas-container')
         if (canvasWrapper) {
-            // Remove existing wrapper classes
             canvasWrapper.classList.remove('canvas-desktop', 'canvas-tablet', 'canvas-mobile')
-            
-            // Add current device class to wrapper
             canvasWrapper.classList.add(`canvas-${device}`)
-            
-            // Update wrapper styles based on device
-            // Mobile: has both width AND height (fixed viewport like device)
-            // Desktop/Tablet: no fixed height (auto height, just width constraint for tablet)
-            if (deviceInfo.width && deviceInfo.height) {
-                // Mobile mode: fixed viewport with border
-                canvasWrapper.style.display = 'flex'
-                canvasWrapper.style.justifyContent = 'center'
-                canvasWrapper.style.alignItems = 'center'
-                canvasWrapper.style.padding = '20px'
-                canvas.style.width = deviceInfo.width
-                canvas.style.height = deviceInfo.height
-                canvas.style.border = '1px solid #e5e7eb'
-                canvas.style.borderRadius = '8px'
-                canvas.style.overflow = 'auto'
-                canvas.style.backgroundColor = 'white'
-            } else if (deviceInfo.width && !deviceInfo.height) {
-                // Tablet mode: width constrained but auto height (like desktop)
-                // Center the canvas horizontally but keep full height
-                canvasWrapper.style.display = 'flex'
-                canvasWrapper.style.justifyContent = 'center'
-                canvasWrapper.style.alignItems = 'stretch'
-                canvasWrapper.style.padding = '0'
-                canvas.style.width = deviceInfo.width
-                canvas.style.height = '100%'
-                canvas.style.border = ''
-                canvas.style.borderRadius = ''
-                canvas.style.overflow = ''
-                canvas.style.backgroundColor = ''
-            } else {
-                // Desktop mode: full width, auto height
-                canvasWrapper.style.display = 'block'
-                canvasWrapper.style.justifyContent = ''
-                canvasWrapper.style.alignItems = ''
-                canvasWrapper.style.padding = ''
-                canvas.style.width = '100%'
-                canvas.style.height = '100%'
-                canvas.style.border = ''
-                canvas.style.borderRadius = ''
-                canvas.style.overflow = ''
-                canvas.style.backgroundColor = ''
-            }
         }
+        
+        // NOTE: Frame sizing is now handled entirely by GrapesJS native deviceManager
+        // GrapesJS sets width/height on .gjs-frame-wrapper via FrameWrapView.__handleSize()
+        // We only need to update CSS classes here for any additional styling needs
 
         // Emit canvas resize event
         const resizeEvent = new CustomEvent('device-switcher:canvas-resized', {

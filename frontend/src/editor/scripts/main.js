@@ -1107,23 +1107,14 @@ class PageMadeApp {
     }
     
     // ===== DEVICE SWITCHER SETUP =====
+    // NOTE: Device switching is handled entirely by DeviceSwitcher component (this.deviceSwitcher)
+    // which is initialized in initPageMadeEditor() via this.deviceSwitcher.init()
+    // DeviceSwitcher correctly converts device names to proper case (Desktop/Tablet/Mobile)
+    // for GrapesJS deviceManager
     setupDeviceSwitcher() {
-        const deviceButtons = document.querySelectorAll('.device-btn[data-device]');
-        
-        deviceButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const device = btn.getAttribute('data-device');
-                
-                // Update active state
-                deviceButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                // Change device in editor
-                if (this.pm) {
-                    this.pm.setDevice(device);
-                }
-            });
-        });
+        // DeviceSwitcher component handles all device switching logic
+        // No additional setup needed here - keeping method for backward compatibility
+        console.log('📱 Device switching delegated to DeviceSwitcher component');
     }
     
     // ===== CANVAS LAYOUT MANAGEMENT =====

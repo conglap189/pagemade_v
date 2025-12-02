@@ -109,6 +109,7 @@ export class PageMadeEditorConfig {
             
             // Device Manager
             // Note: Tablet behaves like Desktop (no fixed height, just width change)
+            // Mobile width should match DeviceSwitcher.js (375px)
             deviceManager: {
                 devices: [
                     {
@@ -124,8 +125,8 @@ export class PageMadeEditorConfig {
                     },
                     {
                         name: 'Mobile',
-                        width: '320px',
-                        widthMedia: '320px'
+                        width: '375px',
+                        widthMedia: '375px'
                     }
                 ]
             },
@@ -134,6 +135,8 @@ export class PageMadeEditorConfig {
             // IMPORTANT: Load ALL CSS resources via CDN for reliability
             // This prevents CORS issues and ensures fonts/icons load correctly
             canvas: {
+                // Enable scrollable canvas for content overflow
+                scrollableCanvas: true,
                 styles: [
                     // Tailwind CSS (CDN - specific version for stability)
                     'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css',
