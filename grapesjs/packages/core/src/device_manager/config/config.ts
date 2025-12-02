@@ -36,8 +36,9 @@ const config: () => DeviceManagerConfig = () => ({
     {
       id: 'tablet',
       name: 'Tablet',
-      width: '770px',
-      widthMedia: '992px',
+      width: '768px',
+      widthMedia: '768px',
+      // Note: No height - behaves like desktop with auto height
     },
     {
       id: 'mobileLandscape',

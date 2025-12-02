@@ -405,9 +405,9 @@ class PageMadeApp {
         const canvas = this.pm.Canvas.getDocument();
         const body = canvas.querySelector('body');
         
-        if (body && !body.querySelector('.pagemaker-empty-state')) {
+        if (body && !body.querySelector('.pagemade-empty-state')) {
             body.innerHTML = `
-                <div class="pagemaker-empty-state" style="
+                <div class="pagemade-empty-state" style="
                     position: fixed;
                     top: 50%;
                     left: 50%;
@@ -504,7 +504,7 @@ class PageMadeApp {
         if (!this.pm) return;
         
         const canvas = this.pm.Canvas.getDocument();
-        const emptyState = canvas.querySelector('.pagemaker-empty-state');
+        const emptyState = canvas.querySelector('.pagemade-empty-state');
         if (emptyState) {
             emptyState.remove();
         }

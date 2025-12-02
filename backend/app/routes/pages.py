@@ -494,10 +494,10 @@ def api_get_page_content(page_id):
     return Helpers.success_response(data=content_data)
 
 
-@pages_bp.route('/api/pages/<int:page_id>/pagemaker/load', methods=['GET'])
+@pages_bp.route('/api/pages/<int:page_id>/pagemade/load', methods=['GET'])
 @login_required
-def pagemaker_load(page_id):
-    """Load PageMaker content for editing (GrapesJS format)."""
+def pagemade_load(page_id):
+    """Load PageMade content for editing (GrapesJS format)."""
     page = PageRepository.find_by_id(page_id)
     
     if not page:
@@ -537,10 +537,10 @@ def pagemaker_load(page_id):
     })
 
 
-@pages_bp.route('/api/pages/<int:page_id>/pagemaker/save', methods=['POST'])
+@pages_bp.route('/api/pages/<int:page_id>/pagemade/save', methods=['POST'])
 @login_required
-def pagemaker_save(page_id):
-    """Save PageMaker content (GrapesJS format)."""
+def pagemade_save(page_id):
+    """Save PageMade content (GrapesJS format)."""
     page = PageRepository.find_by_id(page_id)
     
     if not page:
@@ -901,7 +901,7 @@ def get_editor_template_data(page_id):
                 'email': current_user.email
             },
             'endpoints': {
-                'load': url_for('pages.pagemaker_load', page_id=page.id),
+                'load': url_for('pages.pagemade_load', page_id=page.id),
                 'save': url_for('pages.save_page', page_id=page.id),
                 'publish': url_for('pages.publish_page', page_id=page.id),
                 'preview': url_for('pages.generate_preview', page_id=page.id),

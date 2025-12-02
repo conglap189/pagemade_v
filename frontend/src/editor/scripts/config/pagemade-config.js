@@ -108,6 +108,7 @@ export class PageMadeEditorConfig {
             },
             
             // Device Manager
+            // Note: Tablet behaves like Desktop (no fixed height, just width change)
             deviceManager: {
                 devices: [
                     {
@@ -119,6 +120,7 @@ export class PageMadeEditorConfig {
                         name: 'Tablet',
                         width: '768px',
                         widthMedia: '768px'
+                        // No height - auto height like desktop
                     },
                     {
                         name: 'Mobile',
@@ -136,8 +138,8 @@ export class PageMadeEditorConfig {
                     // Tailwind CSS (CDN - specific version for stability)
                     'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css',
                     
-                    // PageMaker Core CSS (from Backend static folder)
-                    'http://localhost:5000/static/pagemaker/pagemaker.min.css',
+                    // PageMade Core CSS (from Backend static folder)
+                    'http://localhost:5000/static/pagemade/pagemade.min.css',
                     
                     // Font Awesome Icons (CDN - version 5.15.4 for ligature support)
                     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'

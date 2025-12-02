@@ -165,9 +165,9 @@
             <!-- Option 2: Create & Design -->
             <label class="relative cursor-pointer">
               <input type="radio" 
-                     name="action" 
-                     value="pagemaker"
-                     class="peer sr-only">
+                      name="action" 
+                      value="pagemade"
+                      class="peer sr-only">
               <div class="h-full p-6 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl
                           peer-checked:border-emerald-500
                           hover:border-emerald-400 dark:hover:border-emerald-500
@@ -289,7 +289,7 @@ document.getElementById('newSiteForm').addEventListener('submit', async function
 document.querySelectorAll('input[name="action"]').forEach(radio => {
   radio.addEventListener('change', function() {
     const btnText = document.getElementById('btnText');
-    if (this.value === 'pagemaker') {
+    if (this.value === 'pagemade') {
       btnText.textContent = 'Tạo Site & Thiết Kế';
     } else {
       btnText.textContent = 'Tạo Site';

@@ -102,8 +102,8 @@ def new_site():
                     'redirect': '/dashboard'
                 }
             
-            # If action is pagemaker, redirect to editor
-            if action == 'pagemaker' and homepage and homepage.id:
+            # If action is pagemade, redirect to editor
+            if action == 'pagemade' and homepage and homepage.id:
                 response_data['redirect'] = f'/editor/{homepage.id}'
             
             return Helpers.success_response(
@@ -235,7 +235,7 @@ def delete_site(site_id):
 def templates():
     """Template selection page."""
     # Get available templates
-    templates_dir = os.path.join(current_app.root_path, '..', 'static', 'pagemaker', 'templates')
+    templates_dir = os.path.join(current_app.root_path, '..', 'static', 'pagemade', 'templates')
     templates = []
     
     if os.path.exists(templates_dir):
@@ -244,8 +244,8 @@ def templates():
                 templates.append({
                     'id': item,
                     'name': item.replace('-', ' ').title(),
-                    'preview': f'/static/pagemaker/templates/{item}/preview.jpg',
-                    'path': f'/static/pagemaker/templates/{item}/index.html'
+                    'preview': f'/static/pagemade/templates/{item}/preview.jpg',
+                    'path': f'/static/pagemade/templates/{item}/index.html'
                 })
     
     return render_template('templates.html', templates=templates)
@@ -285,7 +285,7 @@ def site_from_template():
         
         # Load template content
         try:
-            template_path = os.path.join(current_app.root_path or '', '..', 'static', 'pagemaker', 'templates', template_id or '', 'index.html')
+            template_path = os.path.join(current_app.root_path or '', '..', 'static', 'pagemade', 'templates', template_id or '', 'index.html')
             if os.path.exists(template_path):
                 with open(template_path, 'r', encoding='utf-8') as f:
                     template_content = f.read()

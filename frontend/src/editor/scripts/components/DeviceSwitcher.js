@@ -10,7 +10,7 @@ export class DeviceSwitcher {
         this.currentDevice = 'desktop'
         this.devices = {
             desktop: { name: 'Desktop', width: null, height: null, icon: 'fa-desktop' },
-            tablet: { name: 'Tablet', width: '768px', height: '1024px', icon: 'fa-tablet-alt' },
+            tablet: { name: 'Tablet', width: '768px', height: null, icon: 'fa-tablet-alt' },  // No height - like desktop
             mobile: { name: 'Mobile', width: '375px', height: '667px', icon: 'fa-mobile-alt' }
         }
         this.isInitialized = false
@@ -164,7 +164,10 @@ export class DeviceSwitcher {
             canvasWrapper.classList.add(`canvas-${device}`)
             
             // Update wrapper styles based on device
+            // Mobile: has both width AND height (fixed viewport like device)
+            // Desktop/Tablet: no fixed height (auto height, just width constraint for tablet)
             if (deviceInfo.width && deviceInfo.height) {
+                // Mobile mode: fixed viewport with border
                 canvasWrapper.style.display = 'flex'
                 canvasWrapper.style.justifyContent = 'center'
                 canvasWrapper.style.alignItems = 'center'
@@ -175,8 +178,21 @@ export class DeviceSwitcher {
                 canvas.style.borderRadius = '8px'
                 canvas.style.overflow = 'auto'
                 canvas.style.backgroundColor = 'white'
+            } else if (deviceInfo.width && !deviceInfo.height) {
+                // Tablet mode: width constrained but auto height (like desktop)
+                // Center the canvas horizontally but keep full height
+                canvasWrapper.style.display = 'flex'
+                canvasWrapper.style.justifyContent = 'center'
+                canvasWrapper.style.alignItems = 'stretch'
+                canvasWrapper.style.padding = '0'
+                canvas.style.width = deviceInfo.width
+                canvas.style.height = '100%'
+                canvas.style.border = ''
+                canvas.style.borderRadius = ''
+                canvas.style.overflow = ''
+                canvas.style.backgroundColor = ''
             } else {
-                // Desktop - full width
+                // Desktop mode: full width, auto height
                 canvasWrapper.style.display = 'block'
                 canvasWrapper.style.justifyContent = ''
                 canvasWrapper.style.alignItems = ''

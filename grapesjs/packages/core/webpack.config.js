@@ -8,8 +8,8 @@ module.exports = ({ config, pkg, webpack }) => {
     ...config,
     output: {
       ...config.output,
-      filename: BUILD_MODULE ? 'pagemaker.mjs' : 'pagemaker.min.js',
-      library: 'pagemaker',  // Global variable name
+      filename: BUILD_MODULE ? 'pagemade.mjs' : 'pagemade.min.js',
+      library: 'pagemade',  // Global variable name
       ...(BUILD_MODULE
         ? {
             libraryTarget: 'module',
