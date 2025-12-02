@@ -1025,6 +1025,42 @@ class PageMadeApp {
                 }
             });
         });
+        
+        // Setup right panel close button and component selection events
+        this.setupRightPanelClose();
+    }
+    
+    // ===== RIGHT PANEL CLOSE BUTTON SETUP =====
+    setupRightPanelClose() {
+        const rightPanelClose = document.getElementById('right-panel-close');
+        const rightPanel = document.getElementById('right-panel');
+        
+        // Close button click handler
+        if (rightPanelClose && rightPanel) {
+            rightPanelClose.addEventListener('click', () => {
+                rightPanel.classList.add('hidden');
+                this.updateCanvasLayout();
+                console.log('🔒 Right panel closed');
+            });
+        }
+        
+        // Show right panel when component is selected
+        if (this.pm) {
+            this.pm.on('component:selected', (component) => {
+                if (component && rightPanel) {
+                    rightPanel.classList.remove('hidden');
+                    this.updateCanvasLayout();
+                    console.log('📋 Right panel opened for component:', component.get('type') || 'unknown');
+                }
+            });
+            
+            // Optionally hide right panel when no component is selected
+            this.pm.on('component:deselected', () => {
+                // Optional: uncomment to auto-hide panel when deselecting
+                // rightPanel.classList.add('hidden');
+                // this.updateCanvasLayout();
+            });
+        }
     }
     
     // ===== LEFT PANEL TABS SETUP =====
@@ -1331,10 +1367,38 @@ class PageMadeApp {
         // NOTE: Removed inline styles - CSS handles styling via .gjs-block-label
         blockEl.appendChild(labelEl);
         
-        // Drag & drop events
+        // Drag & drop events - using GrapesJS BlockManager native drag system
         blockEl.addEventListener('dragstart', (e) => {
             if (this.pm) {
-                this.pm.trigger('block:drag:start', block);
+                const bm = this.pm.BlockManager;
+                if (bm && bm.__startDrag) {
+                    // Use BlockManager's native __startDrag method
+                    bm.__startDrag(block, e);
+                    // Start custom droppable for each frame
+                    bm.__getFrameViews().forEach(fv => fv.droppable?.startCustom());
+                }
+            }
+        });
+        
+        blockEl.addEventListener('drag', (e) => {
+            if (this.pm) {
+                const bm = this.pm.BlockManager;
+                if (bm && bm.__drag) {
+                    bm.__drag(e);
+                }
+            }
+        });
+        
+        blockEl.addEventListener('dragend', (e) => {
+            if (this.pm) {
+                const bm = this.pm.BlockManager;
+                if (bm) {
+                    // End custom droppable for each frame
+                    bm.__getFrameViews().forEach(fv => fv.droppable?.endCustom(false));
+                    if (bm.__endDrag) {
+                        bm.__endDrag();
+                    }
+                }
             }
         });
         
@@ -1358,12 +1422,17 @@ class PageMadeApp {
         if (!layersContainer) return;
         
         const layerManager = this.pm.LayerManager;
-        const layersEl = layerManager.render();
         
-        if (layersEl) {
-            layersContainer.innerHTML = '';
-            layersContainer.appendChild(layersEl);
-            console.log('✅ Layers rendered');
+        // Only render if container is empty (GrapesJS may have already rendered via appendTo config)
+        if (layersContainer.children.length === 0) {
+            const layersEl = layerManager.render();
+            
+            if (layersEl) {
+                layersContainer.appendChild(layersEl);
+                console.log('✅ Layers rendered');
+            }
+        } else {
+            console.log('✅ Layers already rendered by GrapesJS');
         }
     }
     

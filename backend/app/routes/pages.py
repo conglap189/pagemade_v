@@ -344,7 +344,8 @@ def editor(page_id):
     
     # Redirect to frontend editor with token (query params format for Vite SPA)
     # Use query params instead of path params to avoid Vite routing issues
-    frontend_url = f"http://localhost:5001/?id={page_id}&token={token}"
+    # IMPORTANT: Must include /editor/ path to match Vite base config
+    frontend_url = f"http://localhost:5001/editor/?id={page_id}&token={token}"
     return redirect(frontend_url)
 
 

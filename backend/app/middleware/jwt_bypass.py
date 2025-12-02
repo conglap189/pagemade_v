@@ -68,11 +68,9 @@ def jwt_api_auth(f):
                 'message': 'The user associated with this token no longer exists'
             }), 401
         
-        # Add user to request context (both g and request for compatibility)
+        # Add user to request context
         g.current_user = user
-        request.current_user = user
         g.jwt_payload = payload
-        request.jwt_payload = payload
         
         # Bypass Flask-Login by setting user in session temporarily
         # This prevents Flask-Login from triggering unauthorized handler
@@ -86,17 +84,48 @@ def jwt_api_auth(f):
 
 def setup_jwt_bypass(app):
     """
-    Set up JWT authentication bypass for API routes.
+    Set up JWT authentication bypass for both API routes and web routes.
     This function should be called during app initialization.
+    
+    Key feature: Auto-login users from JWT cookie when accessing web routes
+    (e.g., /dashboard) after logging in via frontend (localhost:3000).
     """
+    
+    # Web routes that need JWT-to-session authentication
+    # These routes use @login_required but should accept JWT cookie auth
+    PROTECTED_WEB_ROUTES = [
+        '/dashboard',
+        '/new-site',
+        '/site/',
+        '/editor/',
+        '/page/',
+        '/profile',
+        '/change-password',
+        '/admin/',
+        '/assets/',
+    ]
+    
     @app.before_request
     def handle_jwt_auth():
-        # Only process API routes
-        if not request.path.startswith('/api/'):
+        from flask_login import current_user
+        
+        # Skip if user already authenticated via session
+        if current_user.is_authenticated:
             return None
         
-        # Skip authentication for login and refresh endpoints
-        if request.path in ['/api/auth/login', '/api/auth/refresh']:
+        # Check if this is a protected route (API or web)
+        is_api_route = request.path.startswith('/api/')
+        is_protected_web_route = any(
+            request.path.startswith(route) for route in PROTECTED_WEB_ROUTES
+        )
+        
+        # Only process API routes or protected web routes
+        if not is_api_route and not is_protected_web_route:
+            return None
+        
+        # Skip authentication for login and public endpoints
+        skip_paths = ['/api/auth/login', '/api/auth/refresh', '/api/auth/signup', '/login', '/register']
+        if request.path in skip_paths:
             return None
         
         # Try to get token from cookie first (Shared Cookie approach)
@@ -112,23 +141,30 @@ def setup_jwt_bypass(app):
                     token = None
         
         if not token:
-            return None  # Let the endpoint handle authentication
+            return None  # Let the endpoint/decorator handle authentication
         
         try:
             # Verify token
             payload = JWTService.verify_token(token, 'access')
             if payload:
+                # Check if token is revoked
+                if JWTService.is_token_revoked(token):
+                    current_app.logger.warning("JWT token is revoked")
+                    return None
+                
                 user = JWTService.get_user_from_token(token)
                 if user:
-                    # Set user in Flask-Login context to bypass unauthorized handler
+                    # Set user in Flask-Login context
+                    # This is the KEY: login_user() creates the session
+                    # so @login_required will pass on web routes
                     from flask_login import login_user
-                    login_user(user)
+                    login_user(user, remember=True)
                     
-                    # Add user to request context
+                    # Add user to request context for API compatibility
                     g.current_user = user
-                    request.current_user = user
                     g.jwt_payload = payload
-                    request.jwt_payload = payload
+                    
+                    current_app.logger.debug(f"JWT auto-login: {user.email} for {request.path}")
         except Exception as e:
             current_app.logger.error(f"JWT bypass error: {e}")
             pass  # Let the endpoint handle authentication
