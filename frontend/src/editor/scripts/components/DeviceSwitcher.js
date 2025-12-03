@@ -1,6 +1,7 @@
 /**
  * Device Switcher Component
  * Handles responsive device switching (Desktop, Tablet, Mobile)
+ * with canvas scaling to fit available space while keeping panels visible
  */
 
 export class DeviceSwitcher {
@@ -8,12 +9,18 @@ export class DeviceSwitcher {
         this.editor = null
         this.deviceButtons = []
         this.currentDevice = 'desktop'
+        this.currentScale = 1
         this.devices = {
             desktop: { name: 'Desktop', width: null, height: null, icon: 'fa-desktop' },
             tablet: { name: 'Tablet', width: '768px', height: null, icon: 'fa-tablet-alt' },  // No height - like desktop
             mobile: { name: 'Mobile', width: '375px', height: '667px', icon: 'fa-mobile-alt' }
         }
+        this.panelWidths = {
+            left: 280,
+            right: 320
+        }
         this.isInitialized = false
+        this.scaleIndicator = null
         
         console.log('📱 DeviceSwitcher component created')
     }
@@ -26,6 +33,7 @@ export class DeviceSwitcher {
 
     init() {
         this.initializeElements()
+        this.createScaleIndicator()
         this.setupEventListeners()
         this.updateActiveState()
         this.isInitialized = true
@@ -42,6 +50,22 @@ export class DeviceSwitcher {
 
         // Set initial active state
         this.updateActiveState()
+    }
+
+    /**
+     * Create scale indicator element
+     */
+    createScaleIndicator() {
+        // Check if already exists
+        if (document.querySelector('.scale-indicator')) {
+            this.scaleIndicator = document.querySelector('.scale-indicator')
+            return
+        }
+        
+        this.scaleIndicator = document.createElement('div')
+        this.scaleIndicator.className = 'scale-indicator'
+        this.scaleIndicator.textContent = '100%'
+        document.body.appendChild(this.scaleIndicator)
     }
 
     setupEventListeners() {
@@ -62,6 +86,13 @@ export class DeviceSwitcher {
                 this.setDevice(e.detail.device, false) // Don't emit event to prevent loop
             }
         })
+        
+        // Listen to window resize for recalculating scale
+        window.addEventListener('resize', this.debounce(() => {
+            if (this.currentDevice !== 'desktop') {
+                this.applyCanvasScale(this.currentDevice)
+            }
+        }, 150))
 
         console.log('📱 DeviceSwitcher event listeners setup complete')
     }
@@ -110,9 +141,12 @@ export class DeviceSwitcher {
             try {
                 this.editor.setDevice(this.devices[device].name)
                 
-                // Refresh canvas to fix highlighter misalignment after device switch
-                // Wait for frame resize animation to complete (350ms matches GrapesJS FrameWrapView animation)
+                // Apply canvas scaling for tablet/mobile
+                // Wait for frame resize animation to complete
                 setTimeout(() => {
+                    this.applyCanvasScale(device)
+                    
+                    // Refresh canvas to fix highlighter misalignment
                     if (this.editor && this.editor.Canvas) {
                         this.editor.Canvas.refresh({ all: true })
                         console.log('📱 Canvas refreshed after device switch')
@@ -129,13 +163,102 @@ export class DeviceSwitcher {
                 detail: { 
                     device,
                     previousDevice,
-                    deviceInfo: this.devices[device]
+                    deviceInfo: this.devices[device],
+                    scale: this.currentScale
                 }
             })
             document.dispatchEvent(deviceEvent)
         }
 
         console.log('📱 Device switched to:', device)
+    }
+
+    /**
+     * Calculate the scale ratio for canvas based on available space
+     * @param {string} device - Current device type
+     * @returns {number} Scale ratio (0-1)
+     */
+    calculateScaleRatio(device) {
+        const deviceInfo = this.devices[device]
+        
+        // Desktop doesn't need scaling
+        if (!deviceInfo.width) {
+            return 1
+        }
+        
+        // Get frame width (parse from string like "768px")
+        const frameWidth = parseInt(deviceInfo.width, 10)
+        
+        // Calculate available space
+        const canvasArea = document.getElementById('canvas-area')
+        if (!canvasArea) {
+            console.warn('Canvas area not found')
+            return 1
+        }
+        
+        const canvasAreaWidth = canvasArea.offsetWidth
+        const padding = 40 // 20px on each side
+        const availableWidth = canvasAreaWidth - padding
+        
+        // Calculate scale ratio - only scale down, never up
+        const scaleRatio = Math.min(1, availableWidth / frameWidth)
+        
+        // Minimum scale to keep usable
+        const minScale = 0.3
+        const finalScale = Math.max(minScale, scaleRatio)
+        
+        console.log(`📐 Scale calculation: available=${availableWidth}px, frame=${frameWidth}px, scale=${finalScale.toFixed(2)}`)
+        
+        return finalScale
+    }
+
+    /**
+     * Apply scale (zoom) to canvas view container
+     * Using CSS zoom which affects layout (unlike transform)
+     * @param {string} device - Current device type
+     */
+    applyCanvasScale(device) {
+        // Target the gjs-cv-canvas container
+        const cvCanvas = document.querySelector('#gjs .gjs-cv-canvas')
+        if (!cvCanvas) {
+            console.warn('Canvas view not found, retrying...')
+            setTimeout(() => this.applyCanvasScale(device), 100)
+            return
+        }
+        
+        const scale = this.calculateScaleRatio(device)
+        this.currentScale = scale
+        
+        // Apply scale via CSS variable (used by zoom property)
+        cvCanvas.style.setProperty('--canvas-scale', scale)
+        
+        // Update scale indicator
+        this.updateScaleIndicator(scale)
+        
+        console.log(`📱 Applied canvas scale: ${(scale * 100).toFixed(0)}%`)
+    }
+
+    /**
+     * Update scale indicator badge
+     * @param {number} scale - Current scale ratio
+     */
+    updateScaleIndicator(scale) {
+        if (!this.scaleIndicator) return
+        
+        const percentage = Math.round(scale * 100)
+        this.scaleIndicator.textContent = `${percentage}%`
+        
+        // Show indicator only when scaled (not 100%)
+        if (scale < 1) {
+            this.scaleIndicator.classList.add('visible')
+            
+            // Auto-hide after 2 seconds
+            setTimeout(() => {
+                this.scaleIndicator.classList.remove('visible')
+            }, 2000)
+        } else {
+            this.scaleIndicator.classList.remove('visible')
+        }
     }
 
     updateActiveState() {
@@ -152,22 +275,38 @@ export class DeviceSwitcher {
     }
 
     updateCanvasSize(device) {
-        const canvas = document.getElementById('pm-canvas')
+        const canvas = document.getElementById('canvas-area')  // Fixed: was 'pm-canvas' which doesn't exist
         const gjsEditor = document.getElementById('gjs')
-        if (!canvas) return 
-
+        const editorWrapper = document.getElementById('editor-wrapper')
+        
         const deviceInfo = this.devices[device]
         
-        // Remove existing device classes from pm-canvas
-        canvas.classList.remove('device-desktop', 'device-tablet', 'device-mobile')
+        // Remove existing device classes from canvas-area
+        if (canvas) {
+            canvas.classList.remove('device-desktop', 'device-tablet', 'device-mobile')
+            canvas.classList.add(`device-${device}`)
+        }
         
-        // Add current device class to pm-canvas
-        canvas.classList.add(`device-${device}`)
-        
-        // Also add device class to #gjs for any CSS targeting
+        // Add device class to #gjs for CSS targeting
         if (gjsEditor) {
             gjsEditor.classList.remove('device-desktop', 'device-tablet', 'device-mobile')
             gjsEditor.classList.add(`device-${device}`)
+            
+            // Reset scale for desktop
+            if (device === 'desktop') {
+                const cvCanvas = document.querySelector('#gjs .gjs-cv-canvas')
+                if (cvCanvas) {
+                    cvCanvas.style.setProperty('--canvas-scale', '1')
+                }
+                this.currentScale = 1
+                this.updateScaleIndicator(1)
+            }
+        }
+        
+        // Add device class to #editor-wrapper for reliable CSS targeting (no :has() needed)
+        if (editorWrapper) {
+            editorWrapper.classList.remove('device-desktop', 'device-tablet', 'device-mobile')
+            editorWrapper.classList.add(`device-${device}`)
         }
 
         // Update canvas wrapper classes (for any container-level styling)
@@ -188,7 +327,8 @@ export class DeviceSwitcher {
                 width: deviceInfo.width,
                 height: deviceInfo.height,
                 canvas: canvas,
-                canvasWrapper: canvasWrapper
+                canvasWrapper: canvasWrapper,
+                scale: this.currentScale
             }
         })
         document.dispatchEvent(resizeEvent)
@@ -257,6 +397,10 @@ export class DeviceSwitcher {
     // Public API methods
     getCurrentDevice() {
         return this.currentDevice
+    }
+
+    getCurrentScale() {
+        return this.currentScale
     }
 
     getDeviceInfo(device) {
@@ -341,6 +485,7 @@ export class DeviceSwitcher {
     getState() {
         return {
             currentDevice: this.currentDevice,
+            currentScale: this.currentScale,
             currentDeviceInfo: this.devices[this.currentDevice],
             allDevices: this.getAllDevices(),
             buttonCount: this.deviceButtons.length,
@@ -380,11 +525,21 @@ export class DeviceSwitcher {
             callback(e.detail)
         })
     }
+    
+    // Utility: Debounce function
+    debounce(func, wait) {
+        let timeout
+        return (...args) => {
+            clearTimeout(timeout)
+            timeout = setTimeout(() => func.apply(this, args), wait)
+        }
+    }
 
     // Debug methods
     debug() {
         return {
             currentDevice: this.currentDevice,
+            currentScale: this.currentScale,
             devices: this.devices,
             buttons: Array.from(this.deviceButtons).map(btn => ({
                 device: btn.dataset.device,
@@ -403,8 +558,14 @@ export class DeviceSwitcher {
             const newBtn = btn.cloneNode(true)
             btn.parentNode.replaceChild(newBtn, btn)
         })
+        
+        // Remove scale indicator
+        if (this.scaleIndicator && this.scaleIndicator.parentNode) {
+            this.scaleIndicator.parentNode.removeChild(this.scaleIndicator)
+        }
 
         this.deviceButtons = []
+        this.scaleIndicator = null
         this.isInitialized = false
         console.log('🧹 DeviceSwitcher component destroyed')
     }

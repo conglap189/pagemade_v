@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pagemade Editor - <span id="page-title">Loading...</span></title>
     
+    <!-- GrapesJS Core CSS (CRITICAL: Must load BEFORE custom pagemade.min.css) -->
+    <link rel="stylesheet" href="https://unpkg.com/grapesjs@0.20.3/dist/css/grapes.min.css">
+    
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/images/branding/favicon/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/branding/favicon/favicon-32x32.png">
@@ -794,6 +797,88 @@
             height: 100%;
             border: none;
         }
+        
+        /* ============================================
+           TABLET/MOBILE MODE - SCALE CANVAS APPROACH
+           Panels stay visible. Frame scales to fit available space.
+           Using CSS zoom which actually affects layout (unlike transform).
+           ============================================ */
+        
+        /* Canvas area - flex container, takes remaining space */
+        #canvas-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: auto;
+        }
+        
+        /* GrapesJS editor container - fill available space */
+        #gjs {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* GrapesJS CV (canvas view) - this is where scaling happens */
+        #gjs .gjs-cv-canvas {
+            --canvas-scale: 1;
+            zoom: var(--canvas-scale);
+            /* Note: zoom changes layout, unlike transform */
+        }
+        
+        /* Firefox fallback - Firefox doesn't support zoom */
+        @-moz-document url-prefix() {
+            #gjs .gjs-cv-canvas {
+                transform: scale(var(--canvas-scale));
+                transform-origin: top center;
+            }
+        }
+        
+        /* Frame wrapper smooth transition */
+        .gjs-frame-wrapper {
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+        
+        /* Visual indicator for responsive mode - subtle background */
+        #gjs.device-tablet,
+        #gjs.device-mobile {
+            background: #e5e7eb;
+        }
+        
+        .dark #gjs.device-tablet,
+        .dark #gjs.device-mobile {
+            background: #1a1a2e;
+        }
+        
+        /* Scale indicator badge (shown when scaled) */
+        .scale-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .scale-indicator.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* ============================================
+           END TABLET/MOBILE MODE - SCALE CANVAS
+           ============================================ */
         
         /* Toolbar styling - changed to blue background */
         .gjs-toolbar {
