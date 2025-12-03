@@ -491,6 +491,9 @@ def api_get_page_content(page_id):
     content_data['html_content'] = page.html_content or ''
     content_data['css_content'] = page.css_content or ''
     
+    # Add site_id for navigation (back button)
+    content_data['site_id'] = page.site_id
+    
     return Helpers.success_response(data=content_data)
 
 
@@ -538,21 +541,32 @@ def pagemade_load(page_id):
 
 
 @pages_bp.route('/api/pages/<int:page_id>/pagemade/save', methods=['POST'])
-@login_required
+@jwt_required
 def pagemade_save(page_id):
     """Save PageMade content (GrapesJS format)."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"📥 pagemade_save called for page_id={page_id}")
+    logger.info(f"👤 Current user: id={request.current_user.id}, email={request.current_user.email}")
+    
     page = PageRepository.find_by_id(page_id)
     
     if not page:
+        logger.error(f"❌ Page {page_id} not found")
         return Helpers.error_response('Page không tồn tại!', 404)
     
-    # Verify ownership through site
+    logger.info(f"📄 Page found: id={page.id}, user_id={page.user_id}, site_id={page.site_id}")
+    
+    # Verify ownership through site (using request.current_user from JWT)
     site = SiteRepository.find_by_id(page.site_id)
-    if not site or site.user_id != current_user.id:
+    if not site or site.user_id != request.current_user.id:
+        logger.error(f"❌ Unauthorized: site.user_id={site.user_id if site else 'None'} != current_user.id={request.current_user.id}")
         return Helpers.error_response('Unauthorized', 403)
     
     try:
         data = request.get_json()
+        logger.info(f"📦 Received data keys: {list(data.keys()) if data else 'None'}")
         
         # Store complete GrapesJS storage format
         content_json = {
@@ -563,12 +577,16 @@ def pagemade_save(page_id):
             'gjs-assets': data.get('gjs-assets', []),
         }
         
+        logger.info(f"💾 Saving content: html_len={len(content_json['gjs-html'])}, components_count={len(content_json['gjs-components'])}")
+        
         # Use PageService to save
         success, error = PageService.update_content(
             page_id=page_id,
             content=json.dumps(content_json, ensure_ascii=False),
-            user_id=current_user.id
+            user_id=request.current_user.id
         )
+        
+        logger.info(f"💾 PageService.update_content result: success={success}, error={error}")
         
         if success:
             page = PageRepository.find_by_id(page_id)  # Refresh
@@ -583,9 +601,11 @@ def pagemade_save(page_id):
             else:
                 return Helpers.error_response('Page not found after save', 404)
         else:
+            logger.error(f"❌ Save failed: {error}")
             return Helpers.error_response(error, 500)
         
     except Exception as e:
+        logger.error(f"❌ Exception in pagemade_save: {str(e)}")
         return Helpers.error_response(f'Error saving content: {str(e)}', 500)
 
 

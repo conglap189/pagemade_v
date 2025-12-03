@@ -208,7 +208,7 @@ class ApiClient {
     }
 
     /**
-     * Save page data
+     * Save page data (general endpoint - updates metadata)
      */
     async savePage(pageId, pageData) {
         try {
@@ -219,6 +219,27 @@ class ApiClient {
             return data.success;
         } catch (error) {
             console.error('Save page failed:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Save PageMade/GrapesJS content
+     */
+    async savePageMadeContent(pageId, gjsData) {
+        try {
+            console.log('🔌 [API] savePageMadeContent called for page:', pageId)
+            console.log('🔌 [API] Token exists:', !!localStorage.getItem('access_token'))
+            
+            const data = await this.request(`/api/pages/${pageId}/pagemade/save`, {
+                method: 'POST',
+                body: JSON.stringify(gjsData)
+            });
+            
+            console.log('🔌 [API] Response:', data)
+            return data.success;
+        } catch (error) {
+            console.error('🔌 [API] Save PageMade content failed:', error);
             return false;
         }
     }

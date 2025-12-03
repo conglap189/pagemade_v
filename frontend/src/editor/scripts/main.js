@@ -186,53 +186,75 @@ class PageMadeApp {
 
     async loadPageData() {
         try {
-            // If we have verified token data, use it
-            if (this.pageData) {
-                console.log('Using verified token data')
-                // Update page title
-                const pageTitleEl = document.getElementById('page-title')
-                const pageTitleDisplayEl = document.querySelector('.page-title')
-                if (pageTitleEl) pageTitleEl.textContent = this.pageData.page_title || 'Untitled Page'
-                if (pageTitleDisplayEl) pageTitleDisplayEl.textContent = this.pageData.page_title || 'Untitled Page'
-                return
-            }
-
-            // Otherwise, load page content using PageMade API client
-            console.log('Loading page data via PageMade API...')
-            const pageData = await window.apiClient.getPage(this.pageId)
+            // Store token metadata if available (from verifyToken)
+            const tokenMetadata = this.pageData || {}
+            console.log('📋 Token metadata:', tokenMetadata)
             
-            if (!pageData) {
-                throw new Error('Failed to load page data from API')
+            // ALWAYS load page content from API - token only has metadata, not content!
+            console.log('📥 Loading page content via API for page:', this.pageId)
+            const contentData = await window.apiClient.getPage(this.pageId)
+            
+            if (!contentData) {
+                throw new Error('Failed to load page content from API')
             }
             
-            // Parse content JSON if it's a string
+            console.log('📦 Raw content data from API:', contentData)
+            
+            // Backend /content endpoint returns content data directly:
+            // { "gjs-html": "...", "gjs-css": "...", "gjs-components": [...], ... }
+            // contentData IS the content object, NOT { content: {...} }
+            
+            // Check if contentData already has gjs-* keys (new format from /content endpoint)
+            const hasGjsKeys = contentData['gjs-html'] !== undefined || 
+                               contentData['gjs-components'] !== undefined ||
+                               contentData['gjs-css'] !== undefined
+            
             let parsedContent = {}
-            try {
-                parsedContent = typeof pageData.content === 'string' 
-                    ? JSON.parse(pageData.content) 
-                    : pageData.content || {}
-            } catch (e) {
-                console.warn('⚠️ Failed to parse page content JSON, using as HTML:', e)
-                parsedContent = { 'pm-html': pageData.content }
+            
+            if (hasGjsKeys) {
+                // New format: contentData directly contains gjs-* keys
+                console.log('📄 Using direct gjs-* format from API')
+                parsedContent = contentData
+            } else if (contentData.content) {
+                // Old format: contentData has a .content field
+                console.log('📄 Parsing legacy content field')
+                try {
+                    parsedContent = typeof contentData.content === 'string' 
+                        ? JSON.parse(contentData.content) 
+                        : contentData.content || {}
+                } catch (e) {
+                    console.warn('⚠️ Failed to parse page content JSON, using as HTML:', e)
+                    parsedContent = { 'gjs-html': contentData.content }
+                }
+            } else {
+                console.warn('⚠️ No content found in API response')
+                parsedContent = {}
             }
             
-            // Store page data in PageMade format (pm-* instead of gjs-*)
+            console.log('📊 Parsed content:', {
+                hasHtml: !!(parsedContent['gjs-html'] || parsedContent['pm-html']),
+                hasCss: !!(parsedContent['gjs-css'] || parsedContent['pm-css']),
+                componentsCount: (parsedContent['gjs-components'] || parsedContent['pm-components'] || []).length,
+                stylesCount: (parsedContent['gjs-styles'] || parsedContent['pm-styles'] || []).length
+            })
+            
+            // Store page data in PageMade format, merging token metadata with content
             this.pageData = {
                 page: {
                     id: this.pageId,
-                    title: pageData.title || 'Untitled Page',
+                    title: tokenMetadata.page_title || contentData.title || 'Untitled Page',
                     content: parsedContent['pm-html'] || parsedContent['gjs-html'] || '',
-                    css: parsedContent['pm-css'] || parsedContent['gjs-css'] || pageData.css_content || '',
+                    css: parsedContent['pm-css'] || parsedContent['gjs-css'] || contentData.css_content || '',
                     components: parsedContent['pm-components'] || parsedContent['gjs-components'] || [],
                     styles: parsedContent['pm-styles'] || parsedContent['gjs-styles'] || [],
                     assets: parsedContent['pm-assets'] || parsedContent['gjs-assets'] || []
                 },
                 site: {
-                    title: pageData.site_name || 'PageMade Site',
-                    subdomain: pageData.subdomain || 'demo'
+                    title: tokenMetadata.site_title || contentData.site_name || 'PageMade Site',
+                    subdomain: tokenMetadata.site_subdomain || contentData.subdomain || 'demo'
                 },
                 user: {
-                    name: pageData.user_name || 'PageMade User'
+                    name: tokenMetadata.user_name || contentData.user_name || 'PageMade User'
                 }
             }
             
@@ -242,7 +264,15 @@ class PageMadeApp {
             if (pageTitleEl) pageTitleEl.textContent = this.pageData.page.title
             if (pageTitleDisplayEl) pageTitleDisplayEl.textContent = this.pageData.page.title
             
-            console.log('✅ Page data loaded via PageMade API:', this.pageData)
+            console.log('✅ Page data loaded and merged:', this.pageData)
+            
+            // Setup back button to go to site detail page
+            // Try tokenMetadata first, fallback to contentData
+            const siteId = tokenMetadata.site_id || contentData.site_id
+            console.log('🔍 DEBUG: tokenMetadata.site_id:', tokenMetadata.site_id)
+            console.log('🔍 DEBUG: contentData.site_id:', contentData.site_id)
+            console.log('🔍 DEBUG: Final siteId for back button:', siteId)
+            this.setupBackButton(siteId)
             
         } catch (error) {
             console.error('❌ CRITICAL: Failed to load page data:', error)
@@ -253,6 +283,31 @@ class PageMadeApp {
             // Let the main init() catch block handle the error display
             throw new Error(`Failed to load page data: ${error.message}`)
         }
+    }
+
+    /**
+     * Setup back button to navigate to site detail page
+     */
+    setupBackButton(siteId) {
+        const backButton = document.getElementById('back-button')
+        if (!backButton) {
+            console.warn('⚠️ Back button not found')
+            return
+        }
+        
+        // Determine the back URL based on site_id
+        let backUrl = 'http://localhost:5000/dashboard' // Default fallback
+        
+        if (siteId) {
+            backUrl = `http://localhost:5000/site/${siteId}`
+            console.log('🔙 Back button configured to site detail:', backUrl)
+        } else {
+            console.log('🔙 Back button configured to dashboard (no site_id)')
+        }
+        
+        backButton.addEventListener('click', () => {
+            window.location.href = backUrl
+        })
     }
 
     initializeComponents() {
@@ -856,28 +911,41 @@ class PageMadeApp {
         try {
             this.showLoading('btn-save')
             
+            console.log('💾 [SAVE] Starting save process...')
+            console.log('💾 [SAVE] Page ID:', this.pageId)
+            
             // Get content from GrapesJS editor
             const html = this.pm.getHtml()
             const css = this.pm.getCss()
             const components = this.pm.getComponents()
             const styles = this.pm.getStyle()
-            const assets = this.pm.getAssets()
+            // Get assets from AssetManager
+            const assets = this.pm.AssetManager ? this.pm.AssetManager.getAll() : []
             
-            // Prepare page data for new API
-            const pageData = {
-                title: this.pageData?.page_title || 'Untitled Page',
-                content: JSON.stringify({
-                    html: html || '',
-                    css: css || '',
-                    components: components || [],
-                    styles: styles || [],
-                    assets: assets || []
-                }),
-                css_content: css || ''
+            console.log('💾 [SAVE] Content extracted:', {
+                htmlLength: html?.length || 0,
+                cssLength: css?.length || 0,
+                componentsCount: Array.isArray(components) ? components.length : (typeof components),
+                stylesCount: Array.isArray(styles) ? styles.length : (typeof styles),
+                assetsCount: Array.isArray(assets) ? assets.length : 0
+            })
+            
+            // Prepare GrapesJS data in format expected by backend
+            // Backend expects: gjs-html, gjs-css, gjs-components, gjs-styles, gjs-assets
+            const gjsData = {
+                'gjs-html': html || '',
+                'gjs-css': css || '',
+                'gjs-components': components || [],
+                'gjs-styles': styles || [],
+                'gjs-assets': assets || []
             }
             
-            // Use new API client to save
-            const success = await window.apiClient.savePage(this.pageId, pageData)
+            console.log('💾 [SAVE] Sending data to API:', JSON.stringify(gjsData).substring(0, 500) + '...')
+            
+            // Use PageMade-specific save endpoint
+            const success = await window.apiClient.savePageMadeContent(this.pageId, gjsData)
+            
+            console.log('💾 [SAVE] API response success:', success)
             
             if (success) {
                 this.showSuccess('Trang đã được lưu thành công!')
