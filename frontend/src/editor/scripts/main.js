@@ -368,11 +368,73 @@ class PageMadeApp {
             }
         }, 1000);
         
+        // Inject scrollbar styles into canvas iframe
+        this.injectCanvasScrollbarStyles();
+        
         // Setup empty state management
         this.setupEmptyStateManagement();
         
         // Setup asset management overrides
         this.setupAssetManagementOverrides();
+    }
+    
+    /**
+     * Inject scrollbar styles into canvas iframe
+     * Match the same style as the main editor scrollbars
+     */
+    injectCanvasScrollbarStyles() {
+        if (!this.pm) return;
+        
+        const injectStyles = () => {
+            try {
+                const canvasDoc = this.pm.Canvas.getDocument();
+                if (!canvasDoc || !canvasDoc.head) return;
+                
+                // Check if styles already injected
+                if (canvasDoc.getElementById('pagemade-scrollbar-styles')) return;
+                
+                const styleEl = canvasDoc.createElement('style');
+                styleEl.id = 'pagemade-scrollbar-styles';
+                styleEl.textContent = `
+                    /* Canvas Scrollbar Styles - Match editor scrollbar */
+                    ::-webkit-scrollbar {
+                        width: 8px;
+                        height: 8px;
+                    }
+                    
+                    ::-webkit-scrollbar-track {
+                        background: #e5e7eb;
+                    }
+                    
+                    ::-webkit-scrollbar-thumb {
+                        background: #6b7280;
+                        border-radius: 4px;
+                    }
+                    
+                    ::-webkit-scrollbar-thumb:hover {
+                        background: #4b5563;
+                    }
+                    
+                    /* Firefox scrollbar */
+                    * {
+                        scrollbar-width: thin;
+                        scrollbar-color: #6b7280 #e5e7eb;
+                    }
+                `;
+                canvasDoc.head.appendChild(styleEl);
+                console.log('✅ Canvas scrollbar styles injected');
+            } catch (err) {
+                console.warn('⚠️ Could not inject canvas scrollbar styles:', err);
+            }
+        };
+        
+        // Inject after canvas is ready
+        setTimeout(injectStyles, 500);
+        
+        // Re-inject when canvas frame changes (e.g., device switch)
+        this.pm.on('canvas:frame:load', () => {
+            setTimeout(injectStyles, 100);
+        });
     }
     
     setupEmptyStateManagement() {

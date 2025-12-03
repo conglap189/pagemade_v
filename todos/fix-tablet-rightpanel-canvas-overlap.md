@@ -38,4 +38,35 @@ Xóa duplicate logic trong `main.js setupDeviceSwitcher()`, để DeviceSwitcher
 - GrapesJS deviceManager set width trực tiếp trên `.gjs-frame-wrapper` element
 - DeviceSwitcher.js chuyển đổi device names: 'desktop' → 'Desktop', 'tablet' → 'Tablet', 'mobile' → 'Mobile'
 
-## 5. Status: ĐÃ SỬA - CẦN TEST
+## 5. Status: CẦN TEST
+
+### Session 3 - Sửa CSS đúng cách (HOÀN THÀNH):
+
+**Phát hiện lỗi:**
+- CSS custom đang dùng `position: relative` cho `.gjs-frame-wrapper` - SAI!
+- GrapesJS gốc dùng `position: absolute; left: 0; right: 0; margin: auto` để center frame
+- Khi set `position: relative`, frame không thể được center đúng cách
+
+**Sửa đổi đã thực hiện:**
+1. `.gjs-cv-canvas__frames`: Bỏ `display: flex`, giữ `position: absolute` giống GrapesJS gốc
+2. `.gjs-frame-wrapper`: Dùng `position: absolute` với `left: 0; right: 0; margin: auto` + `top: 20px`
+
+**Logic hoạt động (đã verify từ source code):**
+1. `editor.setDevice('Tablet')` → emit `change:device` event
+2. `Canvas.updateDevice()` lấy device config và set `width/height/minHeight` vào frame model
+3. `FrameWrapView.__handleSize()` update `style.width` và `style.height` inline trên `.gjs-frame-wrapper`
+4. CSS `position: absolute; left: 0; right: 0; margin: auto` center frame trong canvas
+5. Canvas area có `flex: 1`, co lại khi right panel visible
+
+**Cần test trên browser:**
+- [ ] Chuyển Desktop → Tablet: frame co lại 768px và centered
+- [ ] Chuyển Tablet → Mobile: frame co lại 375px và centered  
+- [ ] Right panel không đè lên canvas
+- [ ] Scrollbar hiển thị với màu đậm khi content overflow
+
+### Để test:
+1. Mở http://localhost:5001 (frontend dev server)
+2. Đăng nhập và vào editor
+3. Click device buttons (Desktop/Tablet/Mobile) trên toolbar
+4. Kiểm tra frame resize và centering
+5. Kiểm tra right panel không overlap
