@@ -441,11 +441,13 @@
 }
 
 /* ===== DEVICE PREVIEW STYLES ===== */
+/* NOTE: #canvas-container overflow is set to 'hidden' in editor.css
+   Scrolling happens on .gjs-cv-canvas element inside #pm-canvas via scrollableCanvas: true */
 #canvas-container {
     position: relative;
     width: 100%;
     height: 100%;
-    overflow: auto;
+    /* overflow: hidden is set in editor.css */
 }
 
 #pm-canvas {

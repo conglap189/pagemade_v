@@ -423,6 +423,10 @@ class PageMadeApp {
             }
         }, 1000);
         
+        // Canvas scrolling is handled by GrapesJS native behavior with scrollableCanvas: true
+        // Frame will use height: 100% from CSS, and internal scrollbar appears when content overflows
+        this.enableCanvasScrolling();
+        
         // Inject scrollbar styles into canvas iframe
         this.injectCanvasScrollbarStyles();
         
@@ -490,6 +494,78 @@ class PageMadeApp {
         this.pm.on('canvas:frame:load', () => {
             setTimeout(injectStyles, 100);
         });
+    }
+    
+    /**
+     * Enable canvas scrolling - Use GrapesJS native behavior.
+     * 
+     * GrapesJS handles canvas scrolling natively when:
+     * 1. scrollableCanvas: true in config
+     * 2. CSS sets .gjs-frame { height: 100% }
+     * 
+     * Scrollbar appears inside the iframe when content exceeds frame height.
+     */
+    enableCanvasScrolling() {
+        if (!this.pm) return;
+        
+        // GrapesJS handles scrolling natively - no custom code needed
+        // Just ensure the config has scrollableCanvas: true (set in pagemade-config.js)
+        
+        // NOTE: setupCanvasHeightEvents() is disabled because we're using fixed height (100%)
+        // instead of auto-height. The function was designed for auto-height behavior.
+        // this.setupCanvasHeightEvents();
+        
+        console.log('✅ Canvas scrolling: Using GrapesJS native behavior');
+    }
+    
+    /**
+     * Setup event listeners to manage canvas height when components change.
+     * This ensures canvas shrinks properly when elements are removed.
+     * Works alongside MutationObserver in FrameWrapView.ts for robust height management.
+     */
+    setupCanvasHeightEvents() {
+        if (!this.pm) return;
+        
+        // Debounce function to prevent excessive recalculations
+        const debounce = (func, wait) => {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        };
+        
+        // Force recalculate canvas height
+        const recalculateCanvasHeight = debounce(() => {
+            try {
+                const canvasFrame = this.pm.Canvas.getFrame();
+                if (!canvasFrame) return;
+                
+                const frameView = canvasFrame.view;
+                if (frameView && frameView.updateDim) {
+                    // Trigger dimension update which recalculates height
+                    frameView.updateDim();
+                    console.log('🔄 Canvas height recalculated');
+                }
+            } catch (err) {
+                console.warn('⚠️ Could not recalculate canvas height:', err);
+            }
+        }, 100);
+        
+        // Listen for component changes
+        this.pm.on('component:add', () => {
+            recalculateCanvasHeight();
+        });
+        
+        this.pm.on('component:remove', () => {
+            recalculateCanvasHeight();
+        });
+        
+        this.pm.on('component:update', () => {
+            recalculateCanvasHeight();
+        });
+        
+        console.log('✅ Canvas height event listeners setup');
     }
     
     setupEmptyStateManagement() {
@@ -816,7 +892,7 @@ class PageMadeApp {
             })
         }
         
-        // Preview toggle
+        // Preview toggle (GrapesJS internal preview mode)
         const previewBtn = document.getElementById('btn-preview') || document.getElementById('previewToggle');
         if (previewBtn) {
             previewBtn.addEventListener('click', () => {
@@ -1013,21 +1089,350 @@ class PageMadeApp {
         }
     }
 
+    /**
+     * Toggle Preview Mode - Giống hệt file cũ editor_old_file.html
+     * Không dùng GrapesJS preview command, chỉ hide/show panels thủ công
+     */
     togglePreview() {
-        if (!this.pm) return
+        const btn = document.getElementById('btn-preview')
+        if (!btn) return
         
-        const isPreview = this.pm.togglePreview()
-        const btn = document.getElementById('btn-preview') || document.getElementById('previewToggle')
+        const isActive = btn.classList.contains('active')
         
-        if (btn) {
-            if (isPreview) {
-                btn.innerHTML = '<i class="fas fa-edit"></i>'
-                btn.classList.remove('active')
-            } else {
-                btn.innerHTML = '<i class="fas fa-eye"></i>'
-                btn.classList.add('active')
+        if (isActive) {
+            // Exit preview mode
+            btn.classList.remove('active')
+            document.body.classList.remove('preview-mode')
+            
+            // Hide floating toolbar
+            const floatingToolbar = document.getElementById('floating-preview-toolbar')
+            if (floatingToolbar) {
+                floatingToolbar.style.display = 'none'
+            }
+            
+            // Show all elements
+            const elementsToShow = [
+                '#top-toolbar',
+                '#left-sidebar', 
+                '#left-panel',
+                '#right-panel'
+            ]
+            
+            elementsToShow.forEach(selector => {
+                const el = document.querySelector(selector)
+                if (el) el.style.display = ''
+            })
+            
+            // Reset canvas area
+            const canvasArea = document.getElementById('canvas-area')
+            if (canvasArea) {
+                canvasArea.style.cssText = ''
+            }
+            
+            console.log('✏️ Exited Preview Mode')
+            
+        } else {
+            // Enter preview mode
+            btn.classList.add('active')
+            document.body.classList.add('preview-mode')
+            
+            // Hide all panels
+            const elementsToHide = [
+                '#top-toolbar',
+                '#left-sidebar',
+                '#left-panel', 
+                '#right-panel'
+            ]
+            
+            elementsToHide.forEach(selector => {
+                const el = document.querySelector(selector)
+                if (el) el.style.display = 'none'
+            })
+            
+            // Make canvas full screen
+            const canvasArea = document.getElementById('canvas-area')
+            if (canvasArea) {
+                canvasArea.style.cssText = `
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    z-index: 9999 !important;
+                    background: white !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                `
+            }
+            
+            // Show floating toolbar
+            this.showFloatingPreviewToolbar()
+            
+            console.log('👁️ Entered Preview Mode')
+        }
+    }
+    
+    /**
+     * Show floating toolbar for preview mode - Giống hệt file cũ
+     */
+    showFloatingPreviewToolbar() {
+        let toolbar = document.getElementById('floating-preview-toolbar')
+        
+        // Create toolbar if it doesn't exist (giống hệt HTML trong file cũ)
+        if (!toolbar) {
+            toolbar = document.createElement('div')
+            toolbar.id = 'floating-preview-toolbar'
+            toolbar.style.display = 'none'
+            toolbar.innerHTML = `
+                <!-- Close button -->
+                <button id="floating-close" class="floating-btn floating-btn-close" title="Thoát Preview">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <!-- Device switcher -->
+                <div class="floating-device-switcher">
+                    <button class="floating-device-btn active" data-device="Desktop" title="Desktop">
+                        <i class="fas fa-desktop"></i>
+                    </button>
+                    <button class="floating-device-btn" data-device="Tablet" title="Tablet">
+                        <i class="fas fa-tablet-alt"></i>
+                    </button>
+                    <button class="floating-device-btn" data-device="Mobile" title="Mobile">
+                        <i class="fas fa-mobile-alt"></i>
+                    </button>
+                </div>
+                
+                <!-- Action buttons -->
+                <button id="floating-save" class="floating-btn floating-btn-save" title="Lưu">
+                    <span>Lưu</span>
+                </button>
+                
+                <button id="floating-publish" class="floating-btn floating-btn-publish" title="Xuất bản">
+                    <span>Xuất bản</span>
+                </button>
+            `
+            document.body.appendChild(toolbar)
+            
+            // Close button - trigger exit preview mode
+            document.getElementById('floating-close')?.addEventListener('click', () => {
+                const previewBtn = document.getElementById('btn-preview')
+                if (previewBtn && previewBtn.classList.contains('active')) {
+                    previewBtn.click()
+                }
+            })
+            
+            // Floating device switcher functionality
+            toolbar.querySelectorAll('.floating-device-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active from all floating device buttons
+                    toolbar.querySelectorAll('.floating-device-btn').forEach(b => b.classList.remove('active'))
+                    btn.classList.add('active')
+                    
+                    // Also update main device switcher
+                    const device = btn.dataset.device
+                    const mainDeviceBtn = document.querySelector(`.device-btn[data-device="${device}"]`)
+                    if (mainDeviceBtn) {
+                        document.querySelectorAll('.device-btn[data-device]').forEach(b => b.classList.remove('active'))
+                        mainDeviceBtn.classList.add('active')
+                    }
+                    
+                    // Set device in editor
+                    if (this.pm) {
+                        this.pm.setDevice(device)
+                    }
+                })
+            })
+            
+            // Save button
+            document.getElementById('floating-save')?.addEventListener('click', () => {
+                this.savePage()
+            })
+            
+            // Publish button
+            document.getElementById('floating-publish')?.addEventListener('click', () => {
+                this.publishPage()
+            })
+            
+            // Setup drag functionality for snapping to 4 edges
+            this.setupFloatingToolbarDrag(toolbar)
+        }
+        
+        // Sync floating device switcher with main device switcher
+        this.syncFloatingDeviceSwitcher()
+        
+        toolbar.style.display = 'flex'
+    }
+    
+    /**
+     * Sync floating device switcher with main device switcher
+     */
+    syncFloatingDeviceSwitcher() {
+        const activeMainBtn = document.querySelector('.device-btn[data-device].active')
+        if (activeMainBtn) {
+            const device = activeMainBtn.dataset.device
+            const floatingBtn = document.querySelector(`.floating-device-btn[data-device="${device}"]`)
+            if (floatingBtn) {
+                document.querySelectorAll('.floating-device-btn').forEach(b => b.classList.remove('active'))
+                floatingBtn.classList.add('active')
             }
         }
+    }
+    
+    /**
+     * Setup draggable functionality for floating toolbar
+     * Allows dragging to snap to 4 edges (top, bottom, left, right)
+     */
+    setupFloatingToolbarDrag(toolbar) {
+        let isDragging = false
+        let dragStartX = 0
+        let dragStartY = 0
+        let toolbarStartX = 0
+        let toolbarStartY = 0
+        
+        // Save/load position from localStorage
+        const saveToolbarPosition = (position) => {
+            try {
+                localStorage.setItem('floatingToolbarPosition', position)
+            } catch (e) {
+                console.warn('Could not save toolbar position to localStorage:', e)
+            }
+        }
+        
+        const getToolbarPosition = () => {
+            try {
+                return localStorage.getItem('floatingToolbarPosition') || 'top'
+            } catch (e) {
+                console.warn('Could not read toolbar position from localStorage:', e)
+                return 'top'
+            }
+        }
+        
+        // Apply position class
+        const setToolbarPosition = (position) => {
+            // Remove all position classes
+            toolbar.classList.remove('position-top', 'position-left', 'position-right', 'position-bottom')
+            
+            // Add new position class
+            toolbar.classList.add(`position-${position}`)
+            
+            // Save position
+            saveToolbarPosition(position)
+        }
+        
+        // Calculate snap position based on drag end
+        const calculateSnapPosition = (x, y) => {
+            const windowWidth = window.innerWidth
+            const windowHeight = window.innerHeight
+            const toolbarRect = toolbar.getBoundingClientRect()
+            
+            const toolbarCenterX = x + toolbarRect.width / 2
+            const toolbarCenterY = y + toolbarRect.height / 2
+            
+            // Determine which edge is closest
+            const distances = {
+                top: Math.abs(toolbarCenterY - 100), // 100px from top
+                bottom: Math.abs(toolbarCenterY - (windowHeight - 100)), // 100px from bottom
+                left: Math.abs(toolbarCenterX - 100), // 100px from left
+                right: Math.abs(toolbarCenterX - (windowWidth - 100)) // 100px from right
+            }
+            
+            const minDistance = Math.min(...Object.values(distances))
+            const closestEdge = Object.keys(distances).find(key => distances[key] === minDistance)
+            
+            return closestEdge
+        }
+        
+        // Throttle function for performance
+        const throttle = (func, limit) => {
+            let inThrottle
+            return function() {
+                const args = arguments
+                const context = this
+                if (!inThrottle) {
+                    func.apply(context, args)
+                    inThrottle = true
+                    setTimeout(() => inThrottle = false, limit)
+                }
+            }
+        }
+        
+        // Mouse down - start dragging
+        toolbar.addEventListener('mousedown', (e) => {
+            // Only allow dragging on the toolbar itself, not on buttons or their children
+            if (e.target.closest('.floating-btn') || 
+                e.target.closest('.floating-device-btn') ||
+                e.target.closest('.floating-device-switcher')) {
+                return
+            }
+            
+            isDragging = true
+            dragStartX = e.clientX
+            dragStartY = e.clientY
+            
+            const rect = toolbar.getBoundingClientRect()
+            toolbarStartX = rect.left
+            toolbarStartY = rect.top
+            
+            // Remove position classes while dragging
+            toolbar.classList.remove('position-top', 'position-left', 'position-right', 'position-bottom')
+            
+            // Set inline styles for dragging
+            toolbar.style.position = 'fixed'
+            toolbar.style.left = toolbarStartX + 'px'
+            toolbar.style.top = toolbarStartY + 'px'
+            toolbar.style.transform = 'none'
+            toolbar.style.right = 'auto'
+            toolbar.style.bottom = 'auto'
+            toolbar.style.flexDirection = 'row'
+            
+            e.preventDefault()
+        })
+        
+        // Mouse move - drag (with throttling)
+        const handleMouseMove = throttle((e) => {
+            if (!isDragging) return
+            
+            const deltaX = e.clientX - dragStartX
+            const deltaY = e.clientY - dragStartY
+            
+            const newX = toolbarStartX + deltaX
+            const newY = toolbarStartY + deltaY
+            
+            toolbar.style.left = newX + 'px'
+            toolbar.style.top = newY + 'px'
+        }, 16) // ~60fps
+        
+        document.addEventListener('mousemove', handleMouseMove)
+        
+        // Mouse up - stop dragging and snap
+        document.addEventListener('mouseup', (e) => {
+            if (!isDragging) return
+            
+            isDragging = false
+            
+            const rect = toolbar.getBoundingClientRect()
+            const snapPosition = calculateSnapPosition(rect.left, rect.top)
+            
+            // Clear inline styles
+            toolbar.style.position = ''
+            toolbar.style.left = ''
+            toolbar.style.top = ''
+            toolbar.style.transform = ''
+            toolbar.style.right = ''
+            toolbar.style.bottom = ''
+            toolbar.style.flexDirection = ''
+            
+            // Apply snap position
+            setToolbarPosition(snapPosition)
+            
+            console.log(`📍 Floating toolbar snapped to: ${snapPosition}`)
+        })
+        
+        // Restore saved position
+        const savedPosition = getToolbarPosition()
+        setToolbarPosition(savedPosition)
+        
+        console.log('🖱️ Floating toolbar drag functionality initialized')
     }
 
     hasUnsavedChanges() {

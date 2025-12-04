@@ -43,13 +43,11 @@ export class PageMadeEditor {
         this.isPreview = !this.isPreview
         
         if (this.isPreview) {
-            this.editor.runCommand('gjs-preserve-command', true)
-            this.editor.runCommand('gjs-preserve-selected', false)
-            this.editor.setDevice('Desktop')
+            // Enter preview mode
             this.editor.runCommand('preview')
         } else {
+            // Exit preview mode
             this.editor.stopCommand('preview')
-            this.editor.runCommand('gjs-preserve-command', false)
         }
         
         return this.isPreview
@@ -108,8 +106,9 @@ export class PageMadeEditorConfig {
             },
             
             // Device Manager
-            // Note: Tablet behaves like Desktop (no fixed height, just width change)
-            // Mobile width should match DeviceSwitcher.js (375px)
+            // NOTE: DO NOT set height: 'auto' on devices - it causes canvas to shrink to content height
+            // The CSS rules .gjs-cv-canvas, .gjs-frame { height: 100% } will handle full-height display
+            // Canvas scrolling is handled by scrollableCanvas: true in canvas config
             deviceManager: {
                 devices: [
                     {
@@ -121,7 +120,6 @@ export class PageMadeEditorConfig {
                         name: 'Tablet',
                         width: '768px',
                         widthMedia: '768px'
-                        // No height - auto height like desktop
                     },
                     {
                         name: 'Mobile',
@@ -136,6 +134,9 @@ export class PageMadeEditorConfig {
             // This prevents CORS issues and ensures fonts/icons load correctly
             canvas: {
                 // Enable scrollable canvas for content overflow
+                // scrollableCanvas: true sets overflow: auto on .gjs-cv-canvas
+                // Combined with CSS .gjs-frame { height: 100% }, the frame fills the canvas
+                // and internal iframe scrollbar appears when content exceeds frame height
                 scrollableCanvas: true,
                 styles: [
                     // Tailwind CSS (CDN - specific version for stability)
@@ -447,15 +448,31 @@ export class PageMadeEditorConfig {
             {
                 id: 'preview',
                 run: function(editor, sender) {
-                    sender && sender.set('active', 0);
-                    editor.runCommand('gjs-preserve-command', true);
-                    editor.runCommand('gjs-preserve-selected', false);
-                    editor.setDevice('Desktop');
+                    // Deactivate sender button if exists
+                    sender && sender.set && sender.set('active', 0);
+                    
+                    // Set editor state to preview
                     editor.getModel().set('state', 'preview');
+                    
+                    // Hide selection/highlight elements
+                    const wrapper = editor.getWrapper();
+                    if (wrapper) {
+                        wrapper.set('selectable', false);
+                    }
+                    
+                    console.log('👁️ Preview mode: ON');
                 },
                 stop: function(editor, sender) {
-                    editor.stopCommand('gjs-preserve-command');
+                    // Reset editor state
                     editor.getModel().set('state', '');
+                    
+                    // Re-enable selection
+                    const wrapper = editor.getWrapper();
+                    if (wrapper) {
+                        wrapper.set('selectable', true);
+                    }
+                    
+                    console.log('👁️ Preview mode: OFF');
                 }
             },
             {

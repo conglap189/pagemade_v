@@ -19,6 +19,7 @@ export default class FrameWrapView extends ModuleView<Frame> {
   cv: CanvasView;
   classAnim: string;
   sizeObserver?: ResizeObserver;
+  mutationObserver?: MutationObserver;
 
   constructor(model: Frame, canvasView: CanvasView) {
     super({ model });
@@ -77,6 +78,7 @@ export default class FrameWrapView extends ModuleView<Frame> {
 
   remove(opts?: any) {
     this.sizeObserver?.disconnect();
+    this.mutationObserver?.disconnect();
     this.__clear(opts);
     ModuleView.prototype.remove.apply(this, opts);
     //@ts-ignore
@@ -163,26 +165,50 @@ export default class FrameWrapView extends ModuleView<Frame> {
     const newHeight = isNumber(newH) ? `${newH}${un}` : newH;
     style.width = newWidth;
     this.sizeObserver?.disconnect();
+    this.mutationObserver?.disconnect();
 
     if (model.hasAutoHeight()) {
       const iframe = this.frame.el;
       const { contentDocument } = iframe;
 
       if (contentDocument) {
-        const observer = new ResizeObserver(() => {
-          // This prevents "ResizeObserver loop completed with undelivered notifications"
+        const minHeight = parseFloat(model.get('minHeight')) || 0;
+        
+        // Helper function to update height
+        const updateHeight = () => {
           requestAnimationFrame(() => {
-            const minHeight = parseFloat(model.get('minHeight')) || 0;
             const heightResult = Math.max(contentDocument.body.scrollHeight, minHeight);
             style.height = `${heightResult}px`;
           });
+        };
+
+        // ResizeObserver: detect when content size changes (usually when content grows)
+        const resizeObserver = new ResizeObserver(() => {
+          updateHeight();
         });
-        observer.observe(contentDocument.body);
-        this.sizeObserver = observer;
+        resizeObserver.observe(contentDocument.body);
+        this.sizeObserver = resizeObserver;
+
+        // MutationObserver: detect when DOM changes (add/remove elements)
+        // This is critical for detecting when elements are removed (canvas should shrink)
+        const mutationObserver = new MutationObserver(() => {
+          updateHeight();
+        });
+        mutationObserver.observe(contentDocument.body, {
+          childList: true,    // Detect direct child additions/removals
+          subtree: true,      // Detect changes in all descendants
+          attributes: true,   // Detect attribute changes (e.g., style changes)
+          characterData: true // Detect text content changes
+        });
+        this.mutationObserver = mutationObserver;
+
+        // Initial height calculation
+        updateHeight();
       }
     } else {
       style.height = newHeight;
       delete this.sizeObserver;
+      delete this.mutationObserver;
     }
 
     return { noChanges, width, height, newW, newH };

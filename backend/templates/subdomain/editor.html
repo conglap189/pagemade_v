@@ -6,21 +6,19 @@
     <title>Pagemade Editor - <span id="page-title">Loading...</span></title>
     
     <!-- GrapesJS Core CSS (CRITICAL: Must load BEFORE custom pagemade.min.css) -->
-    <!-- Version 0.22.13 - Built from local source (grapesjs/packages/core/dist/) -->
-    <link rel="stylesheet" href="./styles/pagemade-core.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/grapesjs@0.20.3/dist/css/grapes.min.css">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/images/branding/favicon/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/branding/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/images/branding/favicon/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/images/branding/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="/editor/images/branding/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/editor/images/branding/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/editor/images/branding/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/editor/images/branding/favicon/apple-touch-icon.png">
     <meta name="theme-color" content="#667eea">
     
     <!-- PageMade Core CSS (CRITICAL: Contains .gjs-block and other GrapesJS styles) -->
     <link rel="stylesheet" href="http://localhost:5000/static/pagemade/pagemade.min.css">
     
     <!-- Custom Editor CSS (MUST load AFTER pagemaker.min.css to override default styles) -->
-    <link rel="stylesheet" href="./styles/editor.css">
     
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -525,9 +523,7 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            /* NOTE: Removed overflow: hidden to allow .gjs-cv-canvas scrolling to work properly.
-               GrapesJS sets overflow: auto on .gjs-cv-canvas when scrollableCanvas: true.
-               Having overflow: hidden on parent could interfere with scroll events. */
+            overflow: hidden;
             transition: all 0.3s ease;
         }
         
@@ -757,10 +753,6 @@
             display: none !important;
         }
         
-        /* ============================================
-           CANVAS STYLING - MATCHING OLD WORKING VERSION
-           ============================================ */
-        
         /* Canvas full width/height - remove all gaps */
         .gjs-cv-canvas {
             width: 100% !important;
@@ -769,21 +761,189 @@
             left: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
+            overflow: auto !important;
         }
         
+        /* ============================================
+           GrapesJS Frame Sizing
+           
+           IMPORTANT: GrapesJS handles frame sizing natively via deviceManager
+           - Frame width/height is set by FrameWrapView.__handleSize()
+           - This sets style.width on .gjs-frame-wrapper element
+           - DO NOT use !important to override these values
+           ============================================ */
+        
+        /* Canvas frames container - center frame wrappers for responsive preview */
         .gjs-cv-canvas__frames {
             top: 0 !important;
             left: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
             width: 100% !important;
-            height: 100% !important;
+            min-height: 100% !important;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
         
-        .gjs-frame {
-            width: 100% !important;
-            height: 100% !important;
+        /* Frame wrapper - let GrapesJS control width, add smooth transition */
+        .gjs-frame-wrapper {
+            transition: width 0.3s ease, height 0.3s ease;
         }
+        
+        /* Frame (iframe) - fill the wrapper */
+        .gjs-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* ============================================
+           TABLET/MOBILE MODE - SCALE CANVAS APPROACH
+           Panels stay visible. Frame scales to fit available space.
+           Using CSS zoom which actually affects layout (unlike transform).
+           ============================================ */
+        
+        /* Canvas area - flex container, takes remaining space */
+        #canvas-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: auto;
+        }
+        
+        /* GrapesJS editor container - fill available space */
+        #gjs {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* GrapesJS CV (canvas view) - this is where scaling and scrolling happens */
+        #gjs .gjs-cv-canvas {
+            --canvas-scale: 1;
+            zoom: var(--canvas-scale);
+            /* Note: zoom changes layout, unlike transform */
+            
+            /* Enable scrollable canvas - GrapesJS sets this via JS but we ensure it here too */
+            overflow: auto !important;
+        }
+        
+        /* ============================================
+           CUSTOM SCROLLBAR STYLING FOR CANVAS
+           Modern, minimal scrollbar that matches the editor theme
+           ============================================ */
+        
+        /* Canvas scrollbar - Webkit browsers (Chrome, Safari, Edge) */
+        #gjs .gjs-cv-canvas::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        #gjs .gjs-cv-canvas::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 5px;
+        }
+        
+        #gjs .gjs-cv-canvas::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.4);
+            border-radius: 5px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        
+        #gjs .gjs-cv-canvas::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.6);
+        }
+        
+        #gjs .gjs-cv-canvas::-webkit-scrollbar-thumb:active {
+            background: rgba(102, 126, 234, 0.8);
+        }
+        
+        #gjs .gjs-cv-canvas::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+        
+        /* Dark mode scrollbar */
+        .dark #gjs .gjs-cv-canvas::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .dark #gjs .gjs-cv-canvas::-webkit-scrollbar-thumb {
+            background: rgba(129, 140, 248, 0.4);
+        }
+        
+        .dark #gjs .gjs-cv-canvas::-webkit-scrollbar-thumb:hover {
+            background: rgba(129, 140, 248, 0.6);
+        }
+        
+        .dark #gjs .gjs-cv-canvas::-webkit-scrollbar-thumb:active {
+            background: rgba(129, 140, 248, 0.8);
+        }
+        
+        /* Firefox scrollbar styling */
+        #gjs .gjs-cv-canvas {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(102, 126, 234, 0.4) rgba(0, 0, 0, 0.05);
+        }
+        
+        .dark #gjs .gjs-cv-canvas {
+            scrollbar-color: rgba(129, 140, 248, 0.4) rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Firefox fallback - Firefox doesn't support zoom */
+        @-moz-document url-prefix() {
+            #gjs .gjs-cv-canvas {
+                transform: scale(var(--canvas-scale));
+                transform-origin: top center;
+            }
+        }
+        
+        /* Frame wrapper smooth transition */
+        .gjs-frame-wrapper {
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+        
+        /* Visual indicator for responsive mode - subtle background */
+        #gjs.device-tablet,
+        #gjs.device-mobile {
+            background: #e5e7eb;
+        }
+        
+        .dark #gjs.device-tablet,
+        .dark #gjs.device-mobile {
+            background: #1a1a2e;
+        }
+        
+        /* Scale indicator badge (shown when scaled) */
+        .scale-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .scale-indicator.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* ============================================
+           END TABLET/MOBILE MODE - SCALE CANVAS
+           ============================================ */
         
         /* Toolbar styling - changed to blue background */
         .gjs-toolbar {
@@ -929,193 +1089,15 @@
         .gjs-block-category[data-category="Extra"] {
             display: none !important;
         }
-        
-        /* ===== FLOATING PREVIEW TOOLBAR ===== */
-        /* Giống hệt file cũ editor_old_file.html */
-        #floating-preview-toolbar {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-            cursor: move;
-            user-select: none;
-        }
-        
-        .dark #floating-preview-toolbar {
-            background: rgba(31, 41, 55, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        /* Position classes for floating toolbar - snap to 4 edges */
-        #floating-preview-toolbar.position-top {
-            top: 20px;
-            bottom: auto;
-            left: 50%;
-            right: auto;
-            transform: translateX(-50%);
-        }
-        
-        #floating-preview-toolbar.position-bottom {
-            bottom: 20px;
-            top: auto;
-            left: 50%;
-            right: auto;
-            transform: translateX(-50%);
-        }
-        
-        #floating-preview-toolbar.position-left {
-            top: 50%;
-            bottom: auto;
-            left: 20px;
-            right: auto;
-            transform: translateY(-50%);
-            flex-direction: column;
-        }
-        
-        #floating-preview-toolbar.position-right {
-            top: 50%;
-            bottom: auto;
-            right: 20px;
-            left: auto;
-            transform: translateY(-50%);
-            flex-direction: column;
-        }
-        
-        /* Adjust device switcher layout when vertical */
-        #floating-preview-toolbar.position-left .floating-device-switcher,
-        #floating-preview-toolbar.position-right .floating-device-switcher {
-            flex-direction: column;
-        }
-        
-        .floating-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            background: #f3f4f6;
-            color: #374151;
-        }
-        
-        .dark .floating-btn {
-            background: #374151;
-            color: #f9fafb;
-        }
-        
-        .floating-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .floating-btn-close {
-            background: #ef4444;
-            color: white;
-            padding: 8px 10px;
-        }
-        
-        .floating-btn-close:hover {
-            background: #dc2626;
-        }
-        
-        .floating-btn-save {
-            background: #3b82f6;
-            color: white;
-        }
-        
-        .floating-btn-save:hover {
-            background: #2563eb;
-        }
-        
-        .floating-btn-publish {
-            background: #10b981;
-            color: white;
-        }
-        
-        .floating-btn-publish:hover {
-            background: #059669;
-        }
-        
-        .floating-device-switcher {
-            display: flex;
-            gap: 4px;
-            padding: 4px;
-            background: #f9fafb;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-        }
-        
-        .dark .floating-device-switcher {
-            background: #1f2937;
-            border: 1px solid #374151;
-        }
-        
-        .floating-device-btn {
-            padding: 8px 10px;
-            border: none;
-            background: transparent;
-            color: #6b7280;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        
-        .dark .floating-device-btn {
-            color: #9ca3af;
-        }
-        
-        .floating-device-btn:hover {
-            background: #e5e7eb;
-            color: #374151;
-        }
-        
-        .dark .floating-device-btn:hover {
-            background: #374151;
-            color: #f9fafb;
-        }
-        
-        .floating-device-btn.active {
-            background: white;
-            color: #667eea;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .dark .floating-device-btn.active {
-            background: #1f2937;
-            color: #667eea;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-        
-        /* Preview Mode Body State */
-        body.preview-mode {
-            overflow: hidden;
-        }
-        
-        body.preview-mode #loading-overlay {
-            display: none !important;
-        }
     </style>
+  <script type="module" crossorigin src="/editor/assets/main.js"></script>
+  <link rel="stylesheet" crossorigin href="/editor/assets/main.css">
 </head>
 <body>
     <!-- Loading Overlay -->
     <div id="loading-overlay">
         <div class="loading-logo">
-            <img src="/images/branding/logo.svg" alt="PageMade">
+            <img src="/editor/images/branding/logo.svg" alt="PageMade">
         </div>
         
         <div class="spinner-container">
@@ -1131,7 +1113,7 @@
     <div id="top-toolbar">
         <div class="left">
             <div class="logo-section">
-                <img src="/images/branding/logo.svg" alt="PageMade" height="32">
+                <img src="/editor/images/branding/logo.svg" alt="PageMade" height="32">
             </div>
             
             <div class="page-info">
@@ -1347,76 +1329,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- PageMade Core Engine (MUST load before main.js initialization) -->
-    <!-- This loader script loads pagemade-core.min.js from local build -->
-    <script src="./public/pagemade.min.js" defer></script>
+    <script src="/editor/pagemade.min.js" defer></script>
     
     <!-- PageMade Tailwind Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/grapesjs-tailwind@1/dist/grapesjs-tailwind.min.js" defer></script>
     
     <!-- API Client (MUST load BEFORE main.js) -->
-    <script type="module">
-        import ApiClient from './scripts/api-client.js';
-        window.apiClient = new ApiClient();
-        console.log('✅ API Client initialized and attached to window.apiClient');
-    </script>
     
     <!-- Authentication Guard -->
-    <script type="module">
-        // Enhanced authentication flow with URL token support
-        import AuthGuard from './scripts/auth-check.js';
-        
-        window.authGuard = new AuthGuard();
-        
-        // Enhanced authentication check
-        async function initializeEditor() {
-            console.log('🚀 Starting editor initialization...');
-            
-            // 🚨 CRITICAL: Check for URL token FIRST before checking localStorage
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlToken = urlParams.get('token');
-            
-            if (urlToken) {
-                console.log('🔑 URL token found! Saving to localStorage before authentication check...');
-                localStorage.setItem('access_token', urlToken);
-                window.authGuard.accessToken = urlToken;
-                console.log('✅ URL token saved, proceeding with editor load');
-                
-                // Load main editor script immediately (it will handle full auth verification)
-                const script = document.createElement('script');
-                script.type = 'module';
-                script.src = './scripts/main.js';
-                document.head.appendChild(script);
-                return;
-            }
-            
-            // No URL token - check stored authentication
-            console.log('🔍 No URL token, checking stored authentication...');
-            if (!window.authGuard.isAuthenticated()) {
-                console.log('🔐 No stored authentication found, redirecting to login...');
-                window.authGuard.redirectToLogin();
-                return;
-            }
-            
-            console.log('✅ Stored authentication found, verifying with backend...');
-            
-            // Verify with backend
-            const isValid = await window.authGuard.checkAuth();
-            if (!isValid) {
-                console.log('❌ Backend authentication verification failed');
-                // checkAuth() already handles redirect, so just return
-                return;
-            }
-            
-            console.log('✅ Authentication verified, loading editor...');
-            // Load main editor script
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = './scripts/main.js';
-            document.head.appendChild(script);
-        }
-        
-        // Start the initialization
-        initializeEditor();
-    </script>
 </body>
 </html>
