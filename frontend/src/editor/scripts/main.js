@@ -897,20 +897,56 @@ class PageMadeApp {
             })
         }
 
-        // Undo button
-        const undoBtn = document.getElementById('btn-undo') || document.getElementById('undoBtn');
-        if (undoBtn) {
-            undoBtn.addEventListener('click', () => {
-                this.historyManager.undo()
+        // Component Outline toggle
+        const outlineBtn = document.getElementById('btn-outline');
+        if (outlineBtn) {
+            outlineBtn.addEventListener('click', () => {
+                // Toggle component outline visibility using GrapesJS command
+                const cmd = this.pm.Commands;
+                const cmdId = 'core:component-outline';
+                if (cmd.isActive(cmdId)) {
+                    cmd.stop(cmdId);
+                    outlineBtn.classList.remove('active');
+                } else {
+                    cmd.run(cmdId);
+                    outlineBtn.classList.add('active');
+                }
             })
         }
 
-        // Redo button
+        // Undo button - using GrapesJS native UndoManager
+        const undoBtn = document.getElementById('btn-undo') || document.getElementById('undoBtn');
+        if (undoBtn) {
+            undoBtn.addEventListener('click', () => {
+                if (this.pm && this.pm.UndoManager) {
+                    this.pm.UndoManager.undo();
+                }
+            })
+        }
+
+        // Redo button - using GrapesJS native UndoManager
         const redoBtn = document.getElementById('btn-redo') || document.getElementById('redoBtn');
         if (redoBtn) {
             redoBtn.addEventListener('click', () => {
-                this.historyManager.redo()
+                if (this.pm && this.pm.UndoManager) {
+                    this.pm.UndoManager.redo();
+                }
             })
+        }
+        
+        // Listen to GrapesJS UndoManager changes to update button states
+        if (this.pm) {
+            const updateHistoryBtns = () => {
+                const um = this.pm.UndoManager;
+                if (undoBtn) undoBtn.disabled = !um.hasUndo();
+                if (redoBtn) redoBtn.disabled = !um.hasRedo();
+            };
+            
+            // Update on any change
+            this.pm.on('change:changesCount', updateHistoryBtns);
+            
+            // Initial state
+            updateHistoryBtns();
         }
         
         // Keyboard shortcuts
@@ -928,12 +964,16 @@ class PageMadeApp {
                     case 'z':
                         if (!e.shiftKey) {
                             e.preventDefault()
-                            this.historyManager.undo()
+                            if (this.pm && this.pm.UndoManager) {
+                                this.pm.UndoManager.undo()
+                            }
                         }
                         break
                     case 'y':
                         e.preventDefault()
-                        this.historyManager.redo()
+                        if (this.pm && this.pm.UndoManager) {
+                            this.pm.UndoManager.redo()
+                        }
                         break
                 }
             }
