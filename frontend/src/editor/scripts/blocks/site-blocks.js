@@ -1,19 +1,29 @@
 /**
  * SITE BLOCKS LOADER
  * 
- * This module was used to load custom blocks from backend's static folder.
- * Custom blocks feature has been removed - all blocks are now loaded from
- * frontend/src/editor/scripts/blocks/basic-blocks.js
+ * Main loader for all site block categories.
+ * Blocks are organized in categories/ folder for easy management.
  * 
- * This file is kept as a stub for backward compatibility.
+ * Structure:
+ *   categories/
+ *     ├── index.js              # Export all categories
+ *     ├── hero-section/         # Hero blocks (hero-1, hero-2, ...)
+ *     ├── feature-section/      # Feature blocks (future)
+ *     └── cta-section/          # CTA blocks (future)
  */
 
+import { registerAllBlocks } from './categories/index.js'
+
 export default async function loadSiteBlocks(editor) {
-    console.log('📦 Site Blocks: Feature disabled (using basic-blocks only)')
+    console.log('📦 Loading Site Blocks...')
     
-    // No-op: Custom blocks loading has been removed
-    // All blocks are now managed in basic-blocks.js
-    
-    const totalBlocks = editor.BlockManager.getAll().length
-    console.log(`📊 Total blocks available: ${totalBlocks}`)
+    try {
+        // Register all blocks from categories
+        registerAllBlocks(editor)
+        
+        const totalBlocks = editor.BlockManager.getAll().length
+        console.log(`✅ Site Blocks loaded. Total blocks: ${totalBlocks}`)
+    } catch (error) {
+        console.error('❌ Error loading Site Blocks:', error)
+    }
 }

@@ -1843,7 +1843,14 @@ class PageMadeApp {
         
         // Render each category using EXACT native GrapesJS sector structure
         // This matches Style Manager 100%: .gjs-sm-sector > .gjs-sm-sector-title > (.gjs-sm-sector-caret + .gjs-sm-sector-label)
-        Object.keys(blocksByCategory).sort().forEach(categoryName => {
+        // Sort by numeric prefix (1. Hero Section, 2. Footer Section, etc.)
+        // Categories without number prefix go to the end
+        Object.keys(blocksByCategory).sort((a, b) => {
+            // Extract leading number from category name (e.g., "1. Hero Section" → 1)
+            const numA = parseInt(a.match(/^(\d+)\./)?.[1]) || 999;
+            const numB = parseInt(b.match(/^(\d+)\./)?.[1]) || 999;
+            return numA - numB;
+        }).forEach(categoryName => {
             const categoryBlocks = blocksByCategory[categoryName];
             
             // === SECTOR CONTAINER ===
