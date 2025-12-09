@@ -501,21 +501,18 @@ class PageMadeApp {
      * 
      * GrapesJS handles canvas scrolling natively when:
      * 1. scrollableCanvas: true in config
-     * 2. CSS sets .gjs-frame { height: 100% }
+     * 2. CSS does NOT override .gjs-frame height (removed in Phase 1)
      * 
-     * Scrollbar appears inside the iframe when content exceeds frame height.
+     * Canvas auto-expands/shrinks based on content with native GrapesJS logic.
      */
     enableCanvasScrolling() {
         if (!this.pm) return;
         
-        // GrapesJS handles scrolling natively - no custom code needed
-        // Just ensure the config has scrollableCanvas: true (set in pagemade-config.js)
+        // RESET: Re-enabled setupCanvasHeightEvents() with 100% native GrapesJS CSS
+        // Now that we're using pure GrapesJS native canvas CSS, this should work properly
+        this.setupCanvasHeightEvents();
         
-        // NOTE: setupCanvasHeightEvents() is disabled because we're using fixed height (100%)
-        // instead of auto-height. The function was designed for auto-height behavior.
-        // this.setupCanvasHeightEvents();
-        
-        console.log('✅ Canvas scrolling: Using GrapesJS native behavior');
+        console.log('✅ Canvas: Using 100% GrapesJS native CSS (all custom overrides removed)');
     }
     
     /**

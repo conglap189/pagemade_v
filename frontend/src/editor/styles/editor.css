@@ -36,6 +36,24 @@ body, html {
     position: relative;
 }
 
+/* ===== GRAPESJS CANVAS - 100% NATIVE (NO OVERRIDES) ===== */
+/* Using GrapesJS source CSS from grapesjs/packages/core/src/styles/scss/_gjs_canvas.scss */
+/* Lines 199-315: Canvas, Frames, Frame wrapper - ALL NATIVE BEHAVIOR */
+
+/* Set CSS Variables for GrapesJS native positioning */
+:root {
+    --gjs-left-width: 0px;      /* No left offset (panels handled separately) */
+    --gjs-canvas-top: 0px;      /* No top offset (toolbar handled separately) */
+}
+
+/* CRITICAL: Remove ALL custom overrides - Let GrapesJS handle everything */
+/* Native GrapesJS CSS will apply from pagemade-core.min.css */
+
+/* .gjs-cv-canvas - Uses native: width: calc(100% - var(--gjs-left-width)) */
+/* .gjs-cv-canvas__frames - Uses native: position: absolute, width/height: 100% */
+/* .gjs-frame - Uses native: width/height: 100%, position: absolute */
+/* .gjs-frame-wrapper - Uses native: position: absolute, width/height: 100% */
+
 /* ===== PANELS CONTAINER ===== */
 #left-panels, #right-panels {
     width: 300px;
@@ -191,6 +209,7 @@ body, html {
 }
 
 /* ===== SCROLLBAR STYLING ===== */
+/* GrapesJS Native Scrollbar - Minimal custom styling */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;

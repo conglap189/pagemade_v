@@ -106,25 +106,33 @@ export class PageMadeEditorConfig {
             },
             
             // Device Manager
-            // NOTE: DO NOT set height: 'auto' on devices - it causes canvas to shrink to content height
-            // The CSS rules .gjs-cv-canvas, .gjs-frame { height: 100% } will handle full-height display
-            // Canvas scrolling is handled by scrollableCanvas: true in canvas config
+            // Synced with GrapesJS source (grapesjs/packages/core/src/device_manager/config/config.ts)
+            // NOTE: id field is REQUIRED for proper device switching
+            // NOTE: Desktop should NOT have widthMedia set (source gốc không set)
+            // CRITICAL: height: 'auto' enables auto-expanding frame (Frame.hasAutoHeight() returns true)
+            // This allows the canvas to grow with content instead of showing gray background
             deviceManager: {
                 devices: [
                     {
+                        id: 'desktop',
                         name: 'Desktop',
                         width: '',
-                        widthMedia: '992px'
+                        height: 'auto'  // CRITICAL: Auto-expand frame to fit content
+                        // No widthMedia - matches source gốc
                     },
                     {
+                        id: 'tablet',
                         name: 'Tablet',
                         width: '768px',
+                        height: 'auto',  // CRITICAL: Auto-expand frame to fit content
                         widthMedia: '768px'
                     },
                     {
+                        id: 'mobilePortrait',
                         name: 'Mobile',
-                        width: '375px',
-                        widthMedia: '375px'
+                        width: '375px',  // Updated from 320px - iPhone 6/7/8 size for better content display
+                        height: 'auto',  // CRITICAL: Auto-expand frame to fit content
+                        widthMedia: '480px'
                     }
                 ]
             },
@@ -132,11 +140,11 @@ export class PageMadeEditorConfig {
             // Canvas configuration
             // IMPORTANT: Load ALL CSS resources via CDN for reliability
             // This prevents CORS issues and ensures fonts/icons load correctly
+            // NOTE: Frame height is controlled by deviceManager (height: 'auto' on each device)
+            // NOT by canvas.frameHeight - GrapesJS uses device.height → Frame.set({ height }) → Frame.hasAutoHeight()
             canvas: {
                 // Enable scrollable canvas for content overflow
                 // scrollableCanvas: true sets overflow: auto on .gjs-cv-canvas
-                // Combined with CSS .gjs-frame { height: 100% }, the frame fills the canvas
-                // and internal iframe scrollbar appears when content exceeds frame height
                 scrollableCanvas: true,
                 styles: [
                     // Tailwind CSS (CDN - specific version for stability)
@@ -286,7 +294,37 @@ export class PageMadeEditorConfig {
                 id: 'navbar',
                 label: 'Navigation',
                 category: 'Components',
-                content: '<nav class="bg-white shadow-md"><div class="container mx-auto px-4 py-4 flex justify-between items-center"><div class="text-xl font-bold">Logo</div><div class="space-x-4"><a href="#" class="text-gray-600 hover:text-gray-900">Home</a><a href="#" class="text-gray-600 hover:text-gray-900">About</a><a href="#" class="text-gray-600 hover:text-gray-900">Contact</a></div></div></nav>',
+                content: `<nav class="pm-navbar" style="background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <style>
+                        .pm-navbar { position: relative; }
+                        .pm-navbar .pm-nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 16px 20px; }
+                        .pm-navbar .pm-nav-logo { font-size: 1.25rem; font-weight: bold; color: #1f2937; }
+                        .pm-navbar .pm-nav-menu { display: flex; gap: 24px; }
+                        .pm-navbar .pm-nav-link { color: #6b7280; text-decoration: none; font-size: 14px; transition: color 0.2s; }
+                        .pm-navbar .pm-nav-link:hover { color: #667eea; }
+                        .pm-navbar .pm-hamburger { display: none; background: none; border: none; font-size: 24px; color: #374151; cursor: pointer; padding: 4px; }
+                        @media (max-width: 768px) {
+                            .pm-navbar .pm-nav-container { padding: 12px 16px; }
+                            .pm-navbar .pm-nav-menu { display: none; }
+                            .pm-navbar .pm-hamburger { display: block; }
+                        }
+                        @media (max-width: 480px) {
+                            .pm-navbar .pm-nav-container { padding: 10px 12px; }
+                            .pm-navbar .pm-nav-logo { font-size: 1.125rem; }
+                            .pm-navbar .pm-hamburger { font-size: 22px; }
+                        }
+                    </style>
+                    <div class="pm-nav-container">
+                        <div class="pm-nav-logo">Logo</div>
+                        <div class="pm-nav-menu">
+                            <a href="#" class="pm-nav-link">Home</a>
+                            <a href="#" class="pm-nav-link">About</a>
+                            <a href="#" class="pm-nav-link">Services</a>
+                            <a href="#" class="pm-nav-link">Contact</a>
+                        </div>
+                        <button class="pm-hamburger"><i class="fas fa-bars"></i></button>
+                    </div>
+                </nav>`,
                 attributes: { class: 'fa fa-bars' }
             },
             {

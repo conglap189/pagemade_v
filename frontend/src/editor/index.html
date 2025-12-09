@@ -758,31 +758,32 @@
         }
         
         /* ============================================
-           CANVAS STYLING - MATCHING OLD WORKING VERSION
+           CANVAS STYLING
            ============================================ */
         
-        /* Canvas full width/height - remove all gaps */
+        /* 
+         * REMOVED: CSS overrides that conflict with GrapesJS native behavior
+         * These !important rules were preventing proper device switching and canvas resizing
+         * GrapesJS handles canvas sizing internally via CSS variables
+         * 
+         * If you need to customize, use CSS variables instead:
+         * :root {
+         *     --gjs-left-width: 0;
+         *     --gjs-canvas-top: 0;
+         * }
+         */
+        
+        /* Allow GrapesJS to control canvas positioning naturally */
         .gjs-cv-canvas {
-            width: 100% !important;
-            height: 100% !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
+            /* Let GrapesJS handle width/height via its internal logic */
         }
         
         .gjs-cv-canvas__frames {
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
+            /* Let GrapesJS handle positioning */
         }
         
         .gjs-frame {
-            width: 100% !important;
-            height: 100% !important;
+            /* Let GrapesJS handle frame sizing */
         }
         
         /* Toolbar styling - changed to blue background */

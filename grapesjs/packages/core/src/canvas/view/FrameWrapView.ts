@@ -173,12 +173,52 @@ export default class FrameWrapView extends ModuleView<Frame> {
 
       if (contentDocument) {
         const minHeight = parseFloat(model.get('minHeight')) || 0;
+        let isUpdating = false;
+        let lastHeight = 0;
         
-        // Helper function to update height
+        // Helper function to calculate actual content height
+        // Uses offsetTop + offsetHeight to get true content height (not affected by scroll position)
+        // This avoids the scrollHeight issue where it doesn't shrink when content is removed
+        const getContentHeight = (): number => {
+          const body = contentDocument.body;
+          if (!body || !body.children.length) return minHeight;
+          
+          let maxBottom = 0;
+          // Calculate the bottom-most point of all direct children using offset properties
+          // offsetTop and offsetHeight are relative to the document, not viewport
+          for (let i = 0; i < body.children.length; i++) {
+            const child = body.children[i] as HTMLElement;
+            if (child && typeof child.offsetTop === 'number' && typeof child.offsetHeight === 'number') {
+              const childBottom = child.offsetTop + child.offsetHeight;
+              if (childBottom > maxBottom) {
+                maxBottom = childBottom;
+              }
+            }
+          }
+          
+          // Add body margin/padding if any
+          const bodyStyle = contentDocument.defaultView?.getComputedStyle(body);
+          const bodyMargin = bodyStyle ? (parseFloat(bodyStyle.marginTop) || 0) + (parseFloat(bodyStyle.marginBottom) || 0) : 0;
+          const bodyPadding = bodyStyle ? (parseFloat(bodyStyle.paddingTop) || 0) + (parseFloat(bodyStyle.paddingBottom) || 0) : 0;
+          
+          return Math.max(maxBottom + bodyMargin + bodyPadding, minHeight);
+        };
+        
+        // Helper function to update height with debounce protection
         const updateHeight = () => {
+          if (isUpdating) return;
+          isUpdating = true;
+          
           requestAnimationFrame(() => {
-            const heightResult = Math.max(contentDocument.body.scrollHeight, minHeight);
-            style.height = `${heightResult}px`;
+            const newHeight = getContentHeight();
+            
+            // Only update if height actually changed (prevents unnecessary reflows)
+            if (Math.abs(newHeight - lastHeight) > 1) {
+              style.height = `${newHeight}px`;
+              lastHeight = newHeight;
+            }
+            
+            isUpdating = false;
           });
         };
 
