@@ -1285,3 +1285,203 @@ body, html {
     background: #667eea !important;
     border-color: #667eea !important;
 }
+
+/* ===== ASSET PANEL STYLES ===== */
+
+/* Asset Grid */
+#user-assets-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+/* Asset Item - Simple style */
+.asset-item {
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    aspect-ratio: 1;
+    cursor: grab;
+}
+
+.asset-item:active {
+    cursor: grabbing;
+}
+
+.dark .asset-item {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+.asset-item.dragging {
+    opacity: 0.5;
+}
+
+/* Asset Item Image */
+.asset-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none; /* Allow drag from parent div */
+}
+
+/* Delete button - Bottom right corner, always visible */
+.asset-item .asset-delete {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: background 0.2s;
+}
+
+.asset-item .asset-delete:hover {
+    background: #ef4444;
+}
+
+/* Select button - Center, show on hover */
+.asset-item .asset-select {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 6px 16px;
+    border-radius: 4px;
+    border: none;
+    background: #10b981;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.asset-item:hover .asset-select {
+    opacity: 1;
+}
+
+.asset-item .asset-select:hover {
+    background: #059669;
+}
+
+/* Upload Progress Bar - Compact style */
+.upload-progress-bar {
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border-bottom: 1px solid #bbf7d0;
+    animation: slideDown 0.3s ease;
+}
+
+.dark .upload-progress-bar {
+    background: #14532d;
+    border-bottom-color: #166534;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.upload-progress-bar.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.upload-progress-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #166534;
+}
+
+.dark .upload-progress-info {
+    color: #86efac;
+}
+
+.upload-progress-info i {
+    font-size: 14px;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.upload-filename {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.upload-progress-track {
+    height: 4px;
+    background: #dcfce7;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.dark .upload-progress-track {
+    background: #166534;
+}
+
+.upload-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    border-radius: 2px;
+    width: 30%;
+    animation: progressIndeterminate 1.5s ease-in-out infinite;
+}
+
+@keyframes progressIndeterminate {
+    0% {
+        width: 0%;
+        margin-left: 0%;
+    }
+    50% {
+        width: 60%;
+        margin-left: 20%;
+    }
+    100% {
+        width: 0%;
+        margin-left: 100%;
+    }
+}
+
+/* Drag Over State for Assets Content */
+#assets-content.drag-over {
+    background: rgba(139, 92, 246, 0.1);
+    border: 2px dashed #8b5cf6;
+    border-radius: 8px;
+}
+
+/* Asset Upload Button Hover */
+.asset-upload-btn:hover {
+    background: #7c3aed !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}

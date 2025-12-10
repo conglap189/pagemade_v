@@ -4,7 +4,8 @@
  */
 
 export class AssetPanel {
-    constructor() {
+    constructor(app = null) {
+        this.app = app // Reference to PageMadeApp (for siteId access)
         this.editor = null
         this.panel = null
         this.assets = []
@@ -27,6 +28,7 @@ export class AssetPanel {
         this.initializeElements()
         this.setupEventListeners()
         this.loadAssets()
+        this.updateEmptyState() // Show empty state if no assets loaded
         this.isInitialized = true
         console.log('🖼️ AssetPanel initialized')
     }
@@ -39,64 +41,61 @@ export class AssetPanel {
             return
         }
 
-        this.createUploadArea()
-        this.createAssetGrid()
+        // Use existing elements from HTML instead of creating new ones
+        this.uploadArea = this.panel.querySelector('.asset-upload-btn')?.parentElement
+        this.assetGrid = document.getElementById('user-assets-grid')
+        this.emptyState = document.getElementById('asset-empty-state')
+        this.loadingState = document.getElementById('asset-loading-state')
         
-        console.log('🖼️ AssetPanel elements initialized')
+        console.log('🖼️ AssetPanel elements initialized', {
+            panel: !!this.panel,
+            uploadArea: !!this.uploadArea,
+            assetGrid: !!this.assetGrid,
+            emptyState: !!this.emptyState
+        })
     }
 
     createUploadArea() {
-        this.uploadArea = document.createElement('div')
-        this.uploadArea.className = 'asset-upload-area'
-        this.uploadArea.innerHTML = `
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p><strong>Click to upload</strong> or drag and drop</p>
-            <p>PNG, JPG, GIF up to 10MB</p>
-            <input type="file" id="asset-file-input" multiple accept="image/*" style="display: none;">
-        `
-
-        this.panel.appendChild(this.uploadArea)
+        // Upload area already exists in HTML, no need to create
+        // This method is kept for compatibility but does nothing
     }
 
     createAssetGrid() {
-        this.assetGrid = document.createElement('div')
-        this.assetGrid.className = 'asset-grid'
-        this.panel.appendChild(this.assetGrid)
+        // Asset grid already exists in HTML (#user-assets-grid), no need to create
+        // This method is kept for compatibility but does nothing
     }
 
     setupEventListeners() {
-        if (!this.uploadArea) return
-
         const fileInput = document.getElementById('asset-file-input')
 
-        // Click to upload
-        this.uploadArea.addEventListener('click', () => {
-            fileInput?.click()
-        })
-
-        // File input change
+        // File input change - this is the primary upload mechanism
         if (fileInput) {
             fileInput.addEventListener('change', (e) => {
                 this.handleFileSelect(e.target.files)
+                // Reset input so same file can be selected again
+                e.target.value = ''
             })
         }
 
-        // Drag and drop
-        this.uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault()
-            this.uploadArea.classList.add('drag-over')
-        })
+        // Drag and drop on the assets panel content area
+        const assetsContent = document.getElementById('assets-content')
+        if (assetsContent) {
+            assetsContent.addEventListener('dragover', (e) => {
+                e.preventDefault()
+                assetsContent.classList.add('drag-over')
+            })
 
-        this.uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault()
-            this.uploadArea.classList.remove('drag-over')
-        })
+            assetsContent.addEventListener('dragleave', (e) => {
+                e.preventDefault()
+                assetsContent.classList.remove('drag-over')
+            })
 
-        this.uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault()
-            this.uploadArea.classList.remove('drag-over')
-            this.handleFileSelect(e.dataTransfer.files)
-        })
+            assetsContent.addEventListener('drop', (e) => {
+                e.preventDefault()
+                assetsContent.classList.remove('drag-over')
+                this.handleFileSelect(e.dataTransfer.files)
+            })
+        }
 
         // Listen to asset events from editor
         if (this.editor) {
@@ -126,12 +125,8 @@ export class AssetPanel {
             this.addAsset(asset)
         })
 
-        // Configure asset manager
-        this.assetManager.config({
-            upload: true,
-            uploadFile: (e) => this.handleAssetUpload(e),
-            assets: this.assets
-        })
+        // Note: AssetManager configuration is done during editor init via config object
+        // We just sync with existing assets here
 
         console.log('🖼️ Editor assets setup complete')
     }
@@ -157,13 +152,17 @@ export class AssetPanel {
         try {
             this.showUploadProgress(file.name)
 
-            const formData = new FormData()
-            formData.append('file', file)
+            // Get siteId from app reference
+            const siteId = this.app?.siteId
+            if (!siteId) {
+                throw new Error('Site ID not available')
+            }
 
-            const result = await window.apiClient.uploadAsset(formData)
+            // uploadAsset expects (file, siteId), not FormData
+            const result = await window.apiClient.uploadAsset(file, siteId)
             
             if (!result || !result.url) {
-                throw new Error('Upload failed')
+                throw new Error('Upload failed - no URL returned')
             }
             
             // Add to editor asset manager
@@ -209,6 +208,7 @@ export class AssetPanel {
 
         this.assets.push(asset)
         this.renderAsset(asset)
+        this.updateEmptyState()
 
         return asset
     }
@@ -224,6 +224,8 @@ export class AssetPanel {
             if (assetEl) {
                 assetEl.remove()
             }
+            
+            this.updateEmptyState()
 
             // Remove from editor asset manager
             if (this.assetManager) {
@@ -245,23 +247,12 @@ export class AssetPanel {
 
         assetEl.innerHTML = `
             <img src="${asset.src}" alt="${asset.name}" loading="lazy">
-            <div class="asset-item-overlay">
-                <div class="asset-item-actions">
-                    <button class="btn btn-icon btn-sm asset-insert" title="Insert to canvas">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <button class="btn btn-icon btn-sm asset-copy" title="Copy URL">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                    <button class="btn btn-icon btn-sm asset-delete" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="asset-info">
-                <span class="asset-name" title="${asset.name}">${asset.name}</span>
-                <span class="asset-size">${this.formatFileSize(asset.size)}</span>
-            </div>
+            <button class="asset-btn asset-delete" title="Xóa">
+                <i class="fas fa-trash"></i>
+            </button>
+            <button class="asset-btn asset-select" title="Chọn ảnh">
+                Chọn
+            </button>
         `
 
         // Drag events
@@ -273,17 +264,17 @@ export class AssetPanel {
             this.handleAssetDragEnd(e)
         })
 
-        // Button events
-        const insertBtn = assetEl.querySelector('.asset-insert')
-        const copyBtn = assetEl.querySelector('.asset-copy')
-        const deleteBtn = assetEl.querySelector('.asset-delete')
-
-        insertBtn.addEventListener('click', () => {
+        // Double click to insert
+        assetEl.addEventListener('dblclick', () => {
             this.insertAssetToCanvas(asset)
         })
 
-        copyBtn.addEventListener('click', () => {
-            this.copyAssetUrl(asset)
+        // Button events
+        const selectBtn = assetEl.querySelector('.asset-select')
+        const deleteBtn = assetEl.querySelector('.asset-delete')
+
+        selectBtn.addEventListener('click', () => {
+            this.insertAssetToCanvas(asset)
         })
 
         deleteBtn.addEventListener('click', () => {
@@ -308,16 +299,31 @@ export class AssetPanel {
     }
 
     insertAssetToCanvas(asset) {
-        if (!this.editor) return
+        if (!this.editor) {
+            console.error('🖼️ No editor instance')
+            return
+        }
 
-        const imageHtml = `<img src="${asset.src}" alt="${asset.name}" style="max-width: 100%; height: auto;">`
-        
-        this.editor.runCommand('gjs-add-component', {
-            content: imageHtml,
-            select: true
-        })
+        try {
+            // Get selected component or wrapper
+            const selected = this.editor.getSelected()
+            const wrapper = this.editor.getWrapper()
+            const target = selected || wrapper
 
-        console.log('🖼️ Asset inserted to canvas:', asset.name)
+            // Add image component
+            const imgComponent = target.append(`<img src="${asset.src}" alt="${asset.name}" style="max-width: 100%; height: auto;">`)[0]
+            
+            // Select the new image
+            if (imgComponent) {
+                this.editor.select(imgComponent)
+            }
+
+            console.log('🖼️ Asset inserted to canvas:', asset.name)
+            this.showSuccess('Đã thêm ảnh vào canvas')
+        } catch (error) {
+            console.error('🖼️ Failed to insert asset:', error)
+            this.showError('Không thể thêm ảnh')
+        }
     }
 
     copyAssetUrl(asset) {
@@ -358,14 +364,45 @@ export class AssetPanel {
 
     async loadAssetsFromAPI() {
         try {
-            const assets = await window.apiClient.getAssets()
-            if (assets) {
-                assets.forEach(asset => {
-                    this.addAsset(asset)
-                })
+            // Show loading state
+            if (this.loadingState) this.loadingState.style.display = 'block'
+            if (this.emptyState) this.emptyState.style.display = 'none'
+            if (this.assetGrid) this.assetGrid.style.display = 'none'
+            
+            // Get siteId from app reference
+            const siteId = this.app?.siteId
+            if (!siteId) {
+                console.warn('🖼️ No siteId available, cannot load assets from API')
+                if (this.loadingState) this.loadingState.style.display = 'none'
+                this.loadAssetsFromStorage()
+                return
             }
+            
+            console.log('🖼️ Loading assets for site:', siteId)
+            const assets = await window.apiClient.getAssets(siteId)
+            
+            // Hide loading state
+            if (this.loadingState) this.loadingState.style.display = 'none'
+            
+            if (assets && assets.length > 0) {
+                console.log('🖼️ Loaded', assets.length, 'assets from API')
+                assets.forEach(asset => {
+                    this.addAsset({
+                        id: asset.id,
+                        src: asset.url,
+                        name: asset.filename || asset.name,
+                        type: asset.mime_type || 'image/jpeg',
+                        size: asset.file_size || 0
+                    })
+                })
+            } else {
+                console.log('🖼️ No assets found for this site')
+            }
+            
+            this.updateEmptyState()
         } catch (error) {
             console.error('Failed to load assets:', error)
+            if (this.loadingState) this.loadingState.style.display = 'none'
             // Load from localStorage as fallback
             this.loadAssetsFromStorage()
         }
@@ -397,6 +434,22 @@ export class AssetPanel {
         return 'asset_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
     }
 
+    updateEmptyState() {
+        if (!this.emptyState || !this.assetGrid) return
+        
+        const hasAssets = this.assets.length > 0
+        
+        if (hasAssets) {
+            this.emptyState.style.display = 'none'
+            this.assetGrid.style.display = 'grid'
+        } else {
+            this.emptyState.style.display = 'block'
+            this.assetGrid.style.display = 'none'
+        }
+        
+        console.log('🖼️ Empty state updated:', hasAssets ? 'hidden' : 'shown', `(${this.assets.length} assets)`)
+    }
+
     formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes'
         const k = 1024
@@ -407,21 +460,35 @@ export class AssetPanel {
 
     // UI feedback methods
     showUploadProgress(filename) {
+        // Remove existing progress if any
+        this.hideUploadProgress()
+        
         const progressEl = document.createElement('div')
-        progressEl.className = 'upload-progress'
+        progressEl.className = 'upload-progress-bar'
         progressEl.innerHTML = `
-            <div class="upload-progress-content">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Uploading ${filename}...</span>
+            <div class="upload-progress-info">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span class="upload-filename">${filename}</span>
+            </div>
+            <div class="upload-progress-track">
+                <div class="upload-progress-fill"></div>
             </div>
         `
-        this.panel.appendChild(progressEl)
+        
+        // Insert after panel header, before content
+        const panelHeader = this.panel.querySelector('.panel-header')
+        if (panelHeader && panelHeader.nextSibling) {
+            panelHeader.parentNode.insertBefore(progressEl, panelHeader.nextSibling)
+        } else {
+            this.panel.appendChild(progressEl)
+        }
     }
 
     hideUploadProgress() {
-        const progressEl = this.panel.querySelector('.upload-progress')
+        const progressEl = this.panel?.querySelector('.upload-progress-bar')
         if (progressEl) {
-            progressEl.remove()
+            progressEl.classList.add('fade-out')
+            setTimeout(() => progressEl.remove(), 300)
         }
     }
 

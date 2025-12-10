@@ -24,6 +24,7 @@ class PageMadeApp {
     constructor() {
         this.pm = null
         this.pageId = null
+        this.siteId = null
         this.pageData = null
         this.components = {}
         this.isInitialized = false
@@ -293,6 +294,7 @@ class PageMadeApp {
             // Setup back button to go to site detail page
             // Try tokenMetadata first, fallback to contentData
             const siteId = tokenMetadata.site_id || contentData.site_id
+            this.siteId = siteId // Store siteId for use by components (e.g., AssetPanel)
             console.log('🔍 DEBUG: tokenMetadata.site_id:', tokenMetadata.site_id)
             console.log('🔍 DEBUG: contentData.site_id:', contentData.site_id)
             console.log('🔍 DEBUG: Final siteId for back button:', siteId)
@@ -364,6 +366,12 @@ class PageMadeApp {
             // Set editor instance for components that need it
             this.deviceSwitcher.setEditor(this.pm)
             this.historyManager.editor = this.pm
+            
+            // Initialize AssetPanel with editor instance
+            if (this.assetPanel) {
+                this.assetPanel.setEditor(this.pm)
+                this.assetPanel.init()
+            }
             
             // Initialize device switcher, history manager, and floating toolbar
             this.deviceSwitcher.init()
@@ -2045,6 +2053,9 @@ class PageMadeApp {
         if (assetManager) {
             // Clear container
             assetsContainer.innerHTML = '';
+            
+            // Set flag to allow Asset Manager render (required by setupAssetManagementOverrides)
+            window.assetsRenderedInCorrectPlace = true;
             
             // Render with custom config
             const assetsEl = assetManager.render();

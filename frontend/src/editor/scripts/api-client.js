@@ -266,17 +266,32 @@ class ApiClient {
             formData.append('file', file);
             formData.append('site_id', siteId);
 
+            // Get JWT token from localStorage
+            const token = localStorage.getItem('access_token');
+            
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${this.baseURL}/api/assets/upload`, {
                 method: 'POST',
                 credentials: 'include', // Important: Include cookies
+                headers: headers,
                 body: formData
             });
 
             const data = await response.json();
+            
+            if (!response.ok) {
+                console.error('🚫 Upload failed:', data.error || response.statusText);
+                throw new Error(data.error || 'Upload failed');
+            }
+            
             return data.success ? data.data.asset : null;
         } catch (error) {
             console.error('Upload asset failed:', error);
-            return null;
+            throw error;
         }
     }
 
