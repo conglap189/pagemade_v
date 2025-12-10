@@ -1,0 +1,65 @@
+<svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="200" height="150" fill="#ffffff"/>
+  
+  <!-- Header -->
+  <rect width="200" height="16" fill="#ffffff"/>
+  <circle cx="16" cy="8" r="4" fill="#4A6CF7"/>
+  <rect x="130" y="5" width="24" height="6" rx="2" fill="#E8ECFF"/>
+  <rect x="160" y="5" width="30" height="6" rx="2" fill="#4A6CF7"/>
+  
+  <!-- Hero Section -->
+  <rect y="16" width="200" height="50" fill="#fafbff"/>
+  
+  <!-- Hero Badge -->
+  <rect x="12" y="22" width="50" height="6" rx="3" fill="#4A6CF7"/>
+  
+  <!-- Hero Title -->
+  <rect x="12" y="32" width="80" height="6" rx="1" fill="#1d2430"/>
+  <rect x="12" y="40" width="60" height="6" rx="1" fill="#1d2430"/>
+  
+  <!-- Hero Description -->
+  <rect x="12" y="50" width="70" height="3" rx="1" fill="#788293"/>
+  <rect x="12" y="55" width="65" height="3" rx="1" fill="#788293"/>
+  
+  <!-- Hero Image -->
+  <rect x="110" y="22" width="80" height="40" rx="4" fill="url(#heroGrad)"/>
+  
+  <!-- Features Section -->
+  <rect y="66" width="200" height="36" fill="#ffffff"/>
+  
+  <!-- Section Title -->
+  <rect x="70" y="72" width="60" height="5" rx="1" fill="#1d2430"/>
+  
+  <!-- Feature Cards -->
+  <rect x="12" y="82" width="52" height="16" rx="3" fill="#f8faff" stroke="#e8ecff"/>
+  <rect x="74" y="82" width="52" height="16" rx="3" fill="#f8faff" stroke="#e8ecff"/>
+  <rect x="136" y="82" width="52" height="16" rx="3" fill="#f8faff" stroke="#e8ecff"/>
+  
+  <!-- Feature Icons -->
+  <circle cx="24" cy="88" r="4" fill="#E8ECFF"/>
+  <circle cx="86" cy="88" r="4" fill="#E8ECFF"/>
+  <circle cx="148" cy="88" r="4" fill="#E8ECFF"/>
+  
+  <!-- Pricing Section -->
+  <rect y="102" width="200" height="30" fill="#ffffff"/>
+  
+  <!-- Pricing Cards -->
+  <rect x="12" y="108" width="52" height="18" rx="2" fill="#fafbff" stroke="#e8ecff"/>
+  <rect x="74" y="106" width="52" height="20" rx="2" fill="#4A6CF7"/>
+  <rect x="136" y="108" width="52" height="18" rx="2" fill="#fafbff" stroke="#e8ecff"/>
+  
+  <!-- Footer -->
+  <rect y="132" width="200" height="18" fill="#1d2430"/>
+  <rect x="12" y="138" width="40" height="4" rx="1" fill="#4A6CF7"/>
+  <rect x="150" y="139" width="6" height="6" rx="3" fill="#788293"/>
+  <rect x="160" y="139" width="6" height="6" rx="3" fill="#788293"/>
+  <rect x="170" y="139" width="6" height="6" rx="3" fill="#788293"/>
+  
+  <defs>
+    <linearGradient id="heroGrad" x1="110" y1="22" x2="190" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E8ECFF"/>
+      <stop offset="1" stop-color="#4A6CF7" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -414,7 +414,7 @@
     
     <!-- Modal Body - Template Grid -->
     <div class="p-6">
-      <div class="grid grid-cols-2 gap-4" id="templateGrid">
+      <div class="grid grid-cols-3 gap-4" id="templateGrid">
         
         <!-- Template: Landing Product -->
         <div class="modal-template-card bg-white dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 relative"
@@ -427,6 +427,25 @@
           </div>
           <h4 class="font-medium text-gray-900 dark:text-white">Landing Sản Phẩm</h4>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Hero section, Features, CTA, Footer</p>
+          <!-- Selected checkmark -->
+          <div class="card-check absolute top-3 right-3 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        
+        <!-- Template: Startup Pro Landing (NEW) -->
+        <div class="modal-template-card bg-white dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 relative"
+             data-template-id="landing-product2"
+             data-template-name="Startup Pro Landing"
+             onclick="selectTemplateFromModal(this)">
+          <!-- Thumbnail -->
+          <div class="aspect-[4/3] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg mb-3 overflow-hidden">
+            <img src="/static/templates/thumbnails/landing-product2.svg" alt="Startup Pro Landing" class="w-full h-full object-cover">
+          </div>
+          <h4 class="font-medium text-gray-900 dark:text-white">Startup Pro Landing</h4>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Hero, Features, Pricing, Testimonials</p>
           <!-- Selected checkmark -->
           <div class="card-check absolute top-3 right-3 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
             <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -479,6 +498,10 @@ const templates = {
   'landing-product': {
     name: 'Landing Sản Phẩm',
     thumbnail: '/static/templates/thumbnails/landing-product.svg'
+  },
+  'landing-product2': {
+    name: 'Startup Pro Landing',
+    thumbnail: '/static/templates/thumbnails/landing-product2.svg'
   },
   'blank': {
     name: 'Trang Trống',
