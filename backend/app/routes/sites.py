@@ -59,6 +59,11 @@ def new_site():
             subdomain = request.form.get('subdomain', '').strip().lower()
             description = request.form.get('description', '').strip()
             action = request.form.get('action', 'dashboard')
+            template_id = request.form.get('template', 'blank')
+            
+            # Debug logging
+            current_app.logger.info(f"📝 Creating site: title={title}, subdomain={subdomain}")
+            current_app.logger.info(f"📝 Action={action}, template_id={template_id}")
             
             # Validation
             if not title or not subdomain:
@@ -90,7 +95,30 @@ def new_site():
             # Get the created homepage
             homepage = None
             if site and site.id:
+                # Flush to ensure homepage is committed
+                db.session.flush()
                 homepage = PageRepository.find_homepage(site.id)
+                current_app.logger.info(f"📦 Homepage found: {homepage.id if homepage else 'None'}")
+                
+                # Apply template content to homepage if template selected and action is pagemade
+                if homepage and action == 'pagemade' and template_id and template_id != 'blank':
+                    current_app.logger.info(f"📦 Applying template '{template_id}' to homepage {homepage.id}")
+                    try:
+                        import json
+                        # Templates are in backend/static/templates/, not app/static/templates/
+                        template_file = os.path.join(current_app.root_path, '..', 'static', 'templates', f'{template_id}.json')
+                        current_app.logger.info(f"📦 Template file: {template_file}, exists: {os.path.exists(template_file)}")
+                        if os.path.exists(template_file):
+                            with open(template_file, 'r', encoding='utf-8') as f:
+                                template_data = json.load(f)
+                                content = template_data.get('content', {})
+                                homepage.html_content = content.get('html', '')
+                                homepage.css_content = content.get('css', '')
+                                homepage.template = template_id
+                                db.session.commit()
+                                current_app.logger.info(f"Applied template '{template_id}' to homepage {homepage.id}")
+                    except Exception as e:
+                        current_app.logger.error(f"Error applying template: {e}")
                 
                 response_data = {
                     'site_id': site.id,
@@ -105,6 +133,9 @@ def new_site():
             # If action is pagemade, redirect to editor
             if action == 'pagemade' and homepage and homepage.id:
                 response_data['redirect'] = f'/editor/{homepage.id}'
+                current_app.logger.info(f"✅ Redirect to editor: /editor/{homepage.id}")
+            else:
+                current_app.logger.info(f"⚠️ Not redirecting to editor: action={action}, homepage={homepage}, homepage_id={homepage.id if homepage else 'None'}")
             
             return Helpers.success_response(
                 data=response_data,

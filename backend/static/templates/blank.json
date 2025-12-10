@@ -1,0 +1,13 @@
+{
+  "id": "blank",
+  "name": "Trang trống",
+  "description": "Bắt đầu với một trang trống hoàn toàn",
+  "category": "basic",
+  "thumbnail": "/static/templates/thumbnails/blank.svg",
+  "content": {
+    "html": "",
+    "css": "",
+    "components": [],
+    "styles": []
+  }
+}

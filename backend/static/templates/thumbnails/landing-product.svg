@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="hero" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea"/>
+      <stop offset="100%" style="stop-color:#764ba2"/>
+    </linearGradient>
+    <linearGradient id="cta" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb"/>
+      <stop offset="100%" style="stop-color:#f5576c"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Browser chrome -->
+  <rect x="10" y="10" width="380" height="280" fill="#ffffff" rx="8" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="10" y="10" width="380" height="24" fill="#f1f5f9" rx="8 8 0 0"/>
+  <circle cx="26" cy="22" r="4" fill="#fca5a5"/>
+  <circle cx="38" cy="22" r="4" fill="#fcd34d"/>
+  <circle cx="50" cy="22" r="4" fill="#86efac"/>
+  
+  <!-- Hero Section -->
+  <rect x="10" y="34" width="380" height="100" fill="url(#hero)"/>
+  <rect x="30" y="55" width="140" height="14" fill="white" opacity="0.95" rx="3"/>
+  <rect x="30" y="75" width="100" height="8" fill="white" opacity="0.6" rx="2"/>
+  <rect x="30" y="95" width="70" height="22" fill="#10b981" rx="11"/>
+  <text x="65" y="110" fill="white" font-size="8" font-family="system-ui" font-weight="600">Mua Ngay</text>
+  
+  <!-- Product image placeholder -->
+  <rect x="260" y="45" width="110" height="80" fill="white" opacity="0.2" rx="6"/>
+  <rect x="285" y="70" width="60" height="30" fill="white" opacity="0.3" rx="4"/>
+  
+  <!-- Features Section -->
+  <rect x="10" y="134" width="380" height="80" fill="#f8fafc"/>
+  <rect x="25" y="150" width="105" height="50" fill="white" rx="6" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="147" y="150" width="105" height="50" fill="white" rx="6" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="269" y="150" width="105" height="50" fill="white" rx="6" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- Feature icons -->
+  <circle cx="77" cy="168" r="10" fill="#ddd6fe"/>
+  <circle cx="199" cy="168" r="10" fill="#bfdbfe"/>
+  <circle cx="321" cy="168" r="10" fill="#bbf7d0"/>
+  
+  <!-- CTA Section -->
+  <rect x="10" y="214" width="380" height="45" fill="url(#cta)"/>
+  <rect x="155" y="225" width="90" height="24" fill="white" opacity="0.95" rx="12"/>
+  <text x="200" y="241" text-anchor="middle" fill="#f5576c" font-size="9" font-family="system-ui" font-weight="600">Đặt Hàng</text>
+  
+  <!-- Footer -->
+  <rect x="10" y="259" width="380" height="31" fill="#1e293b" rx="0 0 8 8"/>
+  <rect x="30" y="270" width="60" height="6" fill="#475569" rx="2"/>
+  <rect x="310" y="270" width="60" height="6" fill="#475569" rx="2"/>
+</svg>

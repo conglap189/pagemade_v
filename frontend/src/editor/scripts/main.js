@@ -74,6 +74,9 @@ class PageMadeApp {
             this.pageId = this.getPageIdFromUrl()
             this.token = this.getTokenFromUrl()
             
+            // Debug: Log extracted values
+            console.log('📍 Extracted pageId:', this.pageId, 'token:', this.token ? 'present' : 'none')
+            
             if (this.token) {
                 console.log('🔑 Step 2: Token found in URL, saving to localStorage...')
                 localStorage.setItem('access_token', this.token)
@@ -141,19 +144,33 @@ class PageMadeApp {
     }
 
     getPageIdFromUrl() {
+        // Debug: Log full URL info
+        console.log('🔍 URL Debug:', {
+            href: window.location.href,
+            pathname: window.location.pathname,
+            search: window.location.search,
+            hash: window.location.hash
+        })
+        
         const urlParams = new URLSearchParams(window.location.search)
         const pathParts = window.location.pathname.split('/')
         
         // Try to get from URL path first: /editor/123
-        if (pathParts.length > 2 && pathParts[1] === 'editor') {
+        // Only use path if pathParts[2] is a non-empty value
+        if (pathParts.length > 2 && pathParts[1] === 'editor' && pathParts[2]) {
+            console.log('📍 Page ID from path:', pathParts[2])
             return pathParts[2]
         }
         
         // Then try query parameter: ?id=123
         const id = urlParams.get('id')
-        if (id) return id
+        if (id) {
+            console.log('📍 Page ID from query:', id)
+            return id
+        }
         
         // Default to 1 for development
+        console.log('⚠️ No page ID found, defaulting to 1')
         return '1'
     }
 
@@ -226,6 +243,13 @@ class PageMadeApp {
                     console.warn('⚠️ Failed to parse page content JSON, using as HTML:', e)
                     parsedContent = { 'gjs-html': contentData.content }
                 }
+            } else if (contentData.html_content) {
+                // Template format: has html_content and css_content directly
+                console.log('📄 Using template format (html_content/css_content)')
+                parsedContent = {
+                    'gjs-html': contentData.html_content,
+                    'gjs-css': contentData.css_content || ''
+                }
             } else {
                 console.warn('⚠️ No content found in API response')
                 parsedContent = {}
@@ -243,7 +267,7 @@ class PageMadeApp {
                 page: {
                     id: this.pageId,
                     title: tokenMetadata.page_title || contentData.title || 'Untitled Page',
-                    content: parsedContent['pm-html'] || parsedContent['gjs-html'] || '',
+                    content: parsedContent['pm-html'] || parsedContent['gjs-html'] || contentData.html_content || '',
                     css: parsedContent['pm-css'] || parsedContent['gjs-css'] || contentData.css_content || '',
                     components: parsedContent['pm-components'] || parsedContent['gjs-components'] || [],
                     styles: parsedContent['pm-styles'] || parsedContent['gjs-styles'] || [],
@@ -1846,9 +1870,13 @@ class PageMadeApp {
         // Sort by numeric prefix (1. Hero Section, 2. Footer Section, etc.)
         // Categories without number prefix go to the end
         Object.keys(blocksByCategory).sort((a, b) => {
-            // Extract leading number from category name (e.g., "1. Hero Section" → 1)
-            const numA = parseInt(a.match(/^(\d+)\./)?.[1]) || 999;
-            const numB = parseInt(b.match(/^(\d+)\./)?.[1]) || 999;
+            // Extract leading number from category name (e.g., "0. Header Section" → 0)
+            // FIX: Use ?? instead of || because parseInt("0") returns 0 which is falsy
+            // 0 || 999 = 999 (WRONG!) but 0 ?? 999 = 0 (CORRECT!)
+            const matchA = a.match(/^(\d+)\./);
+            const matchB = b.match(/^(\d+)\./);
+            const numA = matchA ? parseInt(matchA[1]) : 999;
+            const numB = matchB ? parseInt(matchB[1]) : 999;
             return numA - numB;
         }).forEach(categoryName => {
             const categoryBlocks = blocksByCategory[categoryName];

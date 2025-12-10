@@ -119,6 +119,11 @@ def view_page(subdomain, page_id):
 @pages_bp.route('/<path:page_slug>')
 def serve_page(page_slug):
     """Serve public page (catch-all route for subdomains)."""
+    # IMPORTANT: Skip API routes - let api_bp handle them
+    # This prevents catch-all from intercepting /api/* requests
+    if page_slug.startswith('api/') or page_slug.startswith('api'):
+        abort(404)  # Let other blueprints handle API routes
+    
     # Check if this is a subdomain request
     from app.utils.helpers import get_subdomain
     subdomain = get_subdomain()

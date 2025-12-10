@@ -7,6 +7,7 @@
  * 2. Import và thêm vào array bên dưới
  */
 
+import { headerBlocks, categoryInfo as headerCategory} from './header-section/index.js'
 import { heroBlocks, categoryInfo as heroCategory } from './hero-section/index.js'
 import { footerBlocks, categoryInfo as footerCategory} from './footer-section/index.js'
 // import { featureBlocks, categoryInfo as featureCategory } from './feature-section/index.js'
@@ -15,9 +16,15 @@ import { footerBlocks, categoryInfo as footerCategory} from './footer-section/in
 // Export tất cả categories
 export const categories = [
     {
+        ...headerCategory,
+        blocks: headerBlocks,
+    },
+
+    {
         ...heroCategory,
         blocks: heroBlocks,
     },
+
 
 
     {

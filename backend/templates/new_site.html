@@ -59,6 +59,95 @@
 /* Focus outline */
 .focus\:outline-hidden:focus { outline: none !important; }
 .focus\:ring-3:focus { box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1) !important; }
+
+/* Check indicator active state */
+.check-indicator.active {
+  background-color: #10b981 !important; /* emerald-500 */
+  border-color: #10b981 !important;
+}
+.check-indicator.active svg {
+  opacity: 1 !important;
+}
+
+/* Modal styles */
+.modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px);
+  z-index: 9999 !important;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal-backdrop.open {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.modal-content {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) scale(0.9);
+  z-index: 10000 !important;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+.modal-content.open {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+/* Template card in modal */
+.modal-template-card {
+  cursor: pointer;
+  transition: all 0.2s ease !important;
+  border: 2px solid #e5e7eb !important;
+  background: white !important;
+}
+.modal-template-card:hover {
+  border-color: #9ca3af !important;
+}
+.modal-template-card.selected {
+  border-color: #10b981 !important;
+  background: #ecfdf5 !important;
+}
+.modal-template-card .card-check {
+  opacity: 0 !important;
+  transform: scale(0.5) !important;
+  transition: all 0.2s ease !important;
+}
+.modal-template-card.selected .card-check {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+/* Preview box */
+.template-preview-box {
+  position: relative;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* Template card with integrated preview */
+.template-card-wrapper {
+  background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+  position: relative;
+}
+.template-card-wrapper.has-template {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+.template-card-wrapper.has-template #templateCardPreview {
+  opacity: 0.5;
+}
+.template-card-wrapper:hover #templateCardPreview {
+  opacity: 0.6;
+}
 </style>
 {% endblock %}
 
@@ -136,48 +225,129 @@
 
         <!-- Action Selection -->
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+          <label class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-400">
             Bước tiếp theo
           </label>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="hidden" id="selected_template" name="template" value="blank">
+          <div class="grid grid-cols-3 gap-3">
             
-            <!-- Option 1: Create Basic Site -->
-            <label class="relative cursor-pointer">
+            <!-- Option 1: Create Basic Site (blank) -->
+            <label class="relative cursor-pointer block group">
               <input type="radio" 
                      name="action" 
                      value="dashboard" 
                      checked
-                     class="peer sr-only">
-              <div class="h-full p-6 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl
-                          peer-checked:border-emerald-500
-                          hover:border-emerald-400 dark:hover:border-emerald-500
-                          transition-all duration-200">
-                <div class="flex flex-col items-center text-center">
-                  <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mb-3 peer-checked:bg-brand-500">
-                    <i class="fas fa-th-large text-blue-600 dark:text-blue-400 text-2xl peer-checked:text-white"></i>
+                     class="peer sr-only"
+                     onchange="updateTemplateValue('blank')">
+              <div class="p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl
+                          peer-checked:border-emerald-500 peer-checked:bg-emerald-50 dark:peer-checked:bg-emerald-900/20
+                          hover:border-gray-400 dark:hover:border-gray-500
+                          transition-all duration-200 h-full">
+                <div class="flex flex-col items-center text-center gap-2">
+                  <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center group-hover:bg-gray-300 dark:group-hover:bg-gray-600 transition-colors">
+                    <i class="fas fa-file text-gray-500 dark:text-gray-400"></i>
                   </div>
-                  <h3 class="font-semibold text-gray-800 dark:text-white mb-1">Tạo Site Cơ Bản</h3>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">Quay về Dashboard</p>
+                  <div>
+                    <h3 class="font-semibold text-gray-800 dark:text-white text-sm">Trang Trống</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Về Dashboard</p>
+                  </div>
+                  <!-- Checkmark -->
+                  <div class="check-indicator w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center transition-all">
+                    <svg class="w-2.5 h-2.5 text-white opacity-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                  </div>
                 </div>
               </div>
             </label>
 
-            <!-- Option 2: Create & Design -->
-            <label class="relative cursor-pointer">
+            <!-- Option 2: Choose Template (with integrated preview) -->
+            <label class="relative block group cursor-pointer" id="option-template">
               <input type="radio" 
-                      name="action" 
-                      value="pagemade"
-                      class="peer sr-only">
-              <div class="h-full p-6 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl
+                     name="action" 
+                     value="pagemade"
+                     id="radio-template"
+                     class="peer sr-only"
+                     onchange="onTemplateOptionSelected()">
+              <div class="template-card-wrapper border-2 border-gray-300 dark:border-gray-600 rounded-xl
                           peer-checked:border-emerald-500
-                          hover:border-emerald-400 dark:hover:border-emerald-500
-                          transition-all duration-200">
-                <div class="flex flex-col items-center text-center">
-                  <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mb-3 peer-checked:bg-brand-500">
-                    <i class="fas fa-paint-brush text-purple-600 dark:text-purple-400 text-2xl peer-checked:text-white"></i>
+                          hover:border-gray-400 dark:hover:border-gray-500
+                          transition-all duration-200 h-full overflow-hidden relative"
+                   id="templateCardWrapper">
+                
+                <!-- Background: Template Preview Image -->
+                <div class="absolute inset-0 z-0">
+                  <img id="templateCardPreview" 
+                       src="/static/templates/thumbnails/landing-product.svg" 
+                       alt="Template Preview" 
+                       class="w-full h-full object-cover opacity-30 transition-opacity duration-300">
+                </div>
+                
+                <!-- Content overlay -->
+                <div class="relative z-10 p-3 h-full flex flex-col items-center justify-center text-center gap-2 min-h-[140px]">
+                  
+                  <!-- State 1: No template selected - Show button -->
+                  <div id="templateCardEmpty" class="flex flex-col items-center gap-2">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow">
+                      <i class="fas fa-palette text-white"></i>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-800 dark:text-white text-sm">Chọn Template</h3>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Mẫu có sẵn</p>
+                    </div>
+                    <button type="button" 
+                            class="mt-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg shadow transition-colors"
+                            onclick="openTemplateModal(event)">
+                      <i class="fas fa-th-large mr-1"></i>Chọn Template
+                    </button>
                   </div>
-                  <h3 class="font-semibold text-gray-800 dark:text-white mb-1">Tạo & Thiết Kế</h3>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">Vào Editor ngay</p>
+                  
+                  <!-- State 2: Template selected - Show info (click anywhere to change) -->
+                  <div id="templateCardSelected" class="hidden flex flex-col items-center gap-2 cursor-pointer" onclick="openTemplateModal(event)">
+                    <div class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow">
+                      <i class="fas fa-check text-white text-sm"></i>
+                    </div>
+                    <div>
+                      <h3 id="templateCardName" class="font-semibold text-gray-800 dark:text-white text-sm">Landing Sản Phẩm</h3>
+                      <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Click để đổi</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Checkmark indicator (bottom right) -->
+                  <div class="check-indicator w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center transition-all absolute bottom-2 right-2">
+                    <svg class="w-2.5 h-2.5 text-white opacity-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </label>
+
+            <!-- Option 3: Design Now (blank + go to editor) -->
+            <label class="relative cursor-pointer block group">
+              <input type="radio" 
+                     name="action" 
+                     value="pagemade"
+                     class="peer sr-only"
+                     onchange="updateTemplateValue('blank')">
+              <div class="p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl
+                          peer-checked:border-emerald-500 peer-checked:bg-emerald-50 dark:peer-checked:bg-emerald-900/20
+                          hover:border-gray-400 dark:hover:border-gray-500
+                          transition-all duration-200 h-full">
+                <div class="flex flex-col items-center text-center gap-2">
+                  <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shadow">
+                    <i class="fas fa-paint-brush text-white"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-800 dark:text-white text-sm">Thiết Kế Ngay</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Vào Editor</p>
+                  </div>
+                  <!-- Checkmark -->
+                  <div class="check-indicator w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center transition-all">
+                    <svg class="w-2.5 h-2.5 text-white opacity-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                  </div>
                 </div>
               </div>
             </label>
@@ -223,36 +393,315 @@
     </div>
   </div>
 </div>
+
+<!-- Template Selection Modal -->
+<div id="templateModalBackdrop" class="modal-backdrop" onclick="closeTemplateModal()" 
+     style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999999;opacity:0;visibility:hidden;transition:all 0.3s ease;"></div>
+<div id="templateModalContent" class="modal-content" 
+     style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);z-index:100000000;opacity:0;visibility:hidden;transition:all 0.3s ease;width:100%;max-width:42rem;margin:0 1rem;">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+    <!-- Modal Header -->
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Chọn Template</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Chọn một mẫu thiết kế để bắt đầu</p>
+      </div>
+      <button type="button" onclick="closeTemplateModal()" 
+              class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+        <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+      </button>
+    </div>
+    
+    <!-- Modal Body - Template Grid -->
+    <div class="p-6">
+      <div class="grid grid-cols-2 gap-4" id="templateGrid">
+        
+        <!-- Template: Landing Product -->
+        <div class="modal-template-card bg-white dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 relative"
+             data-template-id="landing-product"
+             data-template-name="Landing Sản Phẩm"
+             onclick="selectTemplateFromModal(this)">
+          <!-- Thumbnail -->
+          <div class="aspect-[4/3] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg mb-3 overflow-hidden">
+            <img src="/static/templates/thumbnails/landing-product.svg" alt="Landing Product" class="w-full h-full object-cover">
+          </div>
+          <h4 class="font-medium text-gray-900 dark:text-white">Landing Sản Phẩm</h4>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Hero section, Features, CTA, Footer</p>
+          <!-- Selected checkmark -->
+          <div class="card-check absolute top-3 right-3 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        
+        <!-- Template: Blank -->
+        <div class="modal-template-card bg-white dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 relative"
+             data-template-id="blank"
+             data-template-name="Trang Trống"
+             onclick="selectTemplateFromModal(this)">
+          <!-- Thumbnail -->
+          <div class="aspect-[4/3] bg-gray-50 dark:bg-gray-600 rounded-lg mb-3 overflow-hidden">
+            <img src="/static/templates/thumbnails/blank.svg" alt="Blank" class="w-full h-full object-cover">
+          </div>
+          <h4 class="font-medium text-gray-900 dark:text-white">Trang Trống</h4>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Bắt đầu từ đầu, tự do sáng tạo</p>
+          <!-- Selected checkmark -->
+          <div class="card-check absolute top-3 right-3 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- Modal Footer -->
+    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+      <button type="button" onclick="closeTemplateModal()" 
+              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+        Hủy
+      </button>
+      <button type="button" onclick="confirmTemplateSelection()" 
+              class="px-4 py-2 text-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-md">
+        <i class="fas fa-check mr-2"></i>Xác nhận
+      </button>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+// Template data
+const templates = {
+  'landing-product': {
+    name: 'Landing Sản Phẩm',
+    thumbnail: '/static/templates/thumbnails/landing-product.svg'
+  },
+  'blank': {
+    name: 'Trang Trống',
+    thumbnail: '/static/templates/thumbnails/blank.svg'
+  }
+};
+
+// Current selected template in modal (temporary)
+let modalSelectedTemplate = null;
+
+// Update checkmark indicators based on checked radio
+function updateCheckIndicators() {
+    document.querySelectorAll('.check-indicator').forEach(indicator => {
+        indicator.classList.remove('active');
+    });
+    
+    const checkedRadio = document.querySelector('input[name="action"]:checked');
+    if (checkedRadio) {
+        const label = checkedRadio.closest('label');
+        const indicator = label.querySelector('.check-indicator');
+        if (indicator) {
+            indicator.classList.add('active');
+        }
+    }
+}
+
+// Update button text based on action
+function updateButtonText() {
+    const btnText = document.getElementById('btnText');
+    const action = document.querySelector('input[name="action"]:checked').value;
+    btnText.textContent = action === 'pagemade' ? 'Tạo & Mở Editor' : 'Tạo Site';
+}
+
+// Called when "Chọn Template" option is selected
+function onTemplateOptionSelected() {
+    updateCheckIndicators();
+    updateButtonText();
+    
+    // Auto-open modal if no template selected yet
+    const currentTemplate = document.getElementById('selected_template').value;
+    if (!currentTemplate || currentTemplate === 'blank') {
+        openTemplateModal();
+    }
+}
+
+// Open template selection modal
+function openTemplateModal(event) {
+    console.log('openTemplateModal called');
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    // Select the "Chọn Template" radio option
+    const templateRadio = document.querySelector('#option-template input[type="radio"]');
+    if (templateRadio) {
+        templateRadio.checked = true;
+        updateCheckIndicators();
+        updateButtonText();
+    }
+    
+    // Reset modal selection to current value
+    const currentTemplate = document.getElementById('selected_template').value;
+    modalSelectedTemplate = currentTemplate && currentTemplate !== 'blank' ? currentTemplate : 'landing-product';
+    
+    // Update modal UI
+    updateModalSelection();
+    
+    // Show modal with inline styles
+    const backdrop = document.getElementById('templateModalBackdrop');
+    const content = document.getElementById('templateModalContent');
+    
+    if (backdrop && content) {
+        backdrop.style.opacity = '1';
+        backdrop.style.visibility = 'visible';
+        content.style.opacity = '1';
+        content.style.visibility = 'visible';
+        content.style.transform = 'translate(-50%, -50%) scale(1)';
+        document.body.style.overflow = 'hidden';
+        console.log('Modal opened with inline styles');
+    }
+}
+
+// Close template selection modal
+function closeTemplateModal() {
+    const backdrop = document.getElementById('templateModalBackdrop');
+    const content = document.getElementById('templateModalContent');
+    
+    if (backdrop && content) {
+        backdrop.style.opacity = '0';
+        backdrop.style.visibility = 'hidden';
+        content.style.opacity = '0';
+        content.style.visibility = 'hidden';
+        content.style.transform = 'translate(-50%, -50%) scale(0.9)';
+        document.body.style.overflow = '';
+    }
+}
+
+// Select template in modal (temporary selection)
+function selectTemplateFromModal(card) {
+    modalSelectedTemplate = card.dataset.templateId;
+    updateModalSelection();
+    console.log('Selected template:', modalSelectedTemplate);
+}
+
+// Update modal UI to show selected template
+function updateModalSelection() {
+    document.querySelectorAll('.modal-template-card').forEach(card => {
+        // Reset all cards
+        card.classList.remove('selected');
+        card.style.borderColor = '#e5e7eb';
+        card.style.background = 'white';
+        
+        // Find checkmark and hide it
+        const checkmark = card.querySelector('.card-check');
+        if (checkmark) {
+            checkmark.style.opacity = '0';
+            checkmark.style.transform = 'scale(0.5)';
+        }
+        
+        // Style selected card - simple like radio options
+        if (card.dataset.templateId === modalSelectedTemplate) {
+            card.classList.add('selected');
+            card.style.borderColor = '#10b981';
+            card.style.background = '#ecfdf5'; // Light emerald background
+            
+            // Show checkmark
+            if (checkmark) {
+                checkmark.style.opacity = '1';
+                checkmark.style.transform = 'scale(1)';
+            }
+        }
+    });
+}
+
+// Confirm template selection and close modal
+function confirmTemplateSelection() {
+    if (!modalSelectedTemplate) return;
+    
+    // Update hidden input
+    document.getElementById('selected_template').value = modalSelectedTemplate;
+    
+    // Update template card UI
+    const template = templates[modalSelectedTemplate];
+    const cardWrapper = document.getElementById('templateCardWrapper');
+    const cardPreview = document.getElementById('templateCardPreview');
+    const cardEmpty = document.getElementById('templateCardEmpty');
+    const cardSelected = document.getElementById('templateCardSelected');
+    const cardName = document.getElementById('templateCardName');
+    
+    // Update preview image
+    cardPreview.src = template.thumbnail;
+    
+    // Switch states: hide empty, show selected
+    cardEmpty.classList.add('hidden');
+    cardSelected.classList.remove('hidden');
+    cardName.textContent = template.name;
+    
+    // Add has-template class for styling
+    cardWrapper.classList.add('has-template');
+    
+    // Close modal
+    closeTemplateModal();
+    
+    console.log('Template confirmed:', modalSelectedTemplate);
+}
+
+// Update template value when switching to other options
+function updateTemplateValue(templateId) {
+    document.getElementById('selected_template').value = templateId;
+    updateCheckIndicators();
+    updateButtonText();
+    console.log('Template set to:', templateId);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCheckIndicators();
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeTemplateModal();
+        }
+    });
+});
+
+// Form submit handler
 document.getElementById('newSiteForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   const btn = document.getElementById('createSiteBtn');
   const btnText = document.getElementById('btnText');
   const originalText = btnText.textContent;
+  
   // Get form data
   const title = document.getElementById('title').value.trim();
   const subdomain = document.getElementById('subdomain').value.trim().toLowerCase();
   const description = document.getElementById('description').value.trim();
   const action = document.querySelector('input[name="action"]:checked').value;
+  const template = document.getElementById('selected_template').value;
+  
   // Validation
   if (!title || !subdomain) {
     alert('Vui lòng điền đầy đủ thông tin bắt buộc');
     return;
   }
+  
   // Subdomain format validation
   const subdomainPattern = /^[a-z0-9-]+$/;
   if (!subdomainPattern.test(subdomain)) {
-    alert('❌ Subdomain chỉ được chứa chữ thường, số và dấu gạch ngang');
+    alert('Subdomain chỉ được chứa chữ thường, số và dấu gạch ngang');
     return;
   }
+  
   // Update button
   btn.disabled = true;
   btnText.textContent = 'Đang tạo...';
   btn.classList.add('opacity-75');
+  
   try {
+    // Debug: Log form data being sent
+    console.log('Submitting form with:', { title, subdomain, description, action, template });
+    
     const response = await fetch('{{ url_for("sites.new_site") }}', {
       method: 'POST',
       headers: {
@@ -262,16 +711,25 @@ document.getElementById('newSiteForm').addEventListener('submit', async function
         title: title,
         subdomain: subdomain,
         description: description,
-        action: action
+        action: action,
+        template: template
       })
     });
     const result = await response.json();
+    
+    // Debug: Log server response
+    console.log('Server response:', result);
+    
     if (result.success) {
       btnText.textContent = 'Thành công!';
       btn.classList.remove('opacity-75');
-      // Redirect theo backend trả về
+      
+      // Get redirect URL from response data
+      const redirectUrl = result.data?.redirect || result.redirect || '/dashboard';
+      console.log('Redirecting to:', redirectUrl);
+      
       setTimeout(() => {
-        window.location.href = result.redirect || '/dashboard';
+        window.location.href = redirectUrl;
       }, 500);
     } else {
       throw new Error(result.message || 'Không thể tạo site');
@@ -283,18 +741,6 @@ document.getElementById('newSiteForm').addEventListener('submit', async function
     btnText.textContent = originalText;
     btn.classList.remove('opacity-75');
   }
-});
-
-// Update button text based on selected action
-document.querySelectorAll('input[name="action"]').forEach(radio => {
-  radio.addEventListener('change', function() {
-    const btnText = document.getElementById('btnText');
-    if (this.value === 'pagemade') {
-      btnText.textContent = 'Tạo Site & Thiết Kế';
-    } else {
-      btnText.textContent = 'Tạo Site';
-    }
-  });
 });
 </script>
 {% endblock %}
