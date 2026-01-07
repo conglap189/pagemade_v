@@ -1,6 +1,8 @@
 """Page service for page management."""
 import os
+import json
 from datetime import datetime
+from flask import current_app
 from app.models import db, Page, Site
 
 
@@ -38,6 +40,31 @@ class PageService:
             
             # Generate slug from title
             page.slug = page.generate_slug()
+            
+            # Apply template content if template is specified and not blank/default
+            if template and template not in ['blank', 'default', '']:
+                try:
+                    # Template files are in backend/static/templates/
+                    # current_app.root_path = /backend/app, so we need '..' to go to /backend/static/
+                    template_file = os.path.join(current_app.root_path, '..', 'static', 'templates', f'{template}.json')
+                    current_app.logger.info(f"📦 [PageService] Looking for template: {template}")
+                    current_app.logger.info(f"📦 [PageService] root_path: {current_app.root_path}")
+                    current_app.logger.info(f"📦 [PageService] template_file: {template_file}")
+                    current_app.logger.info(f"📦 [PageService] file exists: {os.path.exists(template_file)}")
+                    
+                    if os.path.exists(template_file):
+                        with open(template_file, 'r', encoding='utf-8') as f:
+                            template_data = json.load(f)
+                            content = template_data.get('content', {})
+                            page.html_content = content.get('html', '')
+                            page.css_content = content.get('css', '')
+                            current_app.logger.info(f"✅ Applied template '{template}' to new page")
+                            current_app.logger.info(f"✅ html_content length: {len(page.html_content)}")
+                            current_app.logger.info(f"✅ css_content length: {len(page.css_content)}")
+                    else:
+                        current_app.logger.error(f"❌ Template file NOT FOUND: {template_file}")
+                except Exception as e:
+                    current_app.logger.error(f"❌ Error applying template '{template}': {e}")
             
             db.session.add(page)
             db.session.commit()

@@ -204,10 +204,17 @@ async function loadTemplates() {
         const data = await response.json();
         
         if (data.templates && data.templates.length > 0) {
-            grid.innerHTML = data.templates.map((t, i) => renderTemplateCard(t, i === 0)).join('');
-            // Select first template by default
-            if (data.templates[0]) {
-                document.getElementById('selected_template').value = data.templates[0].id;
+            // Sort templates: move 'blank' to the end
+            const sortedTemplates = data.templates.sort((a, b) => {
+                if (a.id === 'blank') return 1;
+                if (b.id === 'blank') return -1;
+                return 0;
+            });
+            
+            grid.innerHTML = sortedTemplates.map((t, i) => renderTemplateCard(t, i === 0)).join('');
+            // Select first template by default (now it's NOT blank)
+            if (sortedTemplates[0]) {
+                document.getElementById('selected_template').value = sortedTemplates[0].id;
             }
         } else {
             grid.innerHTML = '<p class="text-gray-500 col-span-3">Chưa có template nào.</p>';
@@ -263,26 +270,30 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang tạo...';
             
-            fetch('{{ url_for("api.create_page") }}', {
+            fetch('{{ url_for("pages.new_page", site_id=site.id) }}', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: JSON.stringify(formData)
+                body: new URLSearchParams({
+                    title: formData.title,
+                    description: formData.description,
+                    template: formData.template
+                })
             })
             .then(function(response) {
                 return response.json();
             })
             .then(function(data) {
                 console.log('API response:', data);
-                if (data.error) {
-                    alert(data.error);
+                if (!data.success) {
+                    alert(data.message || data.error || 'Có lỗi xảy ra');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-magic mr-1"></i> Tạo & Thiết kế';
                 } else {
-                    console.log('Redirecting to editor with page_id:', data.id);
+                    console.log('Redirecting to editor with page_id:', data.data.page_id);
                     // Success - redirect to editor (which loads PageMade Editor)
-                    window.location.href = '/editor/' + data.id;
+                    window.location.href = data.data.redirect || '/editor/' + data.data.page_id;
                 }
             })
             .catch(function(error) {

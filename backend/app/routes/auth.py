@@ -8,6 +8,7 @@ import re
 import secrets
 from PIL import Image
 import mimetypes
+from app.utils.url_helpers import url_for_external
 
 from app.models import db, User
 from app.services import AuthService
@@ -34,7 +35,7 @@ def init_oauth(oauth_instance):
 def login():
     """Login page - email/password and Google OAuth."""
     if current_user.is_authenticated:
-        return redirect(url_for('sites.dashboard'))
+        return redirect(url_for_external('sites.dashboard'))
     
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
@@ -52,7 +53,7 @@ def login():
             flash(f'Chào mừng {user.name}!', 'success')
             
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('sites.dashboard'))
+            return redirect(next_page) if next_page else redirect(url_for_external('sites.dashboard'))
         else:
             flash(error if error else 'Email hoặc mật khẩu không đúng!', 'error')
     
@@ -63,7 +64,7 @@ def login():
 def register():
     """User registration with email/password."""
     if current_user.is_authenticated:
-        return redirect(url_for('sites.dashboard'))
+        return redirect(url_for_external('sites.dashboard'))
     
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -102,7 +103,7 @@ def register():
         if success and user:
             login_user(user, remember=True)
             flash(f'Chào mừng {name}! Tài khoản đã được tạo thành công.', 'success')
-            return redirect(url_for('sites.dashboard'))
+            return redirect(url_for_external('sites.dashboard'))
         else:
             flash(error if error else 'Có lỗi xảy ra khi tạo tài khoản!', 'error')
     
@@ -113,7 +114,7 @@ def register():
 def google_login():
     """Initiate Google OAuth login."""
     if current_user.is_authenticated:
-        return redirect(url_for('sites.dashboard'))
+        return redirect(url_for_external('sites.dashboard'))
     
     if not google:
         flash('Google OAuth chưa được cấu hình!', 'error')
@@ -166,7 +167,7 @@ def google_callback():
         
         login_user(user, remember=True)
         flash(f'Chào mừng {user.name}!', 'success')
-        return redirect(url_for('sites.dashboard'))
+        return redirect(url_for_external('sites.dashboard'))
         
     except Exception as e:
         current_app.logger.error(f"Google OAuth error: {e}")
@@ -179,9 +180,33 @@ def google_callback():
 def logout():
     """User logout."""
     user_name = current_user.name
+    
+    # Revoke JWT token if exists
+    token = request.cookies.get('auth_token')
+    if token:
+        from app.services.jwt_service import JWTService
+        JWTService.revoke_token(token)
+    
+    # Logout from Flask-Login session
     logout_user()
+    
+    # Determine redirect URL based on environment
+    is_production = 'pagemade.site' in request.host
+    redirect_url = 'https://pagemade.site' if is_production else url_for('pages.index')
+    
+    # Create response with redirect
+    response = redirect(redirect_url)
+    
+    # Clear JWT cookie (must match domain used when setting)
+    cookie_domain = '.pagemade.site' if is_production else None
+    response.delete_cookie('auth_token', domain=cookie_domain, path='/')
+    
+    # Clear Flask session cookies
+    response.delete_cookie('session', path='/')
+    response.delete_cookie('remember_token', path='/')
+    
     flash(f'Tạm biệt {user_name}!', 'info')
-    return redirect(url_for('pages.index'))
+    return response
 
 
 @auth_bp.route('/profile', methods=['GET', 'POST'])
@@ -363,18 +388,23 @@ def api_jwt_login():
             from datetime import datetime, timedelta, timezone
             cookie_expires = datetime.now(timezone.utc) + timedelta(hours=24)  # 24 hours
             
-            # Create response with cookie that can be shared across ports
+            # Create response with cookie that can be shared across subdomains
+            # Detect if we're on production
+            is_production = 'pagemade.site' in request.host
+            cookie_domain = '.pagemade.site' if is_production else 'localhost'
+            is_secure = request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https'
+            
             return Helpers.success_response_with_cookie(
                 data=response_data,
                 message='Đăng nhập thành công',
                 cookie_name='auth_token',
                 cookie_value=tokens['access_token'],
                 cookie_expires=cookie_expires,
-                secure=False,  # localhost
+                secure=is_secure,  # Use HTTPS in production
                 httponly=True,
-                samesite='Lax',  # Changed from 'None' to 'Lax' for localhost
-                domain='localhost',
-                path='/'  # Important: Set path to root for cross-port sharing
+                samesite='Lax',
+                domain=cookie_domain,  # Share cookie across subdomains
+                path='/'
             )
         else:
             return Helpers.error_response(error or 'Email hoặc password không đúng', 401)
@@ -822,7 +852,7 @@ def admin_users():
     """Admin user management page."""
     if not current_user.is_admin():
         flash('Bạn không có quyền truy cập trang này!', 'error')
-        return redirect(url_for('sites.dashboard'))
+        return redirect(url_for_external('sites.dashboard'))
     
     users = User.query.order_by(User.created_at.desc()).all()
     return render_template('admin/users.html', users=users)
@@ -862,7 +892,7 @@ def create_test_account():
     if test_user:
         login_user(test_user)
         flash('Đã đăng nhập với tài khoản Admin!', 'success')
-        return redirect(url_for('sites.dashboard'))
+        return redirect(url_for_external('sites.dashboard'))
     
     flash('Không tìm thấy tài khoản admin!', 'error')
     return redirect(url_for('auth.login'))

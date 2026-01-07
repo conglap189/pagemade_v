@@ -33,8 +33,8 @@ export interface PageContentResponse {
 }
 
 class EditorService {
-  private readonly BACKEND_URL = 'http://localhost:5000'
-  private readonly FRONTEND_EDITOR_URL = 'http://localhost:3001/editor'
+  private readonly BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://app.pagemade.site'
+  private readonly FRONTEND_EDITOR_URL = process.env.NEXT_PUBLIC_EDITOR_URL || 'http://editor.pagemade.site'
 
   /**
    * Verify editor token with backend

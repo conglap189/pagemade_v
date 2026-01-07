@@ -20,10 +20,43 @@ export default function EditorLandingPage() {
     try {
       setLoading(true)
       
-      // Check authentication with backend using shared cookie
-      const response = await fetch('http://localhost:5000/api/auth/me', {
+      // Check if user info exists in localStorage
+      const userStr = localStorage.getItem('user');
+      const accessToken = localStorage.getItem('access_token');
+      
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+        setAuthenticated(true);
+        console.log('✅ User loaded from localStorage:', userData.email);
+        
+        // Get user's sites using token
+        const apiUrl = '/api/auth/me'; // Use Next.js proxy
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+        
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers,
+        });
+        
+        if (!response.ok) {
+          console.warn('⚠️ API validation failed, using cached user data');
+        }
+        
+        // Continue with loading sites...
+        return;
+      }
+      
+      // If no cached user, try API
+      const apiUrl = '/api/auth/me';
+      const response = await fetch(apiUrl, {
         method: 'GET',
-        credentials: 'include', // Important for shared cookies
         headers: {
           'Content-Type': 'application/json',
         },
@@ -36,7 +69,7 @@ export default function EditorLandingPage() {
           setUser(result.data.user)
           
           // Get user's sites
-          const sitesResponse = await fetch('http://localhost:5000/api/sites', {
+          const sitesResponse = await fetch(`${apiUrl}/api/sites`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -52,7 +85,7 @@ export default function EditorLandingPage() {
               setSelectedSite(firstSite)
               
               // Get pages for this site
-              const pagesResponse = await fetch(`http://localhost:5000/api/sites/${firstSite.id}/pages`, {
+              const pagesResponse = await fetch(`${apiUrl}/api/sites/${firstSite.id}/pages`, {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -102,7 +135,8 @@ export default function EditorLandingPage() {
       
       // Get pages for this site
       try {
-        const pagesResponse = await fetch(`http://localhost:5000/api/sites/${siteId}/pages`, {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://app.pagemade.site';
+        const pagesResponse = await fetch(`${apiUrl}/api/sites/${siteId}/pages`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -126,7 +160,8 @@ export default function EditorLandingPage() {
 
   const handleEditPage = (pageId: string) => {
     // Open editor in new tab/window instead of redirecting
-    window.open(`http://localhost:5001/editor/${pageId}`, '_blank')
+    const editorUrl = process.env.NEXT_PUBLIC_EDITOR_URL || 'http://editor.pagemade.site';
+    window.open(`${editorUrl}/editor/${pageId}`, '_blank')
   }
 
   const handleCreatePage = () => {

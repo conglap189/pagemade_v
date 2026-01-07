@@ -7,7 +7,7 @@
     
     <!-- GrapesJS Core CSS (CRITICAL: Must load BEFORE custom pagemade.min.css) -->
     <!-- Version 0.22.13 - Built from local source (grapesjs/packages/core/dist/) -->
-    <link rel="stylesheet" href="./styles/pagemade-core.min.css">
+    <link rel="stylesheet" href="/styles/pagemade-core.min.css">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/images/branding/favicon/favicon.ico">
@@ -17,10 +17,19 @@
     <meta name="theme-color" content="#667eea">
     
     <!-- PageMade Core CSS (CRITICAL: Contains .gjs-block and other GrapesJS styles) -->
-    <link rel="stylesheet" href="http://localhost:5000/static/pagemade/pagemade.min.css">
+    <!-- Dynamic URL based on environment -->
+    <link rel="stylesheet" id="pagemade-css">
+    <script>
+        (function() {
+            var baseUrl = window.location.hostname === 'localhost' 
+                ? 'http://localhost:5000' 
+                : 'https://app.pagemade.site';
+            document.getElementById('pagemade-css').href = baseUrl + '/static/pagemade/pagemade.min.css';
+        })();
+    </script>
     
     <!-- Custom Editor CSS (MUST load AFTER pagemaker.min.css to override default styles) -->
-    <link rel="stylesheet" href="./styles/editor.css">
+    <link rel="stylesheet" href="/styles/editor.css">
     
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1349,14 +1358,14 @@
     
     <!-- PageMade Core Engine (MUST load before main.js initialization) -->
     <!-- This loader script loads pagemade-core.min.js from local build -->
-    <script src="./public/pagemade.min.js" defer></script>
+    <script src="/public/pagemade.min.js" defer></script>
     
     <!-- PageMade Tailwind Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/grapesjs-tailwind@1/dist/grapesjs-tailwind.min.js" defer></script>
     
     <!-- API Client (MUST load BEFORE main.js) -->
     <script type="module">
-        import ApiClient from './scripts/api-client.js';
+        import ApiClient from '/scripts/api-client.js';
         window.apiClient = new ApiClient();
         console.log('✅ API Client initialized and attached to window.apiClient');
     </script>
@@ -1364,7 +1373,7 @@
     <!-- Authentication Guard -->
     <script type="module">
         // Enhanced authentication flow with URL token support
-        import AuthGuard from './scripts/auth-check.js';
+        import AuthGuard from '/scripts/auth-check.js';
         
         window.authGuard = new AuthGuard();
         
@@ -1385,7 +1394,7 @@
                 // Load main editor script immediately (it will handle full auth verification)
                 const script = document.createElement('script');
                 script.type = 'module';
-                script.src = './scripts/main.js';
+                script.src = '/scripts/main.js';
                 document.head.appendChild(script);
                 return;
             }
@@ -1412,7 +1421,7 @@
             // Load main editor script
             const script = document.createElement('script');
             script.type = 'module';
-            script.src = './scripts/main.js';
+            script.src = '/scripts/main.js';
             document.head.appendChild(script);
         }
         

@@ -5,9 +5,10 @@
 
 class ApiClient {
     constructor() {
+        // Dynamic API URL based on environment
         this.baseURL = window.location.hostname === 'localhost' 
             ? 'http://localhost:5000' 
-            : 'https://api.pagemade.site'; // Production API URL
+            : 'https://app.pagemade.site'; // Production API URL (Flask backend)
         
         // With Shared Cookie approach, we don't need to store tokens
         // Browser will automatically send HttpOnly cookie with each request
@@ -141,8 +142,11 @@ class ApiClient {
             // Clear local storage
             localStorage.removeItem('user');
             
-            // Redirect to website login page (port 3000)
-            window.location.href = 'http://localhost:3000/login';
+            // Redirect to website login page
+            const loginUrl = window.location.hostname === 'localhost'
+                ? 'http://localhost:3000/login'
+                : 'https://pagemade.site/signin';
+            window.location.href = loginUrl;
         }
     }
 
@@ -261,6 +265,11 @@ class ApiClient {
      * Upload asset
      */
     async uploadAsset(file, siteId) {
+        console.log('🔼 [UPLOAD] Starting upload...');
+        console.log('🔼 [UPLOAD] File:', file.name, 'Size:', file.size, 'Type:', file.type);
+        console.log('🔼 [UPLOAD] Site ID:', siteId);
+        console.log('🔼 [UPLOAD] API URL:', `${this.baseURL}/api/assets/upload`);
+        
         try {
             const formData = new FormData();
             formData.append('file', file);
@@ -268,12 +277,15 @@ class ApiClient {
 
             // Get JWT token from localStorage
             const token = localStorage.getItem('access_token');
+            console.log('🔼 [UPLOAD] Token exists:', !!token);
+            console.log('🔼 [UPLOAD] Token (first 20 chars):', token ? token.substring(0, 20) + '...' : 'NULL');
             
             const headers = {};
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
+            console.log('🔼 [UPLOAD] Sending request...');
             const response = await fetch(`${this.baseURL}/api/assets/upload`, {
                 method: 'POST',
                 credentials: 'include', // Important: Include cookies
@@ -281,16 +293,36 @@ class ApiClient {
                 body: formData
             });
 
-            const data = await response.json();
+            console.log('🔼 [UPLOAD] Response status:', response.status, response.statusText);
+            console.log('🔼 [UPLOAD] Response headers:', Object.fromEntries(response.headers.entries()));
             
-            if (!response.ok) {
-                console.error('🚫 Upload failed:', data.error || response.statusText);
-                throw new Error(data.error || 'Upload failed');
+            // Get response as text first to debug
+            const responseText = await response.text();
+            console.log('🔼 [UPLOAD] Response text (first 500 chars):', responseText.substring(0, 500));
+            
+            // Try to parse JSON
+            let data;
+            try {
+                data = JSON.parse(responseText);
+                console.log('🔼 [UPLOAD] Response data:', data);
+            } catch (parseError) {
+                console.error('❌ [UPLOAD] JSON parse failed!');
+                console.error('❌ [UPLOAD] Response is not JSON:', responseText);
+                throw new Error(`Server returned non-JSON response (${response.status}): ${responseText.substring(0, 200)}`);
             }
             
+            if (!response.ok) {
+                console.error('🚫 [UPLOAD] Upload failed:', data.error || response.statusText);
+                console.error('🚫 [UPLOAD] Full response:', data);
+                throw new Error(data.error || data.message || 'Upload failed');
+            }
+            
+            console.log('✅ [UPLOAD] Upload successful!');
+            console.log('✅ [UPLOAD] Asset URL:', data.success ? data.data.asset.url : 'NO URL');
             return data.success ? data.data.asset : null;
         } catch (error) {
-            console.error('Upload asset failed:', error);
+            console.error('❌ [UPLOAD] Upload asset failed:', error);
+            console.error('❌ [UPLOAD] Error stack:', error.stack);
             throw error;
         }
     }
@@ -299,12 +331,70 @@ class ApiClient {
      * Get assets for a site
      */
     async getAssets(siteId) {
+        console.log('📥 [GET ASSETS] Fetching assets for site:', siteId);
         try {
             const data = await this.request(`/api/sites/${siteId}/assets`);
-            return data.success ? data.data.assets : [];
-        } catch (error) {
-            console.error('Get assets failed:', error);
+            console.log('📥 [GET ASSETS] Response:', data);
+            
+            if (data.success && data.data) {
+                // Paginated response: {data: {items: [...], page, per_page, total}}
+                if (data.data.items && Array.isArray(data.data.items)) {
+                    console.log('✅ [GET ASSETS] Found', data.data.items.length, 'assets (paginated)');
+                    return data.data.items;
+                }
+                // Array response: {data: {assets: [...]}}
+                if (data.data.assets && Array.isArray(data.data.assets)) {
+                    console.log('✅ [GET ASSETS] Found', data.data.assets.length, 'assets');
+                    return data.data.assets;
+                }
+                // Direct array: {data: [...]}
+                if (Array.isArray(data.data)) {
+                    console.log('✅ [GET ASSETS] Found', data.data.length, 'assets (array)');
+                    return data.data;
+                }
+            }
+            
+            console.warn('⚠️ [GET ASSETS] Unexpected format, data.data:', data.data);
             return [];
+        } catch (error) {
+            console.error('❌ [GET ASSETS] Failed:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Delete an asset
+     */
+    async deleteAsset(assetId) {
+        console.log('🗑️ [DELETE ASSET] deleteAsset() called');
+        console.log('🗑️ [DELETE ASSET] Asset ID:', assetId, 'Type:', typeof assetId);
+        console.log('🗑️ [DELETE ASSET] API URL:', `/api/assets/${assetId}`);
+        
+        try {
+            console.log('🗑️ [DELETE ASSET] Calling this.request()...');
+            const data = await this.request(`/api/assets/${assetId}`, {
+                method: 'DELETE'
+            });
+            
+            console.log('🗑️ [DELETE ASSET] Response received:', data);
+            console.log('🗑️ [DELETE ASSET] Response type:', typeof data);
+            console.log('🗑️ [DELETE ASSET] Response.success:', data?.success);
+            console.log('🗑️ [DELETE ASSET] Response.message:', data?.message);
+            
+            if (data.success) {
+                console.log('✅ [DELETE ASSET] Deleted successfully');
+                console.log('✅ [DELETE ASSET] Message:', data.message);
+                return data; // Return full response including message
+            }
+            
+            console.error('❌ [DELETE ASSET] Failed:', data.message);
+            return data; // Return response with error message
+        } catch (error) {
+            console.error('❌ [DELETE ASSET] Error:', error);
+            console.error('❌ [DELETE ASSET] Error type:', error.name);
+            console.error('❌ [DELETE ASSET] Error message:', error.message);
+            console.error('❌ [DELETE ASSET] Error stack:', error.stack);
+            return { success: false, message: error.message };
         }
     }
 

@@ -321,11 +321,16 @@ class PageMadeApp {
             return
         }
         
+        // Dynamic base URL based on environment
+        const baseUrl = window.location.hostname === 'localhost'
+            ? 'http://localhost:5000'
+            : 'https://app.pagemade.site'
+        
         // Determine the back URL based on site_id
-        let backUrl = 'http://localhost:5000/dashboard' // Default fallback
+        let backUrl = `${baseUrl}/dashboard` // Default fallback
         
         if (siteId) {
-            backUrl = `http://localhost:5000/site/${siteId}`
+            backUrl = `${baseUrl}/site/${siteId}`
             console.log('🔙 Back button configured to site detail:', backUrl)
         } else {
             console.log('🔙 Back button configured to dashboard (no site_id)')
@@ -379,29 +384,47 @@ class PageMadeApp {
             this.floatingToolbar.init()
             
             // Load existing page content from older system format
-            if (this.pageData && this.pageData.page) {
-                console.log('📊 Page data structure:', {
-                    hasComponents: !!(this.pageData.page.components),
-                    componentsLength: this.pageData.page.components?.length,
-                    hasContent: !!(this.pageData.page.content),
-                    hasCss: !!(this.pageData.page.css),
-                    hasStyles: !!(this.pageData.page.styles)
-                })
-                
-                // PRIORITY: Load components if available (preserves structure)
-                if (this.pageData.page.components && this.pageData.page.components.length > 0) {
-                    console.log('📦 Loading components:', this.pageData.page.components)
-                    this.pm.setComponents(this.pageData.page.components)
-                    this.pm.setStyle(this.pageData.page.styles || this.pageData.page.css || '')
+            // 🚨 CRITICAL: Wait for canvas to be fully ready before loading content
+            // This fixes the issue where CSS doesn't load on first page load
+            const loadPageContent = () => {
+                if (this.pageData && this.pageData.page) {
+                    console.log('📊 Page data structure:', {
+                        hasComponents: !!(this.pageData.page.components),
+                        componentsLength: this.pageData.page.components?.length,
+                        hasContent: !!(this.pageData.page.content),
+                        hasCss: !!(this.pageData.page.css),
+                        hasStyles: !!(this.pageData.page.styles)
+                    })
+                    
+                    // PRIORITY: Load components if available (preserves structure)
+                    if (this.pageData.page.components && this.pageData.page.components.length > 0) {
+                        console.log('📦 Loading components:', this.pageData.page.components)
+                        this.pm.setComponents(this.pageData.page.components)
+                        this.pm.setStyle(this.pageData.page.styles || this.pageData.page.css || '')
+                    } else {
+                        // Fallback to HTML/CSS only if no components
+                        console.log('📄 Loading HTML content:', this.pageData.page.content?.substring(0, 100))
+                        this.pm.setComponents(this.pageData.page.content || '')
+                        this.pm.setStyle(this.pageData.page.css || '')
+                    }
+                    console.log('✅ Content loaded from older system format')
                 } else {
-                    // Fallback to HTML/CSS only if no components
-                    console.log('📄 Loading HTML content:', this.pageData.page.content?.substring(0, 100))
-                    this.pm.setComponents(this.pageData.page.content || '')
-                    this.pm.setStyle(this.pageData.page.css || '')
+                    console.warn('⚠️ No page data available')
                 }
-                console.log('✅ Content loaded from older system format')
+            }
+            
+            // Check if canvas is already ready
+            const canvasFrame = this.pm.Canvas.getFrame()
+            if (canvasFrame && canvasFrame.loaded) {
+                console.log('🎯 Canvas already ready, loading content immediately')
+                loadPageContent()
             } else {
-                console.warn('⚠️ No page data available')
+                // Wait for canvas frame to load before setting content
+                console.log('⏳ Waiting for canvas:frame:load event...')
+                this.pm.once('canvas:frame:load', () => {
+                    console.log('🎯 Canvas frame loaded, now loading content...')
+                    loadPageContent()
+                })
             }
             
             // Setup older system functionality
@@ -1115,12 +1138,34 @@ class PageMadeApp {
         try {
             this.showLoading('btn-publish')
             
-            // Get content from GrapesJS editor
+            // Step 1: Auto-save content to database first
+            console.log('📤 [PUBLISH] Step 1: Auto-saving content before publish...')
+            
             const html = this.pm.getHtml()
             const css = this.pm.getCss()
             const components = this.pm.getComponents()
             const styles = this.pm.getStyle()
-            const assets = this.pm.getAssets()
+            const assets = this.pm.AssetManager ? this.pm.AssetManager.getAll() : []
+            
+            // Save in GrapesJS format (same as save() function)
+            const gjsData = {
+                'gjs-html': html || '',
+                'gjs-css': css || '',
+                'gjs-components': components || [],
+                'gjs-styles': styles || [],
+                'gjs-assets': assets || []
+            }
+            
+            const saveSuccess = await window.apiClient.savePageMadeContent(this.pageId, gjsData)
+            
+            if (!saveSuccess) {
+                throw new Error('Failed to save content before publishing')
+            }
+            
+            console.log('✅ [PUBLISH] Content saved successfully')
+            
+            // Step 2: Now publish the page
+            console.log('📤 [PUBLISH] Step 2: Publishing page...')
             
             const publishData = {
                 html: html || '',
@@ -1142,10 +1187,10 @@ class PageMadeApp {
             }
             
             // Show published URL if available
-            if (result.data && result.data.published_url) {
+            if (result && result.published_url) {
                 setTimeout(() => {
-                    if (confirm(`Trang đã xuất bản! Xem tại ${result.data.published_url}?`)) {
-                        window.open(result.data.published_url, '_blank')
+                    if (confirm(`Trang đã xuất bản! Xem tại ${result.published_url}?`)) {
+                        window.open(result.published_url, '_blank')
                     }
                 }, 1000)
             }

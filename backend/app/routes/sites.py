@@ -1,3 +1,4 @@
+from app.utils.url_helpers import url_for_external
 """Sites blueprint - Site management and dashboard."""
 from flask import Blueprint, request, jsonify, current_app, abort, render_template, flash, redirect, url_for, render_template, flash, redirect, url_for
 from flask_login import login_required, current_user
@@ -349,7 +350,7 @@ def site_from_template():
         if site and site.id:
             return redirect(url_for('sites.site_detail', site_id=site.id))
         else:
-            return redirect(url_for('sites.dashboard'))
+            return redirect(url_for_external('sites.dashboard'))
     
     return redirect(url_for('sites.templates'))
 

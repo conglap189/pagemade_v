@@ -49,7 +49,8 @@ export default function EditorPage() {
       setError(null)
 
       // Verify token with backend
-      const response = await fetch(`http://localhost:5000/api/editor/verify-token/${token}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://app.pagemade.site';
+      const response = await fetch(`${apiUrl}/api/editor/verify-token/${token}`, {
         method: 'GET',
         credentials: 'include', // Important for session cookies
         headers: {
@@ -75,7 +76,8 @@ export default function EditorPage() {
       setPageData(result.data)
 
       // Construct PageMade Editor URL
-      const editorUrl = `http://localhost:3001/editor/${pageId}?token=${token}&verified=true`
+      const editorBaseUrl = process.env.NEXT_PUBLIC_EDITOR_URL || 'http://editor.pagemade.site';
+      const editorUrl = `${editorBaseUrl}/editor/${pageId}?token=${token}&verified=true`
       setEditorUrl(editorUrl)
 
       setLoading(false)

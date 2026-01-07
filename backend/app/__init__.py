@@ -84,12 +84,21 @@ def create_app(config_name=None):
     )
     
     # Configure CORS for Shared Cookie approach between ports
-    cors_origins = ['http://localhost:6805', 'http://localhost:3000', 'http://localhost:3002', 'http://localhost:5001']
-    if config_name == 'production':
-        cors_origins.extend([
-            'https://pagemade.site',
-            'http://pagemade.site'
-        ])
+    cors_origins = [
+        'http://localhost:6805', 
+        'http://localhost:3000', 
+        'http://localhost:3002', 
+        'http://localhost:5001',
+        'https://pagemade.site',
+        'http://pagemade.site',
+        'https://app.pagemade.site',
+        'http://app.pagemade.site',
+        'https://editor.pagemade.site',
+        'http://editor.pagemade.site'
+    ]
+    
+    # Store in app.config so it's accessible in handlers
+    app.config['CORS_ORIGINS'] = cors_origins
     
     # CORS configuration for shared cookies across ports
     CORS(app, 
@@ -100,6 +109,30 @@ def create_app(config_name=None):
          expose_headers=['Set-Cookie'],  # Expose cookie headers
          vary_header=True,  # Handle cross-origin properly
          max_age=3600)  # Cache preflight for 1 hour
+    
+    # CRITICAL FIX: Handle CORS preflight OPTIONS requests
+    @app.before_request
+    def handle_preflight():
+        """
+        Handle CORS preflight OPTIONS requests.
+        Browser sends OPTIONS request before actual POST/PUT/DELETE to check CORS.
+        """
+        from flask import request, make_response, current_app
+        
+        if request.method == 'OPTIONS':
+            response = make_response()
+            origin = request.headers.get('Origin')
+            allowed_origins = current_app.config.get('CORS_ORIGINS', [])
+            
+            # Check if origin is allowed
+            if origin in allowed_origins:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+                response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+                response.headers['Access-Control-Max-Age'] = '3600'
+            
+            return response
     
     # CRITICAL FIX: Add CORS headers for static files (CSS, fonts, images)
     # Flask-CORS does NOT automatically apply to static files - we need manual handler
@@ -114,22 +147,29 @@ def create_app(config_name=None):
         - Images and other assets
         
         Without this, browser blocks cross-origin font/CSS loading.
+        
+        🚨 IMPORTANT: Check route type FIRST before setting headers!
+        - API/auth routes: Use specific origin with credentials
+        - Static files: Use wildcard (no credentials needed)
         """
-        from flask import request
+        from flask import request, current_app
         
-        # Allow ALL origins for static files (fonts are very strict about CORS)
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        
-        # Allow credentials for API routes (override for non-static)
+        # Check if this is an API or auth route FIRST
         if request.path.startswith('/api/') or request.path.startswith('/auth/'):
             # For API routes, use specific origins with credentials
             origin = request.headers.get('Origin')
-            if origin in cors_origins:
+            allowed_origins = current_app.config.get('CORS_ORIGINS', [])
+            
+            if origin in allowed_origins:
                 response.headers['Access-Control-Allow-Origin'] = origin
                 response.headers['Access-Control-Allow-Credentials'] = 'true'
                 # 🚨 CRITICAL: Must include Authorization header for JWT tokens
                 response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
                 response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        else:
+            # For static files (fonts, CSS, images), use wildcard
+            # Wildcard is ONLY safe when credentials are NOT included
+            response.headers['Access-Control-Allow-Origin'] = '*'
         
         return response
     
@@ -148,7 +188,9 @@ def create_app(config_name=None):
     # Template context processor
     @app.context_processor
     def inject_editor_token_generator():
-        """Make generate_editor_token available in templates."""
+        """Make generate_editor_token and get_editor_url available in templates."""
+        from app.utils.url_helpers import get_editor_url
+        
         def generate_editor_token(page_id):
             """Generate JWT token for frontend editor access."""
             from flask import current_app
@@ -180,7 +222,10 @@ def create_app(config_name=None):
             
             return token
         
-        return dict(generate_editor_token=generate_editor_token)
+        return dict(
+            generate_editor_token=generate_editor_token,
+            get_editor_url=get_editor_url
+        )
     
     # Register routes (Phase 2)
     from app.routes import auth_bp, sites_bp, pages_bp, assets_bp, admin_bp

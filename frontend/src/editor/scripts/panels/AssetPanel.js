@@ -149,28 +149,43 @@ export class AssetPanel {
     }
 
     async uploadFile(file) {
+        console.log('📤 [ASSET PANEL] uploadFile() called');
+        console.log('📤 [ASSET PANEL] File:', file.name, 'Size:', file.size, 'Type:', file.type);
+        
         try {
             this.showUploadProgress(file.name)
 
             // Get siteId from app reference
             const siteId = this.app?.siteId
+            console.log('📤 [ASSET PANEL] Site ID:', siteId);
+            console.log('📤 [ASSET PANEL] App object:', this.app);
+            
             if (!siteId) {
+                console.error('❌ [ASSET PANEL] Site ID not available!');
                 throw new Error('Site ID not available')
             }
 
+            console.log('📤 [ASSET PANEL] Calling apiClient.uploadAsset()...');
             // uploadAsset expects (file, siteId), not FormData
             const result = await window.apiClient.uploadAsset(file, siteId)
             
+            console.log('📤 [ASSET PANEL] Upload result:', result);
+            
             if (!result || !result.url) {
+                console.error('❌ [ASSET PANEL] Upload failed - no URL returned');
                 throw new Error('Upload failed - no URL returned')
             }
             
+            console.log('✅ [ASSET PANEL] Upload successful! URL:', result.url);
+            
             // Add to editor asset manager
             if (this.assetManager) {
+                console.log('📤 [ASSET PANEL] Adding to GrapesJS asset manager...');
                 this.assetManager.add(result.url)
             }
 
             // Add to local assets
+            console.log('📤 [ASSET PANEL] Adding to local asset list...');
             this.addAsset({
                 id: result.id || this.generateAssetId(),
                 src: result.url,
@@ -182,9 +197,12 @@ export class AssetPanel {
 
             this.hideUploadProgress()
             this.showSuccess(`${file.name} uploaded successfully`)
+            console.log('✅ [ASSET PANEL] Upload complete!');
 
         } catch (error) {
-            console.error('Upload failed:', error)
+            console.error('❌ [ASSET PANEL] Upload failed:', error);
+            console.error('❌ [ASSET PANEL] Error message:', error.message);
+            console.error('❌ [ASSET PANEL] Error stack:', error.stack);
             this.hideUploadProgress()
             this.showError(`Failed to upload ${file.name}: ${error.message}`)
         }
@@ -335,13 +353,53 @@ export class AssetPanel {
         })
     }
 
-    deleteAsset(assetId) {
-        if (!confirm('Are you sure you want to delete this asset?')) return
+    async deleteAsset(assetId) {
+        console.log('🗑️ [ASSET PANEL] deleteAsset() called with ID:', assetId, 'Type:', typeof assetId);
+        
+        if (!confirm('Bạn có chắc chắn muốn xóa ảnh này không?')) {
+            console.log('🗑️ [ASSET PANEL] User cancelled delete');
+            return;
+        }
 
-        if (this.removeAsset(assetId)) {
-            this.showSuccess('Asset deleted successfully')
-        } else {
-            this.showError('Failed to delete asset')
+        console.log('🗑️ [ASSET PANEL] User confirmed. Starting delete process...');
+        console.log('🗑️ [ASSET PANEL] window.apiClient exists:', !!window.apiClient);
+        
+        try {
+            // Call API to delete from database and file system
+            console.log('🗑️ [ASSET PANEL] Calling window.apiClient.deleteAsset(' + assetId + ')');
+            const result = await window.apiClient.deleteAsset(assetId);
+            
+            console.log('🗑️ [ASSET PANEL] Delete result:', result);
+            console.log('🗑️ [ASSET PANEL] result.success:', result?.success);
+            console.log('🗑️ [ASSET PANEL] result.message:', result?.message);
+            
+            if (result && result.success) {
+                console.log('✅ [ASSET PANEL] Backend confirmed delete success');
+                
+                // Remove from local state and UI
+                console.log('🗑️ [ASSET PANEL] Calling this.removeAsset(' + assetId + ')');
+                const removed = this.removeAsset(assetId);
+                console.log('🗑️ [ASSET PANEL] removeAsset returned:', removed);
+                
+                if (removed) {
+                    const message = result.message || 'Ảnh đã được xóa thành công!';
+                    this.showSuccess(message);
+                    console.log('✅ [ASSET PANEL] Asset deleted from database and UI');
+                    console.log('✅ [ASSET PANEL] Message:', message);
+                } else {
+                    this.showError('Không thể xóa ảnh khỏi giao diện');
+                    console.error('❌ [ASSET PANEL] removeAsset failed - asset not found in local array');
+                }
+            } else {
+                const errorMsg = result && result.message ? result.message : 'Không thể xóa ảnh từ server';
+                this.showError(errorMsg);
+                console.error('❌ [ASSET PANEL] Delete failed:', errorMsg);
+                console.error('❌ [ASSET PANEL] Full result:', result);
+            }
+        } catch (error) {
+            console.error('❌ [ASSET PANEL] Delete error:', error);
+            console.error('❌ [ASSET PANEL] Error stack:', error.stack);
+            this.showError('Lỗi khi xóa ảnh: ' + error.message);
         }
     }
 
@@ -494,12 +552,40 @@ export class AssetPanel {
 
     showSuccess(message) {
         console.log('✅', message)
-        // TODO: Implement toast notification
+        this.showToast(message, 'success')
     }
 
     showError(message) {
         console.error('❌', message)
-        // TODO: Implement error toast
+        this.showToast(message, 'error')
+    }
+
+    showToast(message, type = 'info') {
+        // Remove existing toasts
+        const existingToasts = document.querySelectorAll('.pm-toast')
+        existingToasts.forEach(toast => toast.remove())
+
+        // Create toast element
+        const toast = document.createElement('div')
+        toast.className = `pm-toast pm-toast-${type}`
+        
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'
+        toast.innerHTML = `
+            <span class="pm-toast-icon">${icon}</span>
+            <span class="pm-toast-message">${message}</span>
+        `
+        
+        // Add to body
+        document.body.appendChild(toast)
+        
+        // Trigger animation
+        setTimeout(() => toast.classList.add('pm-toast-show'), 10)
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('pm-toast-show')
+            setTimeout(() => toast.remove(), 300)
+        }, 3000)
     }
 
     // Public API methods

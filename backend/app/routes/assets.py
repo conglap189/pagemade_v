@@ -29,47 +29,84 @@ assets_bp = Blueprint('assets', __name__, url_prefix='/api/assets')
 @login_required
 def upload_asset():
     """Upload asset file."""
+    print('='*80)
+    print('🔼 [BACKEND] /api/assets/upload endpoint called')
+    print(f'🔼 [BACKEND] User: {current_user.id} ({current_user.email})')
+    print(f'🔼 [BACKEND] Request method: {request.method}')
+    print(f'🔼 [BACKEND] Request headers: {dict(request.headers)}')
+    print(f'🔼 [BACKEND] Request form data: {dict(request.form)}')
+    print(f'🔼 [BACKEND] Request files: {list(request.files.keys())}')
+    
     # Get site_id
     site_id = request.form.get('site_id')
+    print(f'🔼 [BACKEND] Site ID from form: {site_id}')
     
     if not site_id:
+        print('❌ [BACKEND] Error: site_id is required')
         return Helpers.error_response('site_id là bắt buộc', 400)
     
     try:
         site_id = int(site_id)
+        print(f'🔼 [BACKEND] Site ID (int): {site_id}')
     except ValueError:
+        print('❌ [BACKEND] Error: site_id invalid format')
         return Helpers.error_response('site_id không hợp lệ', 400)
     
     # Verify site ownership
     site = SiteRepository.find_by_id(site_id)
+    print(f'🔼 [BACKEND] Site found: {site.title if site else "None"}')
+    print(f'🔼 [BACKEND] Site owner: {site.user_id if site else "N/A"}')
+    print(f'🔼 [BACKEND] Current user: {current_user.id}')
+    
     if not site or site.user_id != current_user.id:
+        print('❌ [BACKEND] Error: Unauthorized - user does not own this site')
         return Helpers.error_response('Unauthorized', 403)
     
     # Check if file exists in request
     if 'file' not in request.files:
+        print('❌ [BACKEND] Error: No file in request')
         return Helpers.error_response('Không có file được tải lên', 400)
     
     file = request.files['file']
+    print(f'🔼 [BACKEND] File object: {file}')
+    print(f'🔼 [BACKEND] Filename: {file.filename}')
+    print(f'🔼 [BACKEND] Content type: {file.content_type}')
     
     if not file or file.filename == '':
+        print('❌ [BACKEND] Error: Empty filename')
         return Helpers.error_response('Không có file được chọn', 400)
     
     # Upload using service
     static_folder = current_app.static_folder
+    print(f'🔼 [BACKEND] Static folder: {static_folder}')
+    print(f'🔼 [BACKEND] Calling AssetService.upload_asset()...')
+    
+    # Get base URL from request
+    base_url = request.host_url.rstrip('/')  # e.g. https://app.pagemade.site
+    print(f'🔼 [BACKEND] Base URL: {base_url}')
+    
     success, asset_dict, error = AssetService.upload_asset(
         file=file,
         user_id=current_user.id,
         site_id=site_id,
-        static_folder=static_folder
+        static_folder=static_folder,
+        base_url=base_url
     )
     
+    print(f'🔼 [BACKEND] Upload result: success={success}')
+    
     if success:
+        print(f'✅ [BACKEND] Upload successful!')
+        print(f'✅ [BACKEND] Asset: {asset_dict}')
+        print('='*80)
         return Helpers.success_response(
             data={'asset': asset_dict},
             message='Upload thành công!',
             status=201
         )
     else:
+        print(f'❌ [BACKEND] Upload failed: {error}')
+        print('='*80)
         return Helpers.error_response(error, 400)
 
 
@@ -96,26 +133,52 @@ def list_assets(site_id):
 @login_required
 def delete_asset(asset_id):
     """Delete an asset."""
+    print('='*80)
+    print(f'🗑️ [BACKEND DELETE] Endpoint called: /api/assets/{asset_id}')
+    print(f'🗑️ [BACKEND DELETE] User: {current_user.id} ({current_user.email})')
+    print(f'🗑️ [BACKEND DELETE] Method: {request.method}')
+    
     asset = AssetRepository.find_by_id(asset_id)
     
     if not asset:
+        print(f'❌ [BACKEND DELETE] Asset not found: {asset_id}')
+        print('='*80)
         return Helpers.error_response('Asset không tồn tại!', 404)
+    
+    print(f'🗑️ [BACKEND DELETE] Asset found:')
+    print(f'   - ID: {asset.id}')
+    print(f'   - Filename: {asset.filename}')
+    print(f'   - URL: {asset.url}')
+    print(f'   - User ID: {asset.user_id}')
+    print(f'   - Site ID: {asset.site_id}')
     
     # Verify ownership
     if asset.user_id != current_user.id:
+        print(f'❌ [BACKEND DELETE] Unauthorized: asset.user_id={asset.user_id}, current_user.id={current_user.id}')
+        print('='*80)
         return Helpers.error_response('Unauthorized', 403)
+    
+    print(f'🗑️ [BACKEND DELETE] Ownership verified. Calling AssetService.delete_asset()...')
     
     # Delete using service
     static_folder = current_app.static_folder
+    print(f'🗑️ [BACKEND DELETE] Static folder: {static_folder}')
+    
     success, error = AssetService.delete_asset(
         asset_id=asset_id,
         user_id=current_user.id,
         static_folder=static_folder
     )
     
+    print(f'🗑️ [BACKEND DELETE] Service returned: success={success}, error={error}')
+    
     if success:
-        return Helpers.success_response(message='Xóa asset thành công!')
+        print(f'✅ [BACKEND DELETE] Asset deleted successfully!')
+        print('='*80)
+        return Helpers.success_response(message='Ảnh đã được xóa thành công!')
     else:
+        print(f'❌ [BACKEND DELETE] Delete failed: {error}')
+        print('='*80)
         return Helpers.error_response(error, 500)
 
 

@@ -17,6 +17,7 @@ from app.models import db, Site, Page
 from app.services import PageService, SiteService
 from app.repositories import SiteRepository, PageRepository
 from app.utils import Validators, Helpers
+from app.utils.url_helpers import get_editor_url
 from app.middleware.jwt_auth import jwt_required  # Add JWT support
 
 # Create blueprint - no prefix to match old routes
@@ -38,18 +39,8 @@ def index():
         # Main site - Redirect to the frontend
         return redirect('http://localhost:3000')
     
-    # Handle subdomain request (published site)
-    site = SiteRepository.find_by_subdomain(subdomain)
-    if not site or not site.is_published:
-        abort(404)
-    
-    # Get homepage for this site
-    homepage = site.get_homepage()
-    if not homepage:
-        abort(404)
-    
-    # Serve the published page
-    return render_template('published_page.html', page=homepage)
+    # Handle subdomain request - use serve_user_site() to serve published HTML
+    return serve_user_site(subdomain)
 
 
 @pages_bp.route('/preview/<string:token>')
@@ -350,7 +341,7 @@ def editor(page_id):
     # Redirect to frontend editor with token (query params format for Vite SPA)
     # Use query params instead of path params to avoid Vite routing issues
     # IMPORTANT: Must include /editor/ path to match Vite base config
-    frontend_url = f"http://localhost:5001/editor/?id={page_id}&token={token}"
+    frontend_url = f"{get_editor_url()}/editor/?id={page_id}&token={token}"
     return redirect(frontend_url)
 
 
@@ -535,10 +526,20 @@ def pagemade_load(page_id):
                 'gjs-styles': []
             }
     
-    # Return GrapesJS format - support both old (html/css) and new (gjs-*) keys
+    # Get HTML and CSS - prioritize content_data, fallback to html_content/css_content fields
+    html = content_data.get('gjs-html', content_data.get('html', ''))
+    css = content_data.get('gjs-css', content_data.get('css', ''))
+    
+    # If no content in JSON, fallback to html_content and css_content fields (from template)
+    if not html and page.html_content:
+        html = page.html_content
+    if not css and page.css_content:
+        css = page.css_content
+    
+    # Return GrapesJS format
     return jsonify({
-        'gjs-html': content_data.get('gjs-html', content_data.get('html', '')),
-        'gjs-css': content_data.get('gjs-css', content_data.get('css', '')),
+        'gjs-html': html,
+        'gjs-css': css,
         'gjs-components': content_data.get('gjs-components', content_data.get('components', [])),
         'gjs-styles': content_data.get('gjs-styles', content_data.get('styles', [])),
         'gjs-assets': content_data.get('gjs-assets', content_data.get('assets', [])),
@@ -861,10 +862,13 @@ def api_publish_page(page_id):
         return jsonify({
             'success': True,
             'message': 'Xuất bản thành công!',
-            'url': page_url,
-            'subdomain': subdomain,
-            'filename': filename,
-            'site_published': True
+            'data': {
+                'published_url': page_url,
+                'url': page_url,
+                'subdomain': subdomain,
+                'filename': filename,
+                'site_published': True
+            }
         })
         
     except Exception as e:
@@ -951,7 +955,7 @@ def editor_frontend(page_id):
         abort(403)
     
     # Redirect to frontend editor with page data
-    frontend_url = f"http://localhost:3000/editor/{page_id}?token={generate_editor_token(page_id)}"
+    frontend_url = f"{get_editor_url()}/editor/{page_id}?token={generate_editor_token(page_id)}"
     return redirect(frontend_url)
 
 

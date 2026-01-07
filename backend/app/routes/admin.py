@@ -1,3 +1,4 @@
+from app.utils.url_helpers import url_for_external
 """Admin blueprint - User management and admin panel."""
 from flask import Blueprint, render_template, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
@@ -29,7 +30,7 @@ def admin_required(f):
         
         if not current_user.is_admin():
             flash('Bạn không có quyền truy cập!', 'error')
-            return redirect(url_for('sites.dashboard'))
+            return redirect(url_for_external('sites.dashboard'))
         
         return f(*args, **kwargs)
     return decorated_function

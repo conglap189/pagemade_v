@@ -150,8 +150,12 @@ export class PageMadeEditorConfig {
                     // Tailwind CSS (CDN - specific version for stability)
                     'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css',
                     
-                    // PageMade Core CSS (from Backend static folder)
-                    'http://localhost:5000/static/pagemade/pagemade.min.css',
+                    // PageMade Core CSS (dynamic based on environment)
+                    // In production: load from app.pagemade.site
+                    // In development: load from localhost:5000
+                    window.location.hostname === 'localhost'
+                        ? 'http://localhost:5000/static/pagemade/pagemade.min.css'
+                        : 'https://app.pagemade.site/static/pagemade/pagemade.min.css',
                     
                     // Font Awesome Icons (CDN - version 5.15.4 for ligature support)
                     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'

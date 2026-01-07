@@ -15,71 +15,59 @@ const SigninPage = () => {
 
     console.log("🔐 Starting login process...");
     console.log("📧 Email:", email);
-    console.log("🔗 API URL:", process.env.NEXT_PUBLIC_API_URL);
 
     try {
-      // Use Next.js proxy to avoid CORS issues
-      const proxyUrl = "/api/backend/auth/login";
-      console.log("📡 Making request to proxy:", proxyUrl);
+      // Call Flask API directly on app.pagemade.site (DNS-only, no Cloudflare)
+      // This bypasses Cloudflare's bot protection on pagemade.site
+      const loginUrl = "https://app.pagemade.site/api/auth/login";
+      console.log("📡 Making request to:", loginUrl);
       
-      const response = await fetch(proxyUrl, {
+      const response = await fetch(loginUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Important for shared cookie approach
+        credentials: "include", // Important: send/receive cookies cross-origin
         body: JSON.stringify({ email, password }),
       });
 
       console.log("📥 Response status:", response.status);
-      console.log("📥 Response ok:", response.ok);
 
       if (!response.ok) {
-        console.log("❌ Response not OK, status:", response.status);
         const errorData = await response.json().catch(() => ({ message: 'Server error' }));
-        console.log("❌ Error data:", errorData);
+        console.log("❌ Error:", errorData);
         setError(errorData.message || "Đăng nhập thất bại");
         setLoading(false);
         return;
       }
 
       const data = await response.json();
-      console.log("📦 Response data:", data);
+      console.log("📦 Response:", data);
 
       if (data.success) {
-        console.log("✅ Login successful, redirecting to editor...");
-        // Store user info in localStorage for UI purposes
-        if (data.data.user) {
+        console.log("✅ Login successful!");
+        
+        // Store user info in localStorage
+        if (data.data?.user) {
           localStorage.setItem('user', JSON.stringify(data.data.user));
         }
         
-        // Check if there's a redirect parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectUrl = urlParams.get('redirect');
-        
-        if (redirectUrl) {
-          // Redirect to the requested URL
-          window.location.href = redirectUrl;
-        } else {
-          // Redirect to backend dashboard
-          window.location.href = 'http://localhost:5000/dashboard';
-        }
+        // Redirect to dashboard
+        console.log("🔄 Redirecting to dashboard...");
+        window.location.href = "https://app.pagemade.site/dashboard";
       } else {
-        console.log("❌ Login failed:", data.message);
         setError(data.message || "Đăng nhập thất bại");
       }
     } catch (err) {
       console.error("💥 Login error:", err);
-      console.error("💥 Error type:", err instanceof TypeError ? 'Network/CORS error' : 'Other error');
-      setError(`Không thể kết nối đến server. Chi tiết: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setError("Không thể kết nối đến server. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    // Use proxy URL to avoid CORS issues
-    window.location.href = "/api/backend/auth/google";
+    window.location.href = "https://app.pagemade.site/auth/google";
   };
 
   return (
@@ -182,7 +170,7 @@ const SigninPage = () => {
                   </div>
                 </form>
                 <p className="text-body-color text-center text-base font-medium">
-                  Don’t you have an account?{" "}
+                  Don&apos;t you have an account?{" "}
                   <Link href="/signup" className="text-primary hover:underline">
                     Sign up
                   </Link>

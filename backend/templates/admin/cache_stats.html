@@ -1,211 +1,371 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
 {% block title %}Cache Statistics - PageMade{% endblock %}
 
+{% block breadcrumb %}Cache{% endblock %}
+
 {% block content %}
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-tachometer-alt"></i> Cache Statistics</h2>
-                <div>
-                    <button class="btn btn-outline-primary" onclick="location.reload()">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                    <button class="btn btn-warning" onclick="clearCache()" id="clearCacheBtn">
-                        <i class="fas fa-trash"></i> Clear Cache
-                    </button>
-                </div>
-            </div>
-        </div>
+<!-- Page Header -->
+<div class="mb-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-title-md font-semibold text-gray-800 dark:text-white/90">
+        Cache Statistics
+      </h1>
+      <p class="text-theme-sm text-gray-500 dark:text-gray-400">
+        Monitor and manage Redis cache performance
+      </p>
     </div>
 
-    {% if stats.available %}
-    <!-- Cache Overview -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6 class="card-title">Memory Used</h6>
-                            <h4>{{ stats.used_memory }}</h4>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-memory fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6 class="card-title">Hit Rate</h6>
-                            <h4>{{ stats.hit_rate }}%</h4>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-bullseye fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6 class="card-title">Connected Clients</h6>
-                            <h4>{{ stats.connected_clients }}</h4>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-users fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6 class="card-title">Uptime</h6>
-                            <h4>{{ (stats.uptime_in_seconds / 3600) | round(1) }}h</h4>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-clock fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="flex items-center gap-3">
+      <!-- Refresh Button -->
+      <button
+        onclick="location.reload()"
+        class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+      >
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+        </svg>
+        Refresh
+      </button>
 
-    <!-- Detailed Statistics -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-chart-line"></i> Cache Performance</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tr>
-                            <td><strong>Keyspace Hits:</strong></td>
-                            <td>{{ "{:,}".format(stats.keyspace_hits) }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Keyspace Misses:</strong></td>
-                            <td>{{ "{:,}".format(stats.keyspace_misses) }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Hit Rate:</strong></td>
-                            <td>
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar bg-success" role="progressbar" 
-                                         style="width: {{ stats.hit_rate }}%" 
-                                         aria-valuenow="{{ stats.hit_rate }}" 
-                                         aria-valuemin="0" aria-valuemax="100">
-                                        {{ stats.hit_rate }}%
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Total Commands:</strong></td>
-                            <td>{{ "{:,}".format(stats.total_commands_processed) }}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-server"></i> Redis Server Info</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tr>
-                            <td><strong>Status:</strong></td>
-                            <td><span class="badge badge-success">Running</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Memory Usage:</strong></td>
-                            <td>{{ stats.used_memory }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Connected Clients:</strong></td>
-                            <td>{{ stats.connected_clients }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Uptime:</strong></td>
-                            <td>{{ (stats.uptime_in_seconds / 86400) | round(1) }} days</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>
+      <!-- Clear Cache Button -->
+      <button
+        onclick="clearCache()"
+        id="clearCacheBtn"
+        class="inline-flex items-center gap-2 rounded-lg bg-warning-500 px-4 py-2.5 text-theme-sm font-medium text-white shadow-theme-xs hover:bg-warning-600 dark:bg-warning-600 dark:hover:bg-warning-700"
+      >
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        Clear Cache
+      </button>
     </div>
-
-    <!-- Cache Operations -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-cogs"></i> Cache Operations</h5>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Cache Benefits:</strong>
-                        <ul class="mb-0 mt-2">
-                            <li>✅ <strong>Faster Page Loading:</strong> Content served directly from memory</li>
-                            <li>✅ <strong>Reduced Database Load:</strong> Less queries to SQLite</li>
-                            <li>✅ <strong>Better User Experience:</strong> Sub-100ms response times</li>
-                            <li>✅ <strong>Analytics Tracking:</strong> Real-time page view counting</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Clear Cache:</strong> This will remove all cached content and force regeneration from database. Use only if needed.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {% else %}
-    <!-- Redis Not Available -->
-    <div class="row">
-        <div class="col-12">
-            <div class="alert alert-danger">
-                <h4><i class="fas fa-exclamation-triangle"></i> Redis Cache Not Available</h4>
-                <p>Redis server is not running or not accessible. Cache features are disabled.</p>
-                {% if stats.error %}
-                <p><strong>Error:</strong> {{ stats.error }}</p>
-                {% endif %}
-                <hr>
-                <p class="mb-0">
-                    <strong>To enable caching:</strong><br>
-                    1. Install Redis: <code>sudo apt install redis-server</code><br>
-                    2. Start Redis: <code>sudo systemctl start redis-server</code><br>
-                    3. Restart PageMade application
-                </p>
-            </div>
-        </div>
-    </div>
-    {% endif %}
+  </div>
 </div>
+
+{% if stats.available %}
+<!-- Statistics Cards -->
+<div class="grid grid-cols-12 gap-4 md:gap-6 mb-6">
+  <!-- Memory Used -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h4 class="text-title-md font-semibold text-gray-800 dark:text-white/90">
+            {{ stats.used_memory }}
+          </h4>
+          <p class="text-theme-sm text-gray-500 dark:text-gray-400">
+            Memory Used
+          </p>
+        </div>
+        <div class="flex h-12.5 w-12.5 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-500/10">
+          <svg class="fill-brand-500 dark:fill-brand-400" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 3C6 2.44772 6.44772 2 7 2H17C17.5523 2 18 2.44772 18 3V5H19C20.1046 5 21 5.89543 21 7V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V7C3 5.89543 3.89543 5 5 5H6V3ZM8 5H16V4H8V5ZM5 7V19H19V7H5ZM8 9H16V11H8V9ZM8 13H12V15H8V13Z" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hit Rate -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h4 class="text-title-md font-semibold text-gray-800 dark:text-white/90">
+            {{ stats.hit_rate }}%
+          </h4>
+          <p class="text-theme-sm text-gray-500 dark:text-gray-400">
+            Cache Hit Rate
+          </p>
+        </div>
+        <div class="flex h-12.5 w-12.5 items-center justify-center rounded-lg bg-success-50 dark:bg-success-500/10">
+          <svg class="fill-success-500 dark:fill-success-400" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connected Clients -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h4 class="text-title-md font-semibold text-gray-800 dark:text-white/90">
+            {{ stats.connected_clients }}
+          </h4>
+          <p class="text-theme-sm text-gray-500 dark:text-gray-400">
+            Connected Clients
+          </p>
+        </div>
+        <div class="flex h-12.5 w-12.5 items-center justify-center rounded-lg bg-info-50 dark:bg-info-500/10">
+          <svg class="fill-info-500 dark:fill-info-400" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Uptime -->
+  <div class="col-span-12 sm:col-span-6 xl:col-span-3">
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h4 class="text-title-md font-semibold text-gray-800 dark:text-white/90">
+            {{ (stats.uptime_in_seconds / 3600) | round(1) }}h
+          </h4>
+          <p class="text-theme-sm text-gray-500 dark:text-gray-400">
+            Uptime
+          </p>
+        </div>
+        <div class="flex h-12.5 w-12.5 items-center justify-center rounded-lg bg-warning-50 dark:bg-warning-500/10">
+          <svg class="fill-warning-500 dark:fill-warning-400" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Performance Cards -->
+<div class="grid grid-cols-12 gap-4 md:gap-6 mb-6">
+  <!-- Cache Performance -->
+  <div class="col-span-12 xl:col-span-6">
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="px-4 py-4 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-500/10">
+            <svg class="fill-brand-500 dark:fill-brand-400" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+            Cache Performance
+          </h3>
+        </div>
+      </div>
+      <div class="p-4 sm:p-6">
+        <div class="space-y-4">
+          <!-- Keyspace Hits -->
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+            <span class="text-theme-sm font-medium text-gray-600 dark:text-gray-400">Keyspace Hits</span>
+            <span class="text-theme-sm font-semibold text-gray-900 dark:text-white">{{ "{:,}".format(stats.keyspace_hits) }}</span>
+          </div>
+          
+          <!-- Keyspace Misses -->
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+            <span class="text-theme-sm font-medium text-gray-600 dark:text-gray-400">Keyspace Misses</span>
+            <span class="text-theme-sm font-semibold text-gray-900 dark:text-white">{{ "{:,}".format(stats.keyspace_misses) }}</span>
+          </div>
+          
+          <!-- Hit Rate Progress -->
+          <div class="py-3 border-b border-gray-100 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-theme-sm font-medium text-gray-600 dark:text-gray-400">Hit Rate</span>
+              <span class="text-theme-sm font-semibold text-success-600 dark:text-success-400">{{ stats.hit_rate }}%</span>
+            </div>
+            <div class="w-full h-2 bg-gray-200 rounded-full dark:bg-gray-700">
+              <div class="h-2 bg-success-500 rounded-full transition-all duration-300" style="width: {{ stats.hit_rate }}%"></div>
+            </div>
+          </div>
+          
+          <!-- Total Commands -->
+          <div class="flex items-center justify-between py-3">
+            <span class="text-theme-sm font-medium text-gray-600 dark:text-gray-400">Total Commands</span>
+            <span class="text-theme-sm font-semibold text-gray-900 dark:text-white">{{ "{:,}".format(stats.total_commands_processed) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Redis Server Info -->
+  <div class="col-span-12 xl:col-span-6">
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="px-4 py-4 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-danger-50 dark:bg-danger-500/10">
+            <svg class="fill-danger-500 dark:fill-danger-400" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H4V5h16v14zM6 7h5v5H6zm2 8h8v2H8zm6-6h4v2h-4zm0 4h4v2h-4z" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+            Redis Server Info
+          </h3>
+        </div>
+      </div>
+      <div class="p-4 sm:p-6">
+        <div class="space-y-4">
+          <!-- Status -->
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+            <span class="text-theme-sm font-medium text-gray-600 dark:text-gray-400">Status</span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1 text-theme-xs font-semibold text-success-600 dark:bg-success-500/10 dark:text-success-400">
+              <span class="h-2 w-2 rounded-full bg-success-500 animate-pulse"></span>
+              Running
+            </span>
+          </div>
+          
+          <!-- Memory Usage -->
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+            <span class="text-theme-sm font-medium text-gray-600 dark:text-gray-400">Memory Usage</span>
+            <span class="text-theme-sm font-semibold text-gray-900 dark:text-white">{{ stats.used_memory }}</span>
+          </div>
+          
+          <!-- Connected Clients -->
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+            <span class="text-theme-sm font-medium text-gray-600 dark:text-gray-400">Connected Clients</span>
+            <span class="text-theme-sm font-semibold text-gray-900 dark:text-white">{{ stats.connected_clients }}</span>
+          </div>
+          
+          <!-- Uptime Days -->
+          <div class="flex items-center justify-between py-3">
+            <span class="text-theme-sm font-medium text-gray-600 dark:text-gray-400">Uptime</span>
+            <span class="text-theme-sm font-semibold text-gray-900 dark:text-white">{{ (stats.uptime_in_seconds / 86400) | round(1) }} days</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cache Benefits Info -->
+<div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+  <div class="px-4 py-4 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-3">
+      <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-info-50 dark:bg-info-500/10">
+        <svg class="fill-info-500 dark:fill-info-400" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="currentColor"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+        Cache Benefits
+      </h3>
+    </div>
+  </div>
+  <div class="p-4 sm:p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Benefit 1 -->
+      <div class="flex items-start gap-3 p-4 rounded-xl bg-success-50 dark:bg-success-500/10">
+        <div class="flex-shrink-0">
+          <svg class="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-theme-sm font-semibold text-success-700 dark:text-success-400">Faster Page Loading</h4>
+          <p class="text-theme-xs text-success-600 dark:text-success-300">Content served directly from memory</p>
+        </div>
+      </div>
+      
+      <!-- Benefit 2 -->
+      <div class="flex items-start gap-3 p-4 rounded-xl bg-success-50 dark:bg-success-500/10">
+        <div class="flex-shrink-0">
+          <svg class="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-theme-sm font-semibold text-success-700 dark:text-success-400">Reduced Database Load</h4>
+          <p class="text-theme-xs text-success-600 dark:text-success-300">Less queries to SQLite</p>
+        </div>
+      </div>
+      
+      <!-- Benefit 3 -->
+      <div class="flex items-start gap-3 p-4 rounded-xl bg-success-50 dark:bg-success-500/10">
+        <div class="flex-shrink-0">
+          <svg class="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-theme-sm font-semibold text-success-700 dark:text-success-400">Better User Experience</h4>
+          <p class="text-theme-xs text-success-600 dark:text-success-300">Sub-100ms response times</p>
+        </div>
+      </div>
+      
+      <!-- Benefit 4 -->
+      <div class="flex items-start gap-3 p-4 rounded-xl bg-success-50 dark:bg-success-500/10">
+        <div class="flex-shrink-0">
+          <svg class="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-theme-sm font-semibold text-success-700 dark:text-success-400">Analytics Tracking</h4>
+          <p class="text-theme-xs text-success-600 dark:text-success-300">Real-time page view counting</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Warning -->
+    <div class="mt-4 p-4 rounded-xl bg-warning-50 dark:bg-warning-500/10 border border-warning-200 dark:border-warning-500/20">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0">
+          <svg class="w-5 h-5 text-warning-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-theme-sm font-semibold text-warning-700 dark:text-warning-400">Clear Cache Warning</h4>
+          <p class="text-theme-xs text-warning-600 dark:text-warning-300">This will remove all cached content and force regeneration from database. Use only if needed.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- Redis Not Available -->
+<div class="overflow-hidden rounded-2xl border border-danger-200 bg-danger-50 dark:border-danger-800 dark:bg-danger-900/20">
+  <div class="p-6">
+    <div class="flex items-start gap-4">
+      <div class="flex-shrink-0">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-danger-100 dark:bg-danger-500/20">
+          <svg class="w-6 h-6 text-danger-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold text-danger-800 dark:text-danger-400">
+          Redis Cache Not Available
+        </h3>
+        <p class="mt-1 text-theme-sm text-danger-700 dark:text-danger-300">
+          Redis server is not running or not accessible. Cache features are disabled.
+        </p>
+        {% if stats.error %}
+        <p class="mt-2 text-theme-sm text-danger-600 dark:text-danger-400">
+          <strong>Error:</strong> {{ stats.error }}
+        </p>
+        {% endif %}
+        
+        <div class="mt-4 p-4 rounded-xl bg-white dark:bg-gray-800 border border-danger-200 dark:border-danger-700">
+          <h4 class="text-theme-sm font-semibold text-gray-800 dark:text-white mb-3">To enable caching:</h4>
+          <div class="space-y-2 text-theme-sm text-gray-600 dark:text-gray-400">
+            <div class="flex items-center gap-2">
+              <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-brand-50 text-brand-600 text-xs font-bold dark:bg-brand-500/10 dark:text-brand-400">1</span>
+              <span>Install Redis: <code class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs">sudo apt install redis-server</code></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-brand-50 text-brand-600 text-xs font-bold dark:bg-brand-500/10 dark:text-brand-400">2</span>
+              <span>Start Redis: <code class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs">sudo systemctl start redis-server</code></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-brand-50 text-brand-600 text-xs font-bold dark:bg-brand-500/10 dark:text-brand-400">3</span>
+              <span>Restart PageMade application</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <script>
 function clearCache() {
@@ -214,8 +374,9 @@ function clearCache() {
     }
     
     const btn = document.getElementById('clearCacheBtn');
+    const originalContent = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+    btn.innerHTML = '<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Clearing...';
     
     fetch('/admin/cache/clear', {
         method: 'POST',
@@ -226,8 +387,23 @@ function clearCache() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Cache cleared successfully!');
-            location.reload();
+            // Show success toast
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'fixed top-4 right-4 z-50 rounded-lg border border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400 p-4 shadow-theme-lg';
+            alertDiv.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <svg class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <p class="text-sm font-medium">Cache cleared successfully!</p>
+                </div>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+                location.reload();
+            }, 2000);
         } else {
             alert('Error: ' + (data.error || 'Unknown error'));
         }
@@ -237,7 +413,7 @@ function clearCache() {
     })
     .finally(() => {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-trash"></i> Clear Cache';
+        btn.innerHTML = originalContent;
     });
 }
 </script>

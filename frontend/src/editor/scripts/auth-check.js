@@ -53,23 +53,29 @@ class AuthGuard {
     }
 
     /**
-     * Redirect to backend login page (port 5000) with return URL
+     * Redirect to backend login page with return URL
      */
     redirectToLogin(returnUrl = null) {
         const currentUrl = returnUrl || window.location.href
-        // Redirect to backend login page (port 5000)
-        const loginUrl = `http://localhost:5000/login?next=${encodeURIComponent(currentUrl)}`
+        // Dynamic login URL based on environment
+        const baseUrl = window.location.hostname === 'localhost'
+            ? 'http://localhost:5000'
+            : 'https://app.pagemade.site'
+        const loginUrl = `${baseUrl}/login?next=${encodeURIComponent(currentUrl)}`
         
         console.log('🔐 Redirecting to backend login:', loginUrl)
         window.location.href = loginUrl
     }
 
     /**
-     * Redirect to backend dashboard (port 5000)
+     * Redirect to backend dashboard
      */
     redirectToWebsite() {
         console.log('🏠 Redirecting to dashboard')
-        window.location.href = 'http://localhost:5000/dashboard'
+        const dashboardUrl = window.location.hostname === 'localhost'
+            ? 'http://localhost:5000/dashboard'
+            : 'https://app.pagemade.site/dashboard'
+        window.location.href = dashboardUrl
     }
 
     /**
@@ -117,7 +123,12 @@ class AuthGuard {
                 console.log('🔑 Using token-based authentication')
             }
 
-            const response = await fetch('http://localhost:5000/api/auth/me', {
+            // Dynamic API URL based on environment
+            const apiBaseUrl = window.location.hostname === 'localhost'
+                ? 'http://localhost:5000'
+                : 'https://app.pagemade.site'
+
+            const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
                 method: 'GET',
                 credentials: 'include', // Include cookies for shared cookie approach
                 headers: headers

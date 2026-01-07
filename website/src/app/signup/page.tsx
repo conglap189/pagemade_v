@@ -35,7 +35,8 @@ const SignupPage = () => {
     console.log("👤 Name:", name);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const currentProtocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || `${currentProtocol}://app.pagemade.site`;
       console.log("📡 Making request to:", `${apiUrl}/api/signup`);
       
       const response = await fetch(`${apiUrl}/api/auth/signup`, {
@@ -69,8 +70,10 @@ const SignupPage = () => {
           localStorage.setItem('user', JSON.stringify(data.data.user));
         }
         
-        // Redirect to backend dashboard
-        window.location.href = 'http://localhost:5000/dashboard';
+        // Redirect to backend dashboard (preserve protocol)
+        const currentProtocol = window.location.protocol === 'https:' ? 'https' : 'http';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${currentProtocol}://app.pagemade.site`;
+        window.location.href = `${appUrl}/dashboard`;
       } else {
         console.log("❌ Signup failed:", data.message);
         setError(data.message || "Đăng ký thất bại");
@@ -85,7 +88,8 @@ const SignupPage = () => {
   };
 
   const handleGoogleSignup = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const currentProtocol = window.location.protocol === 'https:' ? 'https' : 'http';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || `${currentProtocol}://app.pagemade.site`;
     window.location.href = `${apiUrl}/auth/google`;
   };
 
@@ -99,7 +103,7 @@ const SignupPage = () => {
                 Create your account
               </h3>
               <p className="text-body-color mb-11 text-center text-base font-medium">
-                It's totally free and super easy
+                It&apos;s totally free and super easy
               </p>
               
               <button 
